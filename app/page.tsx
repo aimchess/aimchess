@@ -6,14 +6,15 @@ import { useEffect } from "react"
 
 // Your existing components
 import { HeroSection } from "@/components/hero-section"
-import { TestimonialsSection } from "@/components/testimonials-section"
+import  StudentSuccessAndTestimonials  from "@/components/testimonials-section"
 import { StatsSection } from "@/components/stats-section"
-import { WhyChessForKids } from "@/components/why"
+import WhyChessBento from "@/components/why"
 import { CoursesSection } from "@/components/courses-section"
 import { AchievementsSection } from "@/components/achievements-section"
 import { FaqSection } from "@/components/faq-section"
 import { WhyChooseUs } from "@/components/why-choose-us"
 import { HomeCTA } from "@/components/home-cta"
+import SuccessStories from "@/components/sucessstory";
 
 export default function HomePage() {
   const { data: session, status } = useSession()
@@ -47,12 +48,13 @@ export default function HomePage() {
     <div className="min-h-screen py-10">
       <main>
         <HeroSection />
-        <CoursesSection />
-        {/* <StatsSection /> */}
-        <WhyChessForKids />
         <WhyChooseUs />
+        <CoursesSection />
         <AchievementsSection />
-        <TestimonialsSection />
+        <StudentSuccessAndTestimonials />
+        <SuccessStories/>
+        {/* <StatsSection /> */}
+        <WhyChessBento/>
         <FaqSection />
         <HomeCTA />
       </main>

@@ -10,7 +10,7 @@
 // import "./globals.css"
 
 // export const metadata: Metadata = {
-//   title: "Royal Look academy - Professional Chess Training",
+//   title: "Royal Rook academy - Professional Chess Training",
 //   description:
 //     "Professional chess training academy with FIDE rated coaches. Learn chess from beginners to advanced levels with online and offline classes.",
 //   generator: "v0.app",
@@ -48,7 +48,7 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Royal Look Academy - Professional Chess Training",
+  title: "Royal Rook Academy - Professional Chess Training",
   description: "Learn chess from FIDE-rated coaches. Online & offline classes.",
 };
 

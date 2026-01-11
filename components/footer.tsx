@@ -9,8 +9,6 @@ import {
   Twitter,
   Instagram,
   Youtube,
-  Crown,
-  ArrowRight
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -18,7 +16,6 @@ import { motion } from "framer-motion";
 const THEME = {
   bg: "#2D2A26",      // Charcoal
   text: "#FDFBF7",    // Cream
-  dim: "#5C5852",     // Dimmed text
   accent: "#FFDA44",  // Gold
   highlight: "#E76F51" // Burnt Orange
 };
@@ -32,9 +29,9 @@ export function Footer() {
 
   const socialLinks = [
     { icon: Facebook, href: "https://www.facebook.com/chessacademy", label: "Facebook" },
-    { icon: Twitter, href: "https://twitter.com/Royal Look", label: "Twitter" },
-    { icon: Instagram, href: "https://instagram.com/Royal Lookacademy", label: "Instagram" },
-    { icon: Youtube, href: "https://youtube.com/@Royal Lookacademy", label: "YouTube" },
+    { icon: Twitter, href: "https://twitter.com/RoyalRook", label: "Twitter" },
+    { icon: Instagram, href: "https://instagram.com/RoyalRookacademy", label: "Instagram" },
+    { icon: Youtube, href: "https://youtube.com/@RoyalRookacademy", label: "YouTube" },
   ];
 
   const quickLinks = [
@@ -55,36 +52,37 @@ export function Footer() {
 
   return (
     <footer className="relative font-sans overflow-hidden" style={{ backgroundColor: THEME.bg, color: THEME.text }}>
-      {/* 2. BACKGROUND AMBIENCE */}
+      {/* BACKGROUND AMBIENCE */}
       <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-[#E76F51] rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-30" />
+        <div className="absolute -top-40 -right-40 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#E76F51] rounded-full blur-[100px] md:blur-[150px]" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-30" />
       </div>
 
-      <div className="container mx-auto px-6 py-8 relative z-10">
+      <div className="container mx-auto px-6 py-12 md:py-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
 
           {/* COLUMN 1: BRAND */}
-          <div className="space-y-6">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6">
             <Link href="/" className="inline-flex items-center gap-4 group">
               <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:rotate-12"
-                style={{ backgroundColor: THEME.text }}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg bg-white p-1 transition-transform duration-500 group-hover:rotate-12"
               >
                 <img
                   src="/logo.jpg"
-                  alt="Royal Look Chess Academy Logo"
-                  width={28}
-                  height={28}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                />              </div>
+                  alt="Royal Rook Chess Academy Logo"
+                  className="w-full h-full object-contain rounded-xl"
+                />
+              </div>
               <div>
-                <h3 className="font-serif font-bold text-2xl leading-none tracking-tight">Royal Look<br /><span className="text-[#FFDA44] text-sm font-sans tracking-[0.2em] uppercase">Academy</span></h3>
+                <h3 className="font-serif font-bold text-2xl leading-none tracking-tight">
+                  Royal Rook<br />
+                  <span className="text-[#FFDA44] text-[10px] font-sans tracking-[0.3em] uppercase">Academy</span>
+                </h3>
               </div>
             </Link>
 
             <p className="text-sm leading-relaxed opacity-70 max-w-xs">
-              Dedicated to world-class chess education and building champions from Visakhapatnam to the world stage.
+              Dedicated to world-class chess education and building champions from our academy to the world stage.
             </p>
 
             <div className="flex gap-3">
@@ -108,19 +106,19 @@ export function Footer() {
           </div>
 
           {/* COLUMN 2: QUICK LINKS */}
-          <div>
-            <h4 className="font-bold text-sm uppercase tracking-widest text-[#FFDA44] mb-6 relative inline-block">
+          <div className="text-center md:text-left">
+            <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-[#FFDA44] mb-8 relative inline-block">
               Quick Links
-              <span className="absolute -bottom-2 left-0 w-8 h-0.5 bg-[#FFDA44] rounded-full"></span>
+              <span className="absolute -bottom-2 left-1/2 md:left-0 -translate-x-1/2 md:translate-x-0 w-8 h-1 bg-[#E76F51] rounded-full"></span>
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {quickLinks.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="flex items-center gap-2 text-sm opacity-70 hover:opacity-100 hover:text-[#FFDA44] transition-all group"
+                    className="text-sm font-bold opacity-60 hover:opacity-100 hover:text-[#FFDA44] transition-all flex items-center justify-center md:justify-start gap-2 group"
                   >
-                    <span className="w-1 h-1 rounded-full bg-[#E76F51] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="w-1 h-1 rounded-full bg-[#E76F51] scale-0 group-hover:scale-100 transition-transform" />
                     {link.name}
                   </Link>
                 </li>
@@ -129,19 +127,19 @@ export function Footer() {
           </div>
 
           {/* COLUMN 3: PROGRAMS */}
-          <div>
-            <h4 className="font-bold text-sm uppercase tracking-widest text-[#FFDA44] mb-6 relative inline-block">
+          <div className="text-center md:text-left">
+            <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-[#FFDA44] mb-8 relative inline-block">
               Programs
-              <span className="absolute -bottom-2 left-0 w-8 h-0.5 bg-[#FFDA44] rounded-full"></span>
+              <span className="absolute -bottom-2 left-1/2 md:left-0 -translate-x-1/2 md:translate-x-0 w-8 h-1 bg-[#E76F51] rounded-full"></span>
             </h4>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {programs.map((link, index) => (
                 <li key={index}>
                   <Link
                     href={link.href}
-                    className="flex items-center gap-2 text-sm opacity-70 hover:opacity-100 hover:text-[#FFDA44] transition-all group"
+                    className="text-sm font-bold opacity-60 hover:opacity-100 hover:text-[#FFDA44] transition-all flex items-center justify-center md:justify-start gap-2 group"
                   >
-                    <span className="w-1 h-1 rounded-full bg-[#E76F51] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span className="w-1 h-1 rounded-full bg-[#E76F51] scale-0 group-hover:scale-100 transition-transform" />
                     {link.name}
                   </Link>
                 </li>
@@ -150,33 +148,36 @@ export function Footer() {
           </div>
 
           {/* COLUMN 4: CONTACT */}
-          <div>
-            <h4 className="font-bold text-sm uppercase tracking-widest text-[#FFDA44] mb-6 relative inline-block">
+          <div className="text-center md:text-left">
+            <h4 className="font-black text-[10px] uppercase tracking-[0.2em] text-[#FFDA44] mb-8 relative inline-block">
               Contact Us
-              <span className="absolute -bottom-2 left-0 w-8 h-0.5 bg-[#FFDA44] rounded-full"></span>
+              <span className="absolute -bottom-2 left-1/2 md:left-0 -translate-x-1/2 md:translate-x-0 w-8 h-1 bg-[#E76F51] rounded-full"></span>
             </h4>
-            <div className="space-y-5">
-              <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#E76F51]/30 hover:bg-[#E76F51]/5 transition-all">
-                <Phone className="w-5 h-5 text-[#E76F51] mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-bold text-sm mb-1 group-hover:text-[#FFDA44] transition-colors">+91 73560 26170</p>
-                  <p className="text-xs opacity-50">Mon - Sun, 10 AM - 8 PM</p>
+            <div className="space-y-4">
+              <div className="group flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#E76F51]/30 transition-all">
+                <Phone className="w-5 h-5 text-[#E76F51] shrink-0" />
+                <div className="flex flex-col items-center md:items-start">
+                  <p className="font-black text-sm group-hover:text-[#FFDA44] transition-colors">+91 73560 26170</p>
+                  <p className="text-[10px] opacity-50 uppercase tracking-widest font-bold">Available 10 AM - 8 PM</p>
                 </div>
               </div>
 
-              <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#E76F51]/30 hover:bg-[#E76F51]/5 transition-all">
-                <Mail className="w-5 h-5 text-[#E76F51] mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-bold text-sm mb-1 group-hover:text-[#FFDA44] transition-colors break-all">contact@royallookchess.com</p>
-                  <p className="text-xs opacity-50">Response within 24 hrs</p>
+              <div className="group flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#E76F51]/30 transition-all overflow-hidden">
+                <Mail className="w-5 h-5 text-[#E76F51] shrink-0" />
+                <div className="flex flex-col items-center md:items-start max-w-full">
+                  <p className="font-black text-sm group-hover:text-[#FFDA44] transition-colors break-all md:break-words">
+                    contact@royalRookchess.com
+                  </p>
                 </div>
               </div>
 
-              <div className="group flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#E76F51]/30 hover:bg-[#E76F51]/5 transition-all">
-                <MapPin className="w-5 h-5 text-[#E76F51] mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-bold text-sm mb-1 group-hover:text-[#FFDA44] transition-colors">Kerala, India</p>
-                  <p className="text-xs opacity-50">Prarthana Nagar, Thekkumbhagam, Kannankulangara, Thrippunithura, Ernakulam, Kerala 682301</p>
+              <div className="group flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-[#E76F51]/30 transition-all">
+                <MapPin className="w-5 h-5 text-[#E76F51] shrink-0" />
+                <div className="flex flex-col items-center md:items-start">
+                  <p className="font-black text-sm group-hover:text-[#FFDA44] transition-colors">Kerala, India</p>
+                  <p className="text-[10px] opacity-50 font-bold text-center md:text-left mt-1 leading-relaxed">
+                    Thekkumbhagam, Kannankulangara, Thrippunithura, Ernakulam, 682301
+                  </p>
                 </div>
               </div>
             </div>
@@ -184,12 +185,21 @@ export function Footer() {
         </div>
 
         {/* BOTTOM BAR */}
-        <div className="border-t border-white/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
-          <p className="text-center md:text-left">© {new Date().getFullYear()} Royal Look Chess Academy. All rights reserved. • India Time: {currentTime}</p>
-          {/* <div className="flex gap-6">
-            <Link href="/terms" className="hover:text-[#FFDA44] hover:underline transition-colors">Terms & Conditions</Link>
-            <Link href="/privacy" className="hover:text-[#FFDA44] hover:underline transition-colors">Privacy Policy</Link>
-          </div> */}
+        <div className="border-t border-white/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+          <div className="space-y-2">
+             <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">
+              © {new Date().getFullYear()} Royal Rook Chess Academy. All rights reserved.
+             </p>
+             <p className="text-[9px] font-black text-[#FFDA44] opacity-60 uppercase tracking-[0.2em]">
+              India Time: {currentTime}
+             </p>
+          </div>
+          
+          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest opacity-40">
+            <Link href="#" className="hover:text-[#FFDA44] transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-[#FFDA44] transition-colors">Terms</Link>
+            <Link href="#" className="hover:text-[#FFDA44] transition-colors">Support</Link>
+          </div>
         </div>
       </div>
     </footer>
