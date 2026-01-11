@@ -1,0 +1,69 @@
+Build a full-stack chess learning platform inspired by modern chess sites with these features:
+
+1. User Authentication
+Implement sign up and login (JWT or NextAuth for secure sessions).
+
+Roles: admin and student.
+
+2. Payment Integration
+Integrate a payment gateway (Stripe/PayPal/Razorpay).
+
+On successful payment, assign the "beginner" stage and allow access to beginner content.
+
+3. Learning Progression
+Structure lessons/puzzles into 3 stages: beginner, intermediate, advanced.
+
+Allow progression only after admin approval or stage completion/criteria (track user’s stage and progress in DB).
+
+Store and manage user enrollments and payment statuses.
+
+4. Admin Panel
+Secure admin login.
+
+Admin can:
+
+Post/edit/delete chess puzzles, assigning each to a learning stage.
+
+View/manage enrollments and payments.
+
+Upgrade users to next stages manually.
+
+5. Database Models
+Models: User (with role), Payment, Enrollment, Puzzle (with stage), Progress.
+
+Use PostgreSQL or MySQL with Prisma/TypeORM for ORM.
+
+6. Backend (API)
+CRUD APIs for puzzles, enrollments, user management, and payments.
+
+Secure endpoints based on user role.
+
+Track and update user progress and stage on puzzle completion or admin action.
+
+7. Frontend (Next.js/React)
+Learn page with horizontal/vertical cards for each stage, showing lesson/puzzle contents (locked if not enrolled).
+
+Payment screen before enrolling, similar to chess course UIs.
+
+Puzzle view with chessboard and move feedback.
+
+Admin dashboard (separate route) for all management features.
+
+Responsive layout, clean styles, and role-based UI.
+
+8. Quality & Workflow
+Use React hooks and context for state and authentication.
+
+Protect routes/pages based on role and enrollment status.
+
+Provide feedback after payment and on stage progression.
+
+Write clean, scalable code in TypeScript (where possible).
+
+9. Design
+Use clean card layouts, stage headers, and chessboard components modeled after best-in-class chess learning sites.
+
+Make it mobile-responsive and accessible.
+
+Goal:
+A full workflow from user signup, payment, lesson access by stage, admin puzzle/lesson management, user progression, and clean UI with stages—all fully working and secure.

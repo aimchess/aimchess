@@ -1,0 +1,2 @@
+#!/bin/bash
+GIT_WORK_TREE=/home/Royal Look/public_html git checkout -f

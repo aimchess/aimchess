@@ -1,0 +1,159 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  COACH
+  STUDENT
+}
+
+enum Stage {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(STUDENT)
+
+  // Student-specific fields
+  stage     Stage    @default(BEGINNER)
+  coachId   String?
+  coach     User?    @relation("CoachStudents", fields: [coachId], references: [id], onDelete: SetNull)
+  students  User[]   @relation("CoachStudents") // Reverse relation for Coaches
+
+  // Puzzle Relations
+  assignments    Assignment[]
+  puzzleProgress Progress[]
+
+  // Course Relations
+  courseProgress CourseProgress[]
+  status String @default("ACTIVE")
+}
+
+// ==========================================
+// 1. PUZZLE SYSTEM (Existing)
+// ==========================================
+
+model Folder {
+  id        String   @id @default(uuid())
+  name      String
+
+  stage     Stage?   // only root folders have stage
+  parentId  String?
+  parent    Folder?  @relation("SubFolders", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[] @relation("SubFolders")
+
+  puzzles   Puzzle[]
+}
+
+model Puzzle {
+  id        String   @id @default(uuid())
+  title     String
+  fen       String   @db.Text
+  solution  String   @db.Text // space separated moves
+  data      Json?  
+
+  folderId  String?  // Made optional in case a puzzle doesn't belong to a folder immediately
+  folder    Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  assignments Assignment[]
+  progress    Progress[]
+}
+
+model Assignment {
+  id          String   @id @default(uuid())
+
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  puzzleId    String
+  puzzle      Puzzle   @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  assignedBy  String
+  isCompleted Boolean  @default(false)
+  assignedAt  DateTime @default(now())
+}
+
+// Tracks Puzzle history
+model Progress {
+  id          String   @id @default(uuid())
+
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  puzzleId    String
+  puzzle      Puzzle   @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  isSolved    Boolean  @default(false)
+  attempts    Int      @default(0)
+  timeSpent   Int      @default(0)
+  mistakes    Json     @default("[]") 
+
+  lastPlayed  DateTime @updatedAt
+
+  @@unique([studentId, puzzleId])
+}
+
+// ==========================================
+// 2. COURSE / CURRICULUM SYSTEM (New)
+// ==========================================
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  level       Stage    @default(BEGINNER)
+  
+  // A course has many chapters
+  chapters    Chapter[]
+  
+  // Track who is taking this course
+  studentProgress CourseProgress[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Chapter {
+  id        String   @id @default(uuid())
+  title     String
+  content   String?  @db.Text // The script/notes for the coach or student
+  fen       String   @db.Text // The board setup for this lesson
+  
+  order     Int      @default(0) // To keep chapters 1, 2, 3...
+
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+// Tracks Course completion
+model CourseProgress {
+  id        String   @id @default(uuid())
+
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Array of Chapter IDs that the student has completed
+  completedChapters String[] 
+  
+  isCompleted       Boolean  @default(false)
+  lastAccessed      DateTime @default(now())
+
+  @@unique([studentId, courseId])
+}
