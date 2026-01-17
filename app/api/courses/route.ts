@@ -14,13 +14,14 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { title, level, description, chapters } = body
+    const { title, level, description, chapters, audioUrl } = body
 
     const newCourse = await prisma.course.create({
       data: {
         title,
         level,
         description,
+        audioUrl: audioUrl || null,
         chapters: {
           create: chapters?.map((c: any, index: number) => ({
             title: c.title,
@@ -42,16 +43,16 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     const body = await req.json()
-    const { id, title, level, description, chapters } = body
+    const { id, title, level, description, chapters, audioUrl } = body
 
     if (!id) return NextResponse.json({ error: 'Course ID required' }, { status: 400 })
 
     // Transaction to update course and replace chapters
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx: any) => {
       // 1. Update basic info
       const course = await tx.course.update({
         where: { id },
-        data: { title, level, description }
+        data: { title, level, description, audioUrl: audioUrl || null }
       })
 
       // 2. Delete old chapters (Simplest strategy for editing)

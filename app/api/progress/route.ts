@@ -42,12 +42,20 @@ export async function POST(req: Request) {
       }
     });
 
-    // 3. Mark assignment completed if solved
+    // 3. Mark assignment completed if solved (only if due date hasn't passed)
     if (isCorrect) {
-      await prisma.assignment.updateMany({
-        where: { studentId, puzzleId, isCompleted: false },
-        data: { isCompleted: true }
+      const assignments = await prisma.assignment.findMany({
+        where: { studentId, puzzleId, isCompleted: false }
       });
+
+      for (const assignment of assignments) {
+        if (!assignment.dueDate || new Date() <= new Date(assignment.dueDate)) {
+          await prisma.assignment.update({
+            where: { id: assignment.id },
+            data: { isCompleted: true }
+          });
+        }
+      }
     }
 
     return NextResponse.json(progress);

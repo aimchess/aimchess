@@ -1326,8 +1326,10 @@ import {
     Users, Folder, FileText, ChevronRight, Save, RotateCcw,
     MousePointer2, Trash2, Plus, Edit, ArrowLeft, Check,
     Play, Copy, Settings, ArrowUpDown, BookOpen, Video, List, Loader2,
-    MoreVertical, FolderInput, X, Search, Star, CheckSquare, Square, Pencil
+    MoreVertical, FolderInput, X, Search, Star, CheckSquare, Square, Pencil, Clock, CreditCard,
+    TrendingUp, Calculator, Calendar
 } from 'lucide-react'
+import AudioRecorder from '@/components/AudioRecorder'
 
 // --- TYPES ---
 type Tool = { type: string, color: 'w' | 'b' } | 'TRASH' | null
@@ -1416,7 +1418,7 @@ const BoardSetupPalette = ({ selectedTool, setSelectedTool, onClear, onReset }: 
 
 // --- MAIN DASHBOARD ---
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'users' | 'courses' | 'puzzles' | 'analysis'>('users')
+    const [activeTab, setActiveTab] = useState<'users' | 'courses' | 'puzzles' | 'analysis' | 'classes' | 'payments'>('users')
     return (
         <div className="min-h-screen bg-gray-50 text-slate-900 font-sans mt-[90px]">
             <header className="bg-white border-b px-6 py-4 flex flex-col md:flex-row justify-between items-center sticky top-0 z-40 shadow-sm mb-12">
@@ -1427,6 +1429,8 @@ export default function AdminDashboard() {
                 <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                     {[
                         { id: 'users', label: 'Users', icon: Users },
+                        { id: 'classes', label: 'Batch/Classes', icon: Clock },
+                        { id: 'payments', label: 'Payments', icon: CreditCard },
                         { id: 'courses', label: 'Courses', icon: BookOpen },
                         { id: 'puzzles', label: 'Puzzles', icon: Folder },
                         { id: 'analysis', label: 'Analysis', icon: MousePointer2 }
@@ -1448,6 +1452,8 @@ export default function AdminDashboard() {
 
             <main className="p-4 md:p-6 max-w-7xl mx-auto pt-20">
                 {activeTab === 'users' && <UserManager />}
+                {activeTab === 'classes' && <ClassManager />}
+                {activeTab === 'payments' && <PaymentManager />}
                 {activeTab === 'courses' && <CourseManager />}
                 {activeTab === 'puzzles' && <CurriculumManager />}
                 {activeTab === 'analysis' && <AnalysisBoard />}
@@ -1464,7 +1470,11 @@ function UserManager() {
     const [coaches, setCoaches] = useState<any[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [formData, setFormData] = useState<any>({ name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '' })
+    const [formData, setFormData] = useState<any>({
+        name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '',
+        joiningDate: '', birthDate: '', address: '', parentName: '', parentPhone: '',
+        photoUrl: '', idCardUrl: ''
+    })
     const [editingId, setEditingId] = useState<string | null>(null)
 
     const fetchUsers = async () => {
@@ -1515,7 +1525,11 @@ function UserManager() {
             if (res.ok) {
                 setIsModalOpen(false)
                 fetchUsers()
-                setFormData({ name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '' })
+                setFormData({
+                    name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '',
+                    joiningDate: '', birthDate: '', address: '', parentName: '', parentPhone: '',
+                    photoUrl: '', idCardUrl: ''
+                })
             } else {
                 const err = await res.json()
                 alert(err.error || "Failed to save user")
@@ -1538,7 +1552,14 @@ function UserManager() {
     const openEdit = (user: any) => {
         setFormData({
             name: user.name, email: user.email, role: user.role,
-            stage: user.stage, coachId: user.coachId || '', password: ''
+            stage: user.stage, coachId: user.coachId || '', password: '',
+            joiningDate: user.joiningDate ? new Date(user.joiningDate).toISOString().split('T')[0] : '',
+            birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : '',
+            address: user.address || '',
+            parentName: user.parentName || '',
+            parentPhone: user.parentPhone || '',
+            photoUrl: user.photoUrl || '',
+            idCardUrl: user.idCardUrl || ''
         })
         setEditingId(user.id)
         setIsModalOpen(true)
@@ -1548,7 +1569,15 @@ function UserManager() {
         <div className="bg-white rounded-xl shadow-sm border p-6">
             <div className="flex justify-between mb-6">
                 <h2 className="text-xl font-bold flex items-center gap-2"><Users className="text-orange-600" /> Manage Users</h2>
-                <button onClick={() => { setEditingId(null); setIsModalOpen(true); setFormData({ name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '' }) }} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow"><Plus size={16} /> Add User</button>
+                <button onClick={() => {
+                    setEditingId(null);
+                    setIsModalOpen(true);
+                    setFormData({
+                        name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '',
+                        joiningDate: '', birthDate: '', address: '', parentName: '', parentPhone: '',
+                        photoUrl: '', idCardUrl: ''
+                    })
+                }} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow"><Plus size={16} /> Add User</button>
             </div>
 
             {loading ? <div className="text-center py-20"><Loader2 className="animate-spin inline text-orange-600" size={32} /></div> : (
@@ -1623,26 +1652,505 @@ function UserManager() {
                         </select>
                     </div>
                     {formData.role === 'STUDENT' && (
-                        <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded border">
-                            <div>
-                                <label className="text-xs font-bold text-gray-500">Chess Level</label>
-                                <select className="w-full border p-2 rounded mt-1" value={formData.stage} onChange={e => setFormData({ ...formData, stage: e.target.value })}>
-                                    <option value="BEGINNER">Beginner</option>
-                                    <option value="INTERMEDIATE">Intermediate</option>
-                                    <option value="ADVANCED">Advanced</option>
-                                </select>
+                        <>
+                            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded border">
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500">Chess Level</label>
+                                    <select className="w-full border p-2 rounded mt-1" value={formData.stage} onChange={e => setFormData({ ...formData, stage: e.target.value })}>
+                                        <option value="BEGINNER">Beginner</option>
+                                        <option value="INTERMEDIATE">Intermediate</option>
+                                        <option value="ADVANCED">Advanced</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-gray-500">Assign Coach</label>
+                                    <select className="w-full border p-2 rounded mt-1" value={formData.coachId} onChange={e => setFormData({ ...formData, coachId: e.target.value })}>
+                                        <option value="">-- No Coach --</option>
+                                        {coaches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label className="text-xs font-bold text-gray-500">Assign Coach</label>
-                                <select className="w-full border p-2 rounded mt-1" value={formData.coachId} onChange={e => setFormData({ ...formData, coachId: e.target.value })}>
-                                    <option value="">-- No Coach --</option>
-                                    {coaches.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">Joining Date</label>
+                                    <input type="date" className="w-full border p-2 rounded outline-none shadow-sm" value={formData.joiningDate} onChange={e => setFormData({ ...formData, joiningDate: e.target.value })} />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">Birth Date</label>
+                                    <input type="date" className="w-full border p-2 rounded outline-none shadow-sm" value={formData.birthDate} onChange={e => setFormData({ ...formData, birthDate: e.target.value })} />
+                                </div>
                             </div>
-                        </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-gray-500">Address</label>
+                                <textarea className="w-full border p-2 rounded outline-none shadow-sm h-20" placeholder="Student Address" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">Parent's Name</label>
+                                    <input className="w-full border p-2 rounded outline-none shadow-sm" placeholder="Parent Name" value={formData.parentName} onChange={e => setFormData({ ...formData, parentName: e.target.value })} />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">Parent's Phone</label>
+                                    <input className="w-full border p-2 rounded outline-none shadow-sm" placeholder="Parent Phone" value={formData.parentPhone} onChange={e => setFormData({ ...formData, parentPhone: e.target.value })} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">Student Photo</label>
+                                    <input type="file" accept="image/*" className="text-xs w-full" onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => setFormData({ ...formData, photoUrl: reader.result });
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }} />
+                                    {formData.photoUrl && <img src={formData.photoUrl} className="w-16 h-16 object-cover rounded mt-2 border" alt="Preview" />}
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-500">ID Card (Photo)</label>
+                                    <input type="file" accept="image/*" className="text-xs w-full" onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => setFormData({ ...formData, idCardUrl: reader.result });
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }} />
+                                    {formData.idCardUrl && <img src={formData.idCardUrl} className="w-16 h-16 object-cover rounded mt-2 border" alt="ID Preview" />}
+                                </div>
+                            </div>
+                        </>
                     )}
                     <button type="submit" className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold hover:bg-orange-700 shadow-lg mt-4 transition-all">
                         {editingId ? 'Update User' : 'Create User'}
+                    </button>
+                </form>
+            </Modal>
+        </div>
+    )
+}
+
+// ==========================================
+// 1.5 BATCH / CLASS MANAGER
+// ==========================================
+function ClassManager() {
+    const [classes, setClasses] = useState<any[]>([])
+    const [users, setUsers] = useState<any[]>([])
+    const [coaches, setCoaches] = useState<any[]>([])
+    const [students, setStudents] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isEnrollModalOpen, setIsEnrollModalOpen] = useState(false)
+    const [editingClass, setEditingClass] = useState<any>(null)
+    const [formData, setFormData] = useState({
+        name: '', dayOfWeek: 'Monday', startTime: '17:00', endTime: '18:00', coachId: '', meetingLink: ''
+    })
+    const [selectedStudents, setSelectedStudents] = useState<string[]>([])
+
+    const fetchData = async () => {
+        setLoading(true)
+        try {
+            const [classRes, userRes] = await Promise.all([
+                fetch('/api/classes'),
+                fetch('/api/admin/users')
+            ])
+            const classData = await classRes.json()
+            const userData = await userRes.json()
+
+            if (classRes.ok && Array.isArray(classData)) setClasses(classData)
+            if (userRes.ok && Array.isArray(userData)) {
+                setUsers(userData)
+                setCoaches(userData.filter(u => u.role === 'COACH' || u.role === 'ADMIN'))
+                setStudents(userData.filter(u => u.role === 'STUDENT'))
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => { fetchData() }, [])
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const method = editingClass ? 'PUT' : 'POST'
+        const payload = editingClass ? { ...formData, id: editingClass.id } : formData
+
+        try {
+            const res = await fetch('/api/classes', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            if (res.ok) {
+                setIsModalOpen(false)
+                fetchData()
+            } else {
+                const err = await res.json()
+                alert(err.error || "Failed to save class")
+            }
+        } catch (e) { console.error(e) }
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure? This will delete the class and its attendance records.")) return
+        try {
+            const res = await fetch(`/api/classes?id=${id}`, { method: 'DELETE' })
+            if (res.ok) fetchData()
+        } catch (e) { console.error(e) }
+    }
+
+    const handleEnroll = async () => {
+        try {
+            const res = await fetch('/api/classes', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: editingClass.id, studentIds: selectedStudents })
+            })
+            if (res.ok) {
+                setIsEnrollModalOpen(false)
+                fetchData()
+            } else {
+                const err = await res.json()
+                alert(err.error || "Failed to enroll students")
+            }
+        } catch (e) { console.error(e) }
+    }
+
+    return (
+        <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="flex justify-between mb-6">
+                <h2 className="text-xl font-bold flex items-center gap-2"><Clock className="text-orange-600" /> Manage Batches / Classes</h2>
+                <button onClick={() => {
+                    setEditingClass(null);
+                    setFormData({ name: '', dayOfWeek: 'Monday', startTime: '17:00', endTime: '18:00', coachId: '', meetingLink: '' });
+                    setIsModalOpen(true);
+                }} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow">
+                    <Plus size={16} /> Add Class
+                </button>
+            </div>
+
+            {loading ? <div className="text-center py-20"><Loader2 className="animate-spin inline text-orange-600" size={32} /></div> : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {classes.map(c => (
+                        <div key={c.id} className="border rounded-xl p-4 hover:shadow-md transition-shadow bg-slate-50">
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-bold text-lg text-slate-800">{c.name}</h3>
+                                <div className="flex gap-1">
+                                    <button onClick={() => {
+                                        setEditingClass(c);
+                                        setFormData({
+                                            name: c.name, dayOfWeek: c.dayOfWeek,
+                                            startTime: c.startTime, endTime: c.endTime, coachId: c.coachId, meetingLink: c.meetingLink || ''
+                                        });
+                                        setIsModalOpen(true);
+                                    }} className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"><Edit size={16} /></button>
+                                    <button onClick={() => handleDelete(c.id)} className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"><Trash2 size={16} /></button>
+                                </div>
+                            </div>
+                            <div className="text-sm text-slate-600 space-y-1 mb-4">
+                                <div className="flex items-center gap-2"><BookOpen size={14} /> {c.dayOfWeek}</div>
+                                <div className="flex items-center gap-2"><Clock size={14} /> {c.startTime} - {c.endTime}</div>
+                                <div className="flex items-center gap-2 font-medium text-orange-700"><Users size={14} /> Coach: {c.coach?.name}</div>
+                                {c.meetingLink && (
+                                    <div className="flex items-center gap-2 text-blue-600 truncate">
+                                        <Video size={14} /> <a href={c.meetingLink} target="_blank" rel="noopener noreferrer" className="hover:underline text-[10px] font-bold">JOIN MEETING</a>
+                                    </div>
+                                )}
+                                <div className="mt-2 pt-2 border-t flex justify-between items-center">
+                                    <span className="font-bold text-xs uppercase text-slate-400">Enrolled: {c._count?.students || 0}</span>
+                                    <button
+                                        onClick={() => {
+                                            setEditingClass(c);
+                                            setSelectedStudents(c.students?.map((s: any) => s.id) || []);
+                                            setIsEnrollModalOpen(true);
+                                        }}
+                                        className="text-[10px] font-bold bg-slate-200 hover:bg-slate-300 px-2 py-1 rounded transition-colors"
+                                    >MANAGE STUDENTS</button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    {classes.length === 0 && <div className="col-span-full py-20 text-center text-slate-400 border-2 border-dashed rounded-xl">No classes defined yet. Click "Add Class" to start.</div>}
+                </div>
+            )}
+
+            {/* Add/Edit Modal */}
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingClass ? "Edit Class" : "Add New Class"}>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Class Name</label>
+                        <input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" placeholder="e.g. Beginners Group A" />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Day of Week</label>
+                        <select value={formData.dayOfWeek} onChange={e => setFormData({ ...formData, dayOfWeek: e.target.value })} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none">
+                            {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Start Time</label>
+                            <input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} required className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">End Time</label>
+                            <input type="time" value={formData.endTime} onChange={e => setFormData({ ...formData, endTime: e.target.value })} required className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" />
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Assign Coach</label>
+                        <select value={formData.coachId} onChange={e => setFormData({ ...formData, coachId: e.target.value })} required className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none">
+                            <option value="">Select a Coach</option>
+                            {coaches.map(c => <option key={c.id} value={c.id}>{c.name} ({c.role})</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Meeting Link (Zoom/Google Meet)</label>
+                        <input value={formData.meetingLink} onChange={e => setFormData({ ...formData, meetingLink: e.target.value })} className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" placeholder="https://zoom.us/j/..." />
+                    </div>
+                    <div className="pt-4">
+                        <button type="submit" className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
+                            {editingClass ? "Update Class" : "Create Class"}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Enroll Modal */}
+            <Modal isOpen={isEnrollModalOpen} onClose={() => setIsEnrollModalOpen(false)} title={`Enroll Students in ${editingClass?.name}`}>
+                <div className="space-y-4">
+                    <div className="max-h-[300px] overflow-y-auto border rounded-xl divide-y">
+                        {students.map(s => (
+                            <div key={s.id} onClick={() => {
+                                setSelectedStudents(prev => prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id])
+                            }} className={`p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition-colors ${selectedStudents.includes(s.id) ? 'bg-orange-50' : ''}`}>
+                                <div>
+                                    <div className="font-bold text-slate-800">{s.name}</div>
+                                    <div className="text-xs text-slate-500">{s.email}</div>
+                                </div>
+                                {selectedStudents.includes(s.id) ? <CheckSquare className="text-orange-600" /> : <Square className="text-slate-300" />}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="pt-4">
+                        <button onClick={handleEnroll} className="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl transition-all shadow-lg active:scale-95">
+                            Save Enrollment ({selectedStudents.length} Students)
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+        </div>
+    )
+}
+
+// ==========================================
+// 1.7 FEE PAYMENT MANAGER
+// ==========================================
+function PaymentManager() {
+    const [payments, setPayments] = useState<any[]>([])
+    const [students, setStudents] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [editingPayment, setEditingPayment] = useState<any>(null)
+    const [formData, setFormData] = useState({
+        amount: '', date: new Date().toISOString().split('T')[0], status: 'COMPLETED', method: 'Cash', remarks: '', studentId: ''
+    })
+
+    const fetchData = async () => {
+        setLoading(true)
+        try {
+            const [payRes, userRes] = await Promise.all([
+                fetch('/api/payments'),
+                fetch('/api/admin/users')
+            ])
+            if (payRes.ok) setPayments(await payRes.json())
+            if (userRes.ok) {
+                const users = await userRes.json()
+                setStudents(users.filter((u: any) => u.role === 'STUDENT'))
+            }
+        } catch (e) { console.error(e) }
+        finally { setLoading(false) }
+    }
+
+    useEffect(() => { fetchData() }, [])
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const method = editingPayment ? 'PUT' : 'POST'
+        const payload = editingPayment ? { ...formData, id: editingPayment.id } : formData
+
+        try {
+            const res = await fetch('/api/payments', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            if (res.ok) {
+                setIsModalOpen(false)
+                fetchData()
+            } else {
+                const err = await res.json()
+                alert(err.error || "Failed to save payment")
+            }
+        } catch (e) { console.error(e) }
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure?")) return
+        try {
+            const res = await fetch(`/api/payments?id=${id}`, { method: 'DELETE' })
+            if (res.ok) fetchData()
+        } catch (e) { console.error(e) }
+    }
+
+    const totalCollected = payments.filter(p => p.status === 'COMPLETED').reduce((sum, p) => sum + p.amount, 0)
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Collected</span>
+                        <div className="p-2 bg-green-50 rounded-lg"><TrendingUp className="text-green-600" size={16} /></div>
+                    </div>
+                    <div className="text-3xl font-black text-slate-800">₹{totalCollected.toLocaleString()}</div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Transactions</span>
+                        <div className="p-2 bg-blue-50 rounded-lg"><Calculator className="text-blue-600" size={16} /></div>
+                    </div>
+                    <div className="text-3xl font-black text-slate-800">{payments.length}</div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-orange-100 flex flex-col justify-center items-center">
+                    <button onClick={() => {
+                        setEditingPayment(null);
+                        setFormData({ amount: '', date: new Date().toISOString().split('T')[0], status: 'COMPLETED', method: 'Cash', remarks: '', studentId: '' });
+                        setIsModalOpen(true);
+                    }} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2">
+                        <Plus size={20} /> Record New Payment
+                    </button>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div className="p-6 border-b bg-slate-50 flex justify-between items-center">
+                    <h2 className="text-lg font-bold flex items-center gap-2 text-slate-800"><CreditCard className="text-orange-600" /> Transaction History</h2>
+                </div>
+                {loading ? <div className="text-center py-20"><Loader2 className="animate-spin inline text-orange-600" size={32} /></div> : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-gray-50 border-b">
+                                <tr>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Student</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Method</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Status</th>
+                                    <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {payments.map(p => (
+                                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="p-4">
+                                            <div className="font-bold text-slate-800">{p.student?.name}</div>
+                                            <div className="text-[10px] text-slate-500 uppercase tracking-tight">{p.student?.email}</div>
+                                        </td>
+                                        <td className="p-4 font-black text-slate-800">₹{p.amount.toLocaleString()}</td>
+                                        <td className="p-4 text-sm text-slate-600 flex items-center gap-1"><Calendar size={14} /> {new Date(p.date).toLocaleDateString()}</td>
+                                        <td className="p-4 text-sm"><span className="px-2 py-1 bg-slate-100 rounded text-slate-600 font-bold text-[10px] uppercase">{p.method}</span></td>
+                                        <td className="p-4 text-center">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${p.status === 'COMPLETED' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                p.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                                                    'bg-red-100 text-red-700 border-red-200'
+                                                }`}>
+                                                {p.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <button onClick={() => {
+                                                    setEditingPayment(p);
+                                                    setFormData({
+                                                        amount: p.amount.toString(),
+                                                        date: new Date(p.date).toISOString().split('T')[0],
+                                                        status: p.status,
+                                                        method: p.method,
+                                                        remarks: p.remarks || '',
+                                                        studentId: p.studentId
+                                                    });
+                                                    setIsModalOpen(true);
+                                                }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
+                                                <button onClick={() => handleDelete(p.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {payments.length === 0 && (
+                                    <tr><td colSpan={6} className="p-20 text-center text-slate-400 italic">No transactions recorded yet.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingPayment ? "Edit Payment Record" : "Record New Payment"}>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {!editingPayment && (
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Select Student</label>
+                            <select value={formData.studentId} onChange={e => setFormData({ ...formData, studentId: e.target.value })} required className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50">
+                                <option value="">Select a student...</option>
+                                {students.map(s => <option key={s.id} value={s.id}>{s.name} ({s.email})</option>)}
+                            </select>
+                        </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Amount (₹)</label>
+                            <input type="number" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} required className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50" placeholder="0.00" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Payment Date</label>
+                            <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} required className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50" />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Method</label>
+                            <select value={formData.method} onChange={e => setFormData({ ...formData, method: e.target.value })} className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI / Google Pay</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                            <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50">
+                                <option value="COMPLETED">Completed</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="FAILED">Failed</option>
+                                <option value="REFUNDED">Refunded</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Remarks</label>
+                        <textarea value={formData.remarks} onChange={e => setFormData({ ...formData, remarks: e.target.value })} className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50 h-24" placeholder="Optional notes..."></textarea>
+                    </div>
+                    <button type="submit" className="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 mt-4">
+                        {editingPayment ? "Update Record" : "Save Record"}
                     </button>
                 </form>
             </Modal>
@@ -1678,7 +2186,7 @@ function CourseManager() {
     useEffect(() => { fetchCourses() }, [])
 
     const handleCreateCourse = () => {
-        setEditingCourse({ title: '', description: '', level: 'BEGINNER', chapters: [] })
+        setEditingCourse({ title: '', description: '', level: 'BEGINNER', chapters: [], audioUrl: null })
         setView('EDIT_COURSE')
         setActiveChapterIndex(-1)
     }
@@ -1812,6 +2320,13 @@ function CourseManager() {
                             <option value="INTERMEDIATE">Intermediate</option>
                             <option value="ADVANCED">Advanced</option>
                         </select>
+
+                        <div className="pt-4">
+                            <AudioRecorder
+                                onRecordingComplete={(url) => setEditingCourse({ ...editingCourse, audioUrl: url })}
+                                initialAudio={editingCourse.audioUrl}
+                            />
+                        </div>
 
                         <div className="flex justify-between items-center mt-6 mb-2">
                             <span className="text-xs font-bold text-gray-400 uppercase">Chapters</span>
@@ -2523,14 +3038,14 @@ function AnalysisBoard() {
         if (setupMode) {
             const p = game.current.get(source)
             if (!p) return false
-            game.current.remove(source)
-            game.current.put(p, target)
+            game.current.remove(source as any)
+            game.current.put(p, target as any)
             updateBoard()
             clearHighlight(target)
             return true
         }
         try {
-            const move = game.current.move({ from: source, to: target, promotion: 'q' })
+            const move = game.current.move({ from: source as any, to: target as any, promotion: 'q' })
             if (!move) return false
             setFen(game.current.fen())
             clearHighlight(target)
@@ -2540,8 +3055,8 @@ function AnalysisBoard() {
 
     const onSquareClick = (square: string) => {
         if (setupMode && selectedTool) {
-            if (selectedTool === 'TRASH') game.current.remove(square)
-            else game.current.put({ type: selectedTool.type, color: selectedTool.color }, square)
+            if (selectedTool === 'TRASH') game.current.remove(square as any)
+            else game.current.put({ type: selectedTool.type as any, color: selectedTool.color as any }, square as any)
             updateBoard()
             clearHighlight(square)
         }

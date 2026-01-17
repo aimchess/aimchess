@@ -41,6 +41,66 @@ model User {
   // Course Relations
   courseProgress CourseProgress[]
   status String @default("ACTIVE")
+
+  // New Student Fields
+  joiningDate DateTime?
+  birthDate   DateTime?
+  address     String?
+  parentName  String?
+  parentPhone String?
+  photoUrl    String? @db.Text
+  idCardUrl   String? @db.Text
+
+  // Attendance Relations
+  managedClasses ClassTiming[] @relation("CoachClasses")
+  classes        ClassTiming[] @relation("StudentClasses")
+  attendanceRecords Attendance[]
+
+  // Fee Payment Relations
+  feePayments    FeePayment[]
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEAVE
+}
+
+model ClassTiming {
+  id          String   @id @default(uuid())
+  name        String
+  dayOfWeek   String   // e.g., "Monday", "Tuesday"
+  startTime   String   // e.g., "17:00"
+  endTime     String   // e.g., "18:30"
+  
+  coachId     String
+  coach       User     @relation("CoachClasses", fields: [coachId], references: [id], onDelete: Cascade)
+  
+  students    User[]   @relation("StudentClasses")
+  attendance  Attendance[]
+  meetingLink String?   @db.Text
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Attendance {
+  id            String           @id @default(uuid())
+  date          DateTime         // The date of the session
+  status        AttendanceStatus
+  remarks       String?          @db.Text
+  
+  studentId     String
+  student       User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  classTimingId String
+  classTiming   ClassTiming      @relation(fields: [classTimingId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([studentId, classTimingId, date])
 }
 
 // ==========================================
@@ -85,6 +145,8 @@ model Assignment {
   assignedBy  String
   isCompleted Boolean  @default(false)
   assignedAt  DateTime @default(now())
+  dueDate     DateTime?
+  audioUrl    String?   @db.Text
 }
 
 // Tracks Puzzle history
@@ -125,6 +187,7 @@ model Course {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  audioUrl    String?  @db.Text
 }
 
 model Chapter {
@@ -156,4 +219,26 @@ model CourseProgress {
   lastAccessed      DateTime @default(now())
 
   @@unique([studentId, courseId])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model FeePayment {
+  id        String        @id @default(uuid())
+  amount    Float
+  date      DateTime      @default(now())
+  status    PaymentStatus @default(PENDING)
+  method    String        // e.g., "Cash", "UPI", "Bank Transfer"
+  remarks   String?       @db.Text
+  
+  studentId String
+  student   User          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }

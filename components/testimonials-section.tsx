@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ArrowLeft, ArrowRight, Quote, MessageCircle, Star, 
-  ShieldCheck, Trophy, Medal, Zap, Presentation, Users 
+import {
+  ArrowLeft, ArrowRight, Quote, MessageCircle, Star,
+  ShieldCheck, Trophy, Medal, Zap, Presentation, Users
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -90,12 +90,12 @@ export default function StudentSuccessAndTestimonials() {
       {/* --- SECTION 1: WHY OUR STUDENTS SUCCEED --- */}
       <section className="relative w-full py-16 md:py-24 lg:py-32 overflow-hidden border-b border-[#E6E0D4]">
         <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/4 -right-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#E76F51]/[0.05] rounded-full blur-[80px] md:blur-[120px]" />
+          <div className="absolute top-1/4 -right-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#E76F51]/[0.05] rounded-full blur-[80px] md:blur-[120px]" />
         </div>
 
         <div className="container relative z-10 mx-auto px-4 sm:px-6 max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center mb-16 md:mb-24">
-            
+
             {/* Left: Content - Reordered for Mobile (Order 2) */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -115,20 +115,20 @@ export default function StudentSuccessAndTestimonials() {
 
               <div className="space-y-4 md:space-y-6 text-base md:text-lg text-[#5C5852] font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
                 <p>
-                  We don&apos;t just teach chess; we build 
-                  <span className="text-[#2D2A26] font-bold"> character, discipline, and strategic thinking </span> 
+                  We don&apos;t just teach chess; we build
+                  <span className="text-[#2D2A26] font-bold"> character, discipline, and strategic thinking </span>
                   that helps children excel in life and competitions.
                 </p>
                 <p className="hidden md:block">
                   Our curriculum focuses on building strong fundamentals, ensuring every child develops a deep understanding of the game at their own pace.
                 </p>
                 <p className="bg-white p-5 md:p-6 rounded-2xl border-l-4 border-[#FFDA44] shadow-sm text-left">
-                   From building confidence to achieving <span className="text-[#E76F51] font-bold">tournament success</span>, our personalized approach makes learning fun and effective.
+                  From building confidence to achieving <span className="text-[#E76F51] font-bold">tournament success</span>, our personalized approach makes learning fun and effective.
                 </p>
               </div>
 
               <div className="mt-8 md:mt-10 flex flex-wrap justify-center lg:justify-start gap-4">
-                <Link href="/book-demo" className="w-full sm:w-auto">
+                <Link href="/contact" className="w-full sm:w-auto">
                   <button className="w-full h-14 px-8 rounded-2xl bg-[#E76F51] hover:bg-[#cf5d42] text-white font-bold text-lg shadow-xl transition-all hover:scale-105 flex items-center justify-center gap-2">
                     Book a Free Demo
                     <Presentation className="w-5 h-5" />
@@ -138,31 +138,31 @@ export default function StudentSuccessAndTestimonials() {
             </motion.div>
 
             {/* Right: Image - Reordered for Mobile (Order 1) */}
-            <motion.div 
-               initial={{ opacity: 0, scale: 0.9 }}
-               whileInView={{ opacity: 1, scale: 1 }}
-               viewport={{ once: true }}
-               className="relative order-1 lg:order-2 px-4 md:px-0"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative order-1 lg:order-2 px-4 md:px-0"
             >
               <div className="relative z-10 rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl border-4 md:border-8 border-white">
-                <Image 
-                  src="/image101.jpg" 
-                  alt="Chess coaching session" 
+                <Image
+                  src="/image101.jpg"
+                  alt="Chess coaching session"
                   width={800}
                   height={800}
                   className="w-full aspect-square object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A26]/40 to-transparent" />
               </div>
-              
+
               {/* Floating Stat Card - Calibrated for small screens */}
               <div className="absolute -bottom-4 -left-2 md:-bottom-6 md:-left-6 z-20 bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-2xl border border-[#E6E0D4] max-w-[170px] md:max-w-[240px]">
                 <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
-                    <Zap className="text-[#FFDA44] w-4 h-4 md:w-5 md:h-5" />
-                    <span className="text-xl md:text-2xl font-black text-[#2D2A26]">Focus</span>
+                  <Zap className="text-[#FFDA44] w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-xl md:text-2xl font-black text-[#2D2A26]">Focus</span>
                 </div>
                 <p className="text-[10px] md:text-xs font-bold text-[#5C5852] uppercase tracking-widest leading-tight">
-                    Improved concentration in 100% of students.
+                  Improved concentration in 100% of students.
                 </p>
               </div>
             </motion.div>
@@ -193,15 +193,15 @@ export default function StudentSuccessAndTestimonials() {
 
       {/* --- SECTION 2: TESTIMONIALS --- */}
       <section className="relative w-full py-16 md:py-24 lg:py-32 overflow-hidden" style={{ backgroundColor: "#FDFBF7" }}>
-        
+
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 -left-20 w-[200px] md:w-[500px] h-[200px] md:h-[500px] bg-[#FFDA44]/[0.1] rounded-full blur-[60px] md:blur-[80px]" />
         </div>
 
         <div className="container relative z-10 mx-auto px-4 md:px-6 max-w-7xl">
-          
+
           <div className="text-center max-w-3xl mx-auto mb-10 md:mb-20">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -212,7 +212,7 @@ export default function StudentSuccessAndTestimonials() {
                 Real Stories
               </span>
             </motion.div>
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -227,7 +227,7 @@ export default function StudentSuccessAndTestimonials() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-16 items-center">
-            
+
             {/* --- LEFT: The Card Slider --- */}
             <div className="lg:col-span-7 relative min-h-[450px] sm:min-h-[500px] md:min-h-[520px] w-full flex items-center justify-center lg:justify-start perspective-1000 order-1">
               {/* Stack Decorations - Only on tablets/desktop for cleanliness */}
@@ -251,9 +251,9 @@ export default function StudentSuccessAndTestimonials() {
                       <div className="relative z-10">
                         <div className="mb-4 md:mb-8">
                           <div className="flex items-center gap-2 mb-2">
-                             <div className="px-2.5 py-1 bg-[#FFDA44] rounded-md text-[9px] md:text-[10px] font-black text-[#2D2A26] uppercase tracking-widest">
+                            <div className="px-2.5 py-1 bg-[#FFDA44] rounded-md text-[9px] md:text-[10px] font-black text-[#2D2A26] uppercase tracking-widest">
                               {currentProfile.achievement}
-                             </div>
+                            </div>
                           </div>
                           <h3 className="text-xl md:text-3xl font-black text-[#2D2A26] leading-none">
                             {currentProfile.name}
@@ -269,18 +269,18 @@ export default function StudentSuccessAndTestimonials() {
                       <div className="flex items-center justify-between pt-6 mt-4 border-t border-[#E6E0D4]">
                         <div className="flex items-center gap-3 md:gap-4">
                           <div className="relative w-10 h-10 md:w-16 md:h-16 rounded-xl md:rounded-2xl overflow-hidden border-2 border-[#FFDA44] shadow-lg">
-                              <Image 
-                                src={currentProfile.image} 
-                                alt={currentProfile.name}
-                                fill
-                                className="object-cover"
-                              />
+                            <Image
+                              src={currentProfile.image}
+                              alt={currentProfile.name}
+                              fill
+                              className="object-cover"
+                            />
                           </div>
                           <div>
-                              <p className="text-[9px] md:text-[10px] font-black text-[#2D2A26] uppercase tracking-widest leading-none">Verified Parent</p>
-                              <div className="flex text-[#FFDA44] gap-0.5 mt-1.5">
-                                  {[...Array(5)].map((_, i) => <Star key={i} size={10} className="md:w-3 md:h-3" fill="currentColor" />)}
-                              </div>
+                            <p className="text-[9px] md:text-[10px] font-black text-[#2D2A26] uppercase tracking-widest leading-none">Verified Parent</p>
+                            <div className="flex text-[#FFDA44] gap-0.5 mt-1.5">
+                              {[...Array(5)].map((_, i) => <Star key={i} size={10} className="md:w-3 md:h-3" fill="currentColor" />)}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -319,7 +319,7 @@ export default function StudentSuccessAndTestimonials() {
                 Voices of our <br className="hidden md:block" />
                 <span className="text-[#E76F51]">Growing Family</span>
               </h3>
-              
+
               <p className="text-[#5C5852] text-sm md:text-xl font-medium mb-8 md:mb-10 leading-relaxed px-6 lg:px-0">
                 Join hundreds of parents who have seen their children flourish through our dedicated chess mentorship programs.
               </p>

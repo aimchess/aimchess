@@ -33,7 +33,10 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     // Added 'status' to destructuring
-    const { email, password, name, role, stage, coachId, status } = body;
+    const { 
+      email, password, name, role, stage, coachId, status,
+      joiningDate, birthDate, address, parentName, parentPhone, photoUrl, idCardUrl 
+    } = body;
 
     // 1. Validate required fields
     if (!email || !password || !name || !role) {
@@ -56,10 +59,18 @@ export async function POST(req: Request) {
     };
 
     // 4. Role specific logic
-    if (role === "STUDENT") {
       data.stage = stage || "BEGINNER";
       // Ensure empty strings are converted to null for optional relations
       data.coachId = coachId && coachId.trim() !== "" ? coachId : null;
+      
+      // Student details
+      if (joiningDate) data.joiningDate = new Date(joiningDate);
+      if (birthDate) data.birthDate = new Date(birthDate);
+      data.address = address || null;
+      data.parentName = parentName || null;
+      data.parentPhone = parentPhone || null;
+      data.photoUrl = photoUrl || null;
+      data.idCardUrl = idCardUrl || null;
     } else {
       data.stage = "BEGINNER"; // Default fallback
       data.coachId = null;
@@ -93,7 +104,11 @@ export async function PUT(req: Request) {
   try {
     const body = await req.json();
     // Added 'status' to destructuring so we can explicitly handle it if needed
-    const { id, password, role, coachId, status, ...rest } = body;
+    const { 
+      id, password, role, coachId, status, 
+      joiningDate, birthDate, address, parentName, parentPhone, photoUrl, idCardUrl,
+      ...rest 
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing user id" }, { status: 400 });
@@ -111,6 +126,15 @@ export async function PUT(req: Request) {
     if (password && password.trim() !== "") {
       data.password = await bcrypt.hash(password, 10);
     }
+
+    // Handle student fields
+    if (joiningDate) data.joiningDate = new Date(joiningDate);
+    if (birthDate) data.birthDate = new Date(birthDate);
+    if (address !== undefined) data.address = address;
+    if (parentName !== undefined) data.parentName = parentName;
+    if (parentPhone !== undefined) data.parentPhone = parentPhone;
+    if (photoUrl !== undefined) data.photoUrl = photoUrl;
+    if (idCardUrl !== undefined) data.idCardUrl = idCardUrl;
 
     // Handle Role & Coach logic
     if (role) {

@@ -15,9 +15,9 @@ export async function POST(req: Request) {
 
     // Get input. Supports both new 'itemId/type' and legacy 'puzzleId'
     const body = await req.json();
-    const { studentId, itemId, type, puzzleId } = body;
+    const { studentId, itemId, type, puzzleId, dueDate, audioUrl } = body;
 
-    const targetId = itemId || puzzleId; 
+    const targetId = itemId || puzzleId;
     const targetType = type || 'PUZZLE'; // Default to single puzzle
 
     // 1. Validate Input
@@ -60,22 +60,24 @@ export async function POST(req: Request) {
       }
 
       // FIX: Use 'userId' (UUID) for assignedBy, not email
-      const assignmentsData = puzzlesInFolder.map(p => ({
+      const assignmentsData = puzzlesInFolder.map((p: any) => ({
         studentId,
         puzzleId: p.id,
         assignedBy: userId, // Must be UUID if DB column is UUID
-        assignedAt: new Date()
+        assignedAt: new Date(),
+        dueDate: dueDate ? new Date(dueDate) : null,
+        audioUrl: audioUrl || null
       }));
 
       // Bulk Insert
       const result = await prisma.assignment.createMany({
         data: assignmentsData,
-        skipDuplicates: true 
+        skipDuplicates: true
       });
 
-      return NextResponse.json({ 
-        message: "Folder assigned successfully", 
-        count: result.count 
+      return NextResponse.json({
+        message: "Folder assigned successfully",
+        count: result.count
       });
     }
 
@@ -107,7 +109,9 @@ export async function POST(req: Request) {
           studentId,
           puzzleId: targetId,
           assignedBy: userId, // FIX: Use UUID
-          assignedAt: new Date()
+          assignedAt: new Date(),
+          dueDate: dueDate ? new Date(dueDate) : null,
+          audioUrl: audioUrl || null
         }
       });
 
