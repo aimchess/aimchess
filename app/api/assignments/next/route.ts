@@ -28,7 +28,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ id: null });
     }
 
-    const index = assignments.findIndex((a) => a.id === currentId);
+    const index = assignments.findIndex((a: { id: string }) => a.id === currentId);
 
     if (index === -1) {
       return NextResponse.json({ id: null });

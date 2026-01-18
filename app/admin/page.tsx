@@ -2237,21 +2237,21 @@ function CourseManager() {
     }
     const onSquareClick = (square: string) => {
         if (activeChapterIndex === -1 || !selectedTool) return
-        if (selectedTool === 'TRASH') game.current.remove(square)
-        else game.current.put({ type: selectedTool.type, color: selectedTool.color }, square)
+        if (selectedTool === 'TRASH') game.current.remove(square as any)
+        else game.current.put({ type: selectedTool.type as any, color: selectedTool.color as any }, square as any)
         updateBoard()
     }
     const onPieceDrop = (source: string, target: string, piece: string) => {
         if (activeChapterIndex === -1) return false
-        const p = game.current.get(source)
+        const p = game.current.get(source as any)
         if (!p) return false
-        game.current.remove(source)
-        game.current.put(p, target)
+        game.current.remove(source as any)
+        game.current.put(p, target as any)
         updateBoard()
         return true
     }
     const onSquareRightClick = (square: string) => {
-        game.current.remove(square)
+        game.current.remove(square as any)
         updateBoard()
     }
 
@@ -2828,19 +2828,19 @@ function PuzzleCreator({ folderId, existingPuzzle, onBack }: { folderId: string,
         if (stars.includes(square)) setStars(stars.filter(s => s !== square))
 
         if (selectedTool === 'TRASH') {
-            game.current.remove(square)
+            game.current.remove(square as any)
         } else {
-            game.current.put({ type: selectedTool.type, color: selectedTool.color }, square)
+            game.current.put({ type: selectedTool.type as any, color: selectedTool.color as any }, square as any)
         }
         setFen(game.current.fen())
     }
 
     const onPieceDrop = (source: string, target: string, piece: string) => {
         if (mode === 'SETUP') {
-            const p = game.current.get(source)
+            const p = game.current.get(source as any)
             if (!p) return false
-            game.current.remove(source)
-            game.current.put(p, target)
+            game.current.remove(source as any)
+            game.current.put(p, target as any)
             setFen(game.current.fen())
             return true
         }
@@ -2848,15 +2848,15 @@ function PuzzleCreator({ folderId, existingPuzzle, onBack }: { folderId: string,
         if (mode === 'RECORD') {
             if (stars.includes(target)) {
                 setStars(stars.filter(s => s !== target))
-                const p = game.current.get(source)
-                game.current.remove(source)
-                game.current.put(p, target)
+                const p = game.current.get(source as any)
+                game.current.remove(source as any)
+                game.current.put(p as any, target as any)
                 setMoves([...moves, `${source}-${target}`])
                 setFen(game.current.fen())
                 return true
             }
             try {
-                const move = game.current.move({ from: source, to: target, promotion: 'q' })
+                const move = game.current.move({ from: source as any, to: target as any, promotion: 'q' })
                 if (!move) return false
                 setMoves([...moves, move.san])
                 setFen(game.current.fen())
@@ -3036,10 +3036,10 @@ function AnalysisBoard() {
 
     const onPieceDrop = (source: string, target: string, piece: string) => {
         if (setupMode) {
-            const p = game.current.get(source)
+            const p = game.current.get(source as any)
             if (!p) return false
             game.current.remove(source as any)
-            game.current.put(p, target as any)
+            game.current.put(p as any, target as any)
             updateBoard()
             clearHighlight(target)
             return true

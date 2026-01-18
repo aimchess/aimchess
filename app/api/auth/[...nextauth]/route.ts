@@ -14,12 +14,14 @@ declare module "next-auth" {
     user: {
       id: string;
       role: string;
+      stage: string;
     } & DefaultSession["user"];
   }
 
   interface User {
     id: string;
     role: string;
+    stage: string;
   }
 }
 
@@ -27,6 +29,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: string;
+    stage: string;
   }
 }
 
@@ -95,8 +98,9 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
-            name: user.name || "", 
-            role: user.role as string, 
+            name: user.name || "",
+            role: user.role as string,
+            stage: user.stage as string,
           };
         } catch (error) {
           console.error("Auth Error:", error);
