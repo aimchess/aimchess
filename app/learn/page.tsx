@@ -81,17 +81,25 @@ export default function StudentDashboard() {
     } catch (error) { console.error(error) }
   }, [session])
 
-  const fetchSchedule = useCallback(async () => {
-    if (!session?.user) return
-    try {
-      const res = await fetch('/api/classes')
-      if (res.ok) {
-        const allData = await res.json()
-        const studentId = (session.user as any).id
-        setClasses(allData.filter((c: any) => c.studentIds?.includes(studentId)))
-      }
-    } catch (error) { console.error(error) }
-  }, [session])
+// inside StudentDashboard.tsx
+
+const fetchSchedule = useCallback(async () => {
+  if (!session?.user) return
+  try {
+    const studentId = (session.user as any).id
+    // 1. Pass the studentId to the API
+    const res = await fetch(`/api/classes?studentId=${studentId}`)
+    
+    if (res.ok) {
+      const data = await res.json()
+      // 2. The API now returns only the classes for THIS student, 
+      // so we don't need to filter it manually here anymore.
+      setClasses(data)
+    }
+  } catch (error) { 
+    console.error("Fetch Schedule Error:", error) 
+  }
+}, [session])
 
   const fetchCourses = useCallback(async () => {
     try {
