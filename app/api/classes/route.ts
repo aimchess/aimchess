@@ -6,16 +6,48 @@ import { authOptions } from "../auth/[...nextauth]/route";
 // GET: Fetch classes (filterable by coachId)
 // app/api/classes/route.ts
 
+// export async function GET(req: Request) {
+//     try {
+//         const { searchParams } = new URL(req.url);
+//         const coachId = searchParams.get("coachId");
+//         const studentId = searchParams.get("studentId"); // Add this
+
+//         const where: any = {};
+//         if (coachId) where.coachId = coachId;
+        
+//         // Add this: If studentId is provided, only find classes where this student is enrolled
+//         if (studentId) {
+//             where.students = {
+//                 some: { id: studentId }
+//             };
+//         }
+
+//         const classes = await prisma.classTiming.findMany({
+//             where,
+//             include: {
+//                 coach: { select: { id: true, name: true } },
+//                 // Add this: include the student objects (or at least their IDs)
+//                 students: { select: { id: true } }, 
+//                 _count: { select: { students: true } }
+//             },
+//             orderBy: { createdAt: 'desc' }
+//         });
+
+//         return NextResponse.json(classes);
+//     } catch (error) {
+//         console.error("Classes GET error:", error);
+//         return NextResponse.json({ error: "Failed to fetch classes" }, { status: 500 });
+//     }
+// }
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const coachId = searchParams.get("coachId");
-        const studentId = searchParams.get("studentId"); // Add this
+        const studentId = searchParams.get("studentId");
 
         const where: any = {};
         if (coachId) where.coachId = coachId;
         
-        // Add this: If studentId is provided, only find classes where this student is enrolled
         if (studentId) {
             where.students = {
                 some: { id: studentId }
@@ -26,8 +58,14 @@ export async function GET(req: Request) {
             where,
             include: {
                 coach: { select: { id: true, name: true } },
-                // Add this: include the student objects (or at least their IDs)
-                students: { select: { id: true } }, 
+                // FIX: Add name and email to the select object
+                students: { 
+                    select: { 
+                        id: true, 
+                        name: true, 
+                        email: true 
+                    } 
+                }, 
                 _count: { select: { students: true } }
             },
             orderBy: { createdAt: 'desc' }

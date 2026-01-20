@@ -290,19 +290,38 @@ function AttendanceView({ coachId }: { coachId: string }) {
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, { status: string, remarks: string }>>({})
 
   // Fetch classes managed by this coach
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const res = await fetch(`/api/classes?coachId=${coachId}`)
-        if (res.ok) {
-          const data = await res.json()
-          setClasses(data)
-          if (data.length > 0) setSelectedClassId(data[0].id)
-        }
-      } catch (e) { console.error(e) }
-    }
-    fetchClasses()
-  }, [coachId])
+  // FIND THIS BLOCK (Approx. Line 191) AND REPLACE IT:
+useEffect(() => {
+  if (!selectedClassId || !date) return
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      // MANDATORY: Use the 'classes' array already in state which now contains the names
+      const currentClass = classes.find((c: any) => c.id === selectedClassId)
+
+      if (currentClass) {
+        setStudents(currentClass.students || [])
+      }
+
+      // Fetch existing attendance records
+      const attRes = await fetch(`/api/attendance?classTimingId=${selectedClassId}&date=${date}`)
+      if (attRes.ok) {
+        const attData = await attRes.json()
+        const records: any = {}
+        attData.forEach((r: any) => {
+          records[r.studentId] = { status: r.status, remarks: r.remarks || '' }
+        })
+        setAttendanceRecords(records)
+      } else {
+        setAttendanceRecords({})
+      }
+    } catch (e) {
+      console.error(e)
+      setAttendanceRecords({})
+    } finally { setLoading(false) }
+  }
+  fetchData()
+}, [selectedClassId, date, classes]) // <--- 'classes' MUST be here
 
   // Fetch students and existing attendance when class or date changes
   useEffect(() => {
