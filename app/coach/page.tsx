@@ -280,6 +280,260 @@ function MyStudentsView({ coachId }: { coachId: string }) {
 // ==========================================
 // 1.5 ATTENDANCE VIEW
 // ==========================================
+// function AttendanceView({ coachId }: { coachId: string }) {
+//   const [classes, setClasses] = useState<any[]>([])
+//   const [selectedClassId, setSelectedClassId] = useState('')
+//   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+//   const [students, setStudents] = useState<any[]>([])
+//   const [loading, setLoading] = useState(false)
+//   const [saving, setSaving] = useState(false)
+//   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, { status: string, remarks: string }>>({})
+
+//   // Fetch classes managed by this coach
+//   // FIND THIS BLOCK (Approx. Line 191) AND REPLACE IT:
+// useEffect(() => {
+//   if (!selectedClassId || !date) return
+//   const fetchData = async () => {
+//     setLoading(true)
+//     try {
+//       // MANDATORY: Use the 'classes' array already in state which now contains the names
+//       const currentClass = classes.find((c: any) => c.id === selectedClassId)
+
+//       if (currentClass) {
+//         setStudents(currentClass.students || [])
+//       }
+
+//       // Fetch existing attendance records
+//       const attRes = await fetch(`/api/attendance?classTimingId=${selectedClassId}&date=${date}`)
+//       if (attRes.ok) {
+//         const attData = await attRes.json()
+//         const records: any = {}
+//         attData.forEach((r: any) => {
+//           records[r.studentId] = { status: r.status, remarks: r.remarks || '' }
+//         })
+//         setAttendanceRecords(records)
+//       } else {
+//         setAttendanceRecords({})
+//       }
+//     } catch (e) {
+//       console.error(e)
+//       setAttendanceRecords({})
+//     } finally { setLoading(false) }
+//   }
+//   fetchData()
+// }, [selectedClassId, date, classes]) // <--- 'classes' MUST be here
+
+//   // Fetch students and existing attendance when class or date changes
+//   useEffect(() => {
+//     if (!selectedClassId || !date) return
+//     const fetchData = async () => {
+//       setLoading(true)
+//       try {
+//         // Fetch class details to get students
+//         const classRes = await fetch(`/api/classes`)
+//         const classesData = await classRes.json()
+//         const currentClass = classesData.find((c: any) => c.id === selectedClassId)
+
+//         if (currentClass) {
+//           setStudents(currentClass.students || [])
+//           // Note: The /api/classes GET currently doesn't include full student list in this specific branch.
+//           // But let's assume the API returns what we need or we can optimize it.
+//           // Implementation detail: I'll make sure students are included in the GET result above or update it.
+//         }
+
+//         // Fetch attendance
+//         const attRes = await fetch(`/api/attendance?classTimingId=${selectedClassId}&date=${date}`)
+//         if (attRes.ok) {
+//           const attData = await attRes.json()
+//           const records: any = {}
+//           attData.forEach((r: any) => {
+//             records[r.studentId] = { status: r.status, remarks: r.remarks || '' }
+//           })
+//           setAttendanceRecords(records)
+//         } else {
+//           setAttendanceRecords({})
+//         }
+//       } catch (e) {
+//         console.error(e)
+//         setAttendanceRecords({})
+//       } finally { setLoading(false) }
+//     }
+//     fetchData()
+//   }, [selectedClassId, date])
+
+//   const handleStatusChange = (studentId: string, status: string) => {
+//     setAttendanceRecords(prev => ({
+//       ...prev,
+//       [studentId]: { ...prev[studentId], status }
+//     }))
+//   }
+
+//   const handleSave = async () => {
+//     setSaving(true)
+//     try {
+//       const records = Object.entries(attendanceRecords).map(([studentId, data]) => ({
+//         studentId,
+//         status: data.status,
+//         remarks: data.remarks
+//       }))
+
+//       const res = await fetch('/api/attendance', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({
+//           classTimingId: selectedClassId,
+//           date,
+//           records
+//         })
+//       })
+
+//       if (res.ok) {
+//         alert("Attendance saved successfully!")
+//       } else {
+//         alert("Failed to save attendance")
+//       }
+//     } catch (e) { console.error(e) }
+//     finally { setSaving(false) }
+//   }
+
+//   const getStatusColor = (status: string) => {
+//     switch (status) {
+//       case 'PRESENT': return 'bg-green-100 text-green-700 border-green-200'
+//       case 'ABSENT': return 'bg-red-100 text-red-700 border-red-200'
+//       case 'LATE': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+//       case 'LEAVE': return 'bg-blue-100 text-blue-700 border-blue-200'
+//       default: return 'bg-slate-100 text-slate-500 border-slate-200'
+//     }
+//   }
+
+//   return (
+//     <div className="bg-white rounded-xl shadow-sm border p-6 animate-in fade-in slide-in-from-bottom-4">
+//       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+//         <div>
+//           <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+//             <CheckCircle className="text-orange-500" /> Mark Attendance
+//           </h2>
+//           <p className="text-slate-500 text-sm mt-1">Select class and date to mark student attendance.</p>
+//         </div>
+//         <div className="flex flex-wrap gap-3">
+//           <select
+//             value={selectedClassId}
+//             onChange={(e) => setSelectedClassId(e.target.value)}
+//             className="p-2 border rounded-lg bg-slate-50 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-orange-500"
+//           >
+//             {classes.map(c => <option key={c.id} value={c.id}>{c.name} ({c.startTime})</option>)}
+//           </select>
+//           <input
+//             type="date"
+//             value={date}
+//             onChange={(e) => setDate(e.target.value)}
+//             className="p-2 border rounded-lg bg-slate-50 font-bold text-slate-700 outline-none focus:ring-2 focus:ring-orange-500"
+//           />
+//         </div>
+//       </div>
+
+//       {classes.find(c => c.id === selectedClassId)?.meetingLink && (
+//         <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between">
+//           <div className="flex items-center gap-3">
+//             <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+//               <Video size={20} />
+//             </div>
+//             <div>
+//               <div className="text-xs font-bold text-blue-400 uppercase tracking-wider">Online Class Link</div>
+//               <div className="text-sm font-medium text-blue-700 truncate max-w-md">
+//                 {classes.find((c: any) => c.id === selectedClassId).meetingLink}
+//               </div>
+//             </div>
+//           </div>
+//           <a
+//             href={classes.find((c: any) => c.id === selectedClassId).meetingLink}
+//             target="_blank"
+//             rel="noopener noreferrer"
+//             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm flex items-center gap-2"
+//           >
+//             Join Meeting
+//           </a>
+//         </div>
+//       )}
+
+//       {loading ? (
+//         <div className="flex justify-center py-20"><Loader2 className="animate-spin text-orange-500 w-10 h-10" /></div>
+//       ) : (
+//         <div className="space-y-4">
+//           <div className="border rounded-xl overflow-hidden">
+//             <table className="w-full text-left border-collapse">
+//               <thead className="bg-slate-50 border-b">
+//                 <tr>
+//                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Student Name</th>
+//                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+//                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Remarks</th>
+//                 </tr>
+//               </thead>
+//               <tbody className="divide-y">
+//                 {students.map(s => {
+//                   const currentStatus = attendanceRecords[s.id]?.status || ''
+//                   return (
+//                     <tr key={s.id} className="hover:bg-slate-50 transition-colors">
+//                       <td className="p-4">
+//                         <div className="font-bold text-slate-800">{s.name}</div>
+//                         <div className="text-xs text-slate-500">{s.email}</div>
+//                       </td>
+//                       <td className="p-4">
+//                         <div className="flex justify-center gap-1">
+//                           {['PRESENT', 'ABSENT', 'LATE', 'LEAVE'].map(status => (
+//                             <button
+//                               key={status}
+//                               onClick={() => handleStatusChange(s.id, status)}
+//                               className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all border ${currentStatus === status
+//                                 ? getStatusColor(status) + ' ring-1 ring-orange-500 ring-offset-1 shadow-sm'
+//                                 : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+//                                 }`}
+//                             >
+//                               {status[0]}
+//                             </button>
+//                           ))}
+//                         </div>
+//                       </td>
+//                       <td className="p-4">
+//                         <input
+//                           value={attendanceRecords[s.id]?.remarks || ''}
+//                           onChange={(e) => setAttendanceRecords(prev => ({
+//                             ...prev,
+//                             [s.id]: { ...prev[s.id], remarks: e.target.value }
+//                           }))}
+//                           className="w-full p-2 border rounded-md text-sm bg-transparent outline-none focus:border-orange-500"
+//                           placeholder="Add remark..."
+//                         />
+//                       </td>
+//                     </tr>
+//                   )
+//                 })}
+//               </tbody>
+//             </table>
+//             {students.length === 0 && (
+//               <div className="p-20 text-center text-slate-400 italic bg-slate-50">
+//                 No students enrolled in this class batch.
+//               </div>
+//             )}
+//           </div>
+
+//           <div className="flex justify-end pt-4">
+//             <button
+//               onClick={handleSave}
+//               disabled={students.length === 0 || saving}
+//               className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
+//             >
+//               {saving ? <Loader2 className="animate-spin w-5 h-5" /> : null}
+//               Save Attendance
+//             </button>
+//           </div>
+//         </div>
+//       )
+//       }
+//     </div >
+//   )
+// }
+
 function AttendanceView({ coachId }: { coachId: string }) {
   const [classes, setClasses] = useState<any[]>([])
   const [selectedClassId, setSelectedClassId] = useState('')
@@ -289,59 +543,40 @@ function AttendanceView({ coachId }: { coachId: string }) {
   const [saving, setSaving] = useState(false)
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, { status: string, remarks: string }>>({})
 
-  // Fetch classes managed by this coach
-  // FIND THIS BLOCK (Approx. Line 191) AND REPLACE IT:
-useEffect(() => {
-  if (!selectedClassId || !date) return
-  const fetchData = async () => {
-    setLoading(true)
-    try {
-      // MANDATORY: Use the 'classes' array already in state which now contains the names
-      const currentClass = classes.find((c: any) => c.id === selectedClassId)
-
-      if (currentClass) {
-        setStudents(currentClass.students || [])
-      }
-
-      // Fetch existing attendance records
-      const attRes = await fetch(`/api/attendance?classTimingId=${selectedClassId}&date=${date}`)
-      if (attRes.ok) {
-        const attData = await attRes.json()
-        const records: any = {}
-        attData.forEach((r: any) => {
-          records[r.studentId] = { status: r.status, remarks: r.remarks || '' }
-        })
-        setAttendanceRecords(records)
-      } else {
-        setAttendanceRecords({})
-      }
-    } catch (e) {
-      console.error(e)
-      setAttendanceRecords({})
-    } finally { setLoading(false) }
-  }
-  fetchData()
-}, [selectedClassId, date, classes]) // <--- 'classes' MUST be here
-
-  // Fetch students and existing attendance when class or date changes
+  // 1. Fetch ALL classes for this coach
   useEffect(() => {
-    if (!selectedClassId || !date) return
+    if (!coachId) return
+    const fetchClasses = async () => {
+      try {
+        const res = await fetch(`/api/classes?coachId=${coachId}`)
+        if (res.ok) {
+          const data = await res.json()
+          setClasses(data)
+          // Automatically select the first class if one exists
+          if (data.length > 0 && !selectedClassId) {
+            setSelectedClassId(data[0].id)
+          }
+        }
+      } catch (e) { console.error("Error fetching classes:", e) }
+    }
+    fetchClasses()
+  }, [coachId])
+
+  // 2. When Class or Date changes, update the student list and fetch existing attendance
+  useEffect(() => {
+    // Stop if no class is selected yet
+    if (!selectedClassId || !date || classes.length === 0) return
+
     const fetchData = async () => {
       setLoading(true)
       try {
-        // Fetch class details to get students
-        const classRes = await fetch(`/api/classes`)
-        const classesData = await classRes.json()
-        const currentClass = classesData.find((c: any) => c.id === selectedClassId)
-
+        // Find the selected class from our local state to get its student list
+        const currentClass = classes.find((c: any) => c.id === selectedClassId)
         if (currentClass) {
           setStudents(currentClass.students || [])
-          // Note: The /api/classes GET currently doesn't include full student list in this specific branch.
-          // But let's assume the API returns what we need or we can optimize it.
-          // Implementation detail: I'll make sure students are included in the GET result above or update it.
         }
 
-        // Fetch attendance
+        // Fetch attendance records for this specific day
         const attRes = await fetch(`/api/attendance?classTimingId=${selectedClassId}&date=${date}`)
         if (attRes.ok) {
           const attData = await attRes.json()
@@ -354,12 +589,12 @@ useEffect(() => {
           setAttendanceRecords({})
         }
       } catch (e) {
-        console.error(e)
+        console.error("Error fetching attendance:", e)
         setAttendanceRecords({})
       } finally { setLoading(false) }
     }
     fetchData()
-  }, [selectedClassId, date])
+  }, [selectedClassId, date, classes]) // Runs when classes are loaded OR selection changes
 
   const handleStatusChange = (studentId: string, status: string) => {
     setAttendanceRecords(prev => ({
@@ -387,11 +622,8 @@ useEffect(() => {
         })
       })
 
-      if (res.ok) {
-        alert("Attendance saved successfully!")
-      } else {
-        alert("Failed to save attendance")
-      }
+      if (res.ok) { alert("Attendance saved successfully!") } 
+      else { alert("Failed to save attendance") }
     } catch (e) { console.error(e) }
     finally { setSaving(false) }
   }
@@ -431,30 +663,6 @@ useEffect(() => {
           />
         </div>
       </div>
-
-      {classes.find(c => c.id === selectedClassId)?.meetingLink && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-              <Video size={20} />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-blue-400 uppercase tracking-wider">Online Class Link</div>
-              <div className="text-sm font-medium text-blue-700 truncate max-w-md">
-                {classes.find((c: any) => c.id === selectedClassId).meetingLink}
-              </div>
-            </div>
-          </div>
-          <a
-            href={classes.find((c: any) => c.id === selectedClassId).meetingLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm flex items-center gap-2"
-          >
-            Join Meeting
-          </a>
-        </div>
-      )}
 
       {loading ? (
         <div className="flex justify-center py-20"><Loader2 className="animate-spin text-orange-500 w-10 h-10" /></div>
@@ -528,9 +736,8 @@ useEffect(() => {
             </button>
           </div>
         </div>
-      )
-      }
-    </div >
+      )}
+    </div>
   )
 }
 
