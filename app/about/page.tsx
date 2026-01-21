@@ -11,6 +11,7 @@ import { FaqSection } from "@/components/faq-section";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
+
 const foundationItems = [
   {
     icon: Brain,
