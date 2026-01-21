@@ -85,7 +85,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-[#FDFBF7] font-sans selection:bg-[#E76F51]/20 overflow-x-hidden">
 
       {/* 1. HERO */}
-      <section className="relative pt-24 md:pt-40 pb-12 md:pb-24 px-4 text-center overflow-hidden">
+      <section className="relative pt-24 md:pt-12 pb-12 md:pb-24 px-4 text-center overflow-hidden">
         <div className="absolute inset-0 opacity-5 pointer-events-none overflow-hidden select-none">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 transform -rotate-12 scale-125 md:scale-110">
             {dummyImages.map((src, i) => (
