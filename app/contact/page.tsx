@@ -127,7 +127,7 @@ export default function ContactPage() {
                 {[
                   { icon: MapPin, title: "Our Academy", lines: ["Prarthana Nagar, Thekkumbhagam,", "Thrippunithura, Kerala - 682301"] },
                   { icon: Phone, title: "Direct Line", lines: ["+91 73560 26170", "WhatsApp Available"] },
-                  { icon: Mail, title: "Digital Mail", lines: ["contact@royalRook.com"] },
+                  { icon: Mail, title: "Digital Mail", lines: ["royalrookschesscoach@gmail.com"] },
                   { icon: Clock, title: "Office Hours", lines: ["Mon-Sun: 10 AM - 8 PM"] },
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4 items-start">

@@ -166,7 +166,7 @@ export function Footer() {
                 <Mail className="w-5 h-5 text-[#E76F51] shrink-0" />
                 <div className="flex flex-col items-center md:items-start max-w-full">
                   <p className="font-black text-sm group-hover:text-[#FFDA44] transition-colors break-all md:break-words">
-                    contact@royalRookchess.com
+                    royalrookschesscoach@gmail.com
                   </p>
                 </div>
               </div>
