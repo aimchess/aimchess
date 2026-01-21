@@ -28,10 +28,10 @@ export default function PaymentPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const params = useParams()
-  
+
   // Ensure stage matches the keys in stageInfo (BEGINNER, INTERMEDIATE, ADVANCED)
   const stage = (params.stage as string)?.toUpperCase() || 'BEGINNER'
-  
+
   const [processing, setProcessing] = useState(false)
   const [success, setSuccess] = useState(false)
 
@@ -99,7 +99,7 @@ export default function PaymentPage() {
       const response = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage }) 
+        body: JSON.stringify({ stage })
       })
 
       const orderData = await response.json()
@@ -110,7 +110,7 @@ export default function PaymentPage() {
 
       // Step C: Configure Razorpay
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Chess Platform",
@@ -155,7 +155,7 @@ export default function PaymentPage() {
           }
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             setProcessing(false)
           }
         }
@@ -164,8 +164,8 @@ export default function PaymentPage() {
       // Step E: Open the Payment Modal
       const paymentObject = new window.Razorpay(options)
       paymentObject.open()
-      
-      paymentObject.on('payment.failed', function (response: any){
+
+      paymentObject.on('payment.failed', function (response: any) {
         console.error(response.error)
         alert("Payment failed: " + response.error.description)
         setProcessing(false)
@@ -204,24 +204,24 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-20 px-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 flex items-center justify-center">
       <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Enroll in {currentStage.name}
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-base md:text-lg text-gray-600">
             Secure your spot and start improving today
           </p>
         </div>
 
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden max-w-2xl mx-auto">
           {/* Header Section */}
-          <div className="bg-gradient-to-r from-[#769656] to-[#5C1F1C] p-8 text-white text-center">
-            <h2 className="text-3xl font-bold mb-2">{currentStage.name} Level</h2>
-            <div className="text-5xl font-bold mt-4">
+          <div className="bg-gradient-to-r from-[#769656] to-[#5C1F1C] p-6 md:p-8 text-white text-center">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">{currentStage.name} Level</h2>
+            <div className="text-4xl md:text-5xl font-bold mt-4">
               ${displayPrice}
-              <span className="text-lg font-medium opacity-80 ml-2">/ one-time</span>
+              <span className="text-base md:text-lg font-medium opacity-80 ml-2">/ one-time</span>
             </div>
           </div>
 
@@ -245,16 +245,16 @@ export default function PaymentPage() {
               >
                 {processing ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="h-5 w-5 animate-spin" /> 
+                    <Loader2 className="h-5 w-5 animate-spin" />
                     Processing...
                   </span>
                 ) : (
                   `Pay $${displayPrice} & Start Learning`
                 )}
               </Button>
-              
+
               <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                 <span>🔒 Secured by Razorpay</span>
+                <span>🔒 Secured by Razorpay</span>
               </div>
             </div>
           </div>

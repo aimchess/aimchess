@@ -431,7 +431,7 @@
 //   return (
 //     <div className="bg-white rounded-xl shadow-lg border overflow-hidden flex flex-col h-[85vh]">
 //       <div className="bg-white border-b p-4 flex justify-between items-center shrink-0">
-//         <div className="flex items-center gap-4">
+//         <div className="flex items-center gap-4 overflow-x-auto whitespace-nowrap pb-1 scrollbar-hide">
 //           <button onClick={() => setView('LIST')} className="hover:bg-gray-100 p-2 rounded-full transition-colors text-gray-500"><ArrowLeft/></button>
 //           <div>
 //             <h2 className="text-lg font-bold text-slate-800">{editingCourse.title || 'New Course'}</h2>
@@ -1450,7 +1450,7 @@ export default function AdminDashboard() {
                 </div>
             </header>
 
-            <main className="p-4 md:p-6 max-w-7xl mx-auto pt-20">
+            <main className="p-4 md:p-6 max-w-7xl mx-auto pt-8 md:pt-20">
                 {activeTab === 'users' && <UserManager />}
                 {activeTab === 'classes' && <ClassManager />}
                 {activeTab === 'payments' && <PaymentManager />}
@@ -1628,7 +1628,7 @@ function UserManager() {
 
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingId ? "Edit User" : "Add User"}>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-gray-500">Full Name</label>
                             <input className="w-full border p-2 rounded focus:ring-2 ring-orange-200 outline-none" placeholder="John Doe" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
@@ -1653,7 +1653,7 @@ function UserManager() {
                     </div>
                     {formData.role === 'STUDENT' && (
                         <>
-                            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded border">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded border">
                                 <div>
                                     <label className="text-xs font-bold text-gray-500">Chess Level</label>
                                     <select className="w-full border p-2 rounded mt-1" value={formData.stage} onChange={e => setFormData({ ...formData, stage: e.target.value })}>
@@ -1671,7 +1671,7 @@ function UserManager() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-gray-500">Joining Date</label>
                                     <input type="date" className="w-full border p-2 rounded outline-none shadow-sm" value={formData.joiningDate} onChange={e => setFormData({ ...formData, joiningDate: e.target.value })} />
@@ -1687,7 +1687,7 @@ function UserManager() {
                                 <textarea className="w-full border p-2 rounded outline-none shadow-sm h-20" placeholder="Student Address" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-gray-500">Parent's Name</label>
                                     <input className="w-full border p-2 rounded outline-none shadow-sm" placeholder="Parent Name" value={formData.parentName} onChange={e => setFormData({ ...formData, parentName: e.target.value })} />
@@ -1698,7 +1698,7 @@ function UserManager() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-gray-500">Student Photo</label>
                                     <input type="file" accept="image/*" className="text-xs w-full" onChange={async (e) => {
@@ -1894,7 +1894,7 @@ function ClassManager() {
                             {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Start Time</label>
                             <input type="time" value={formData.startTime} onChange={e => setFormData({ ...formData, startTime: e.target.value })} required className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none" />
@@ -2114,7 +2114,7 @@ function PaymentManager() {
                             </select>
                         </div>
                     )}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Amount (₹)</label>
                             <input type="number" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} required className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50" placeholder="0.00" />
@@ -2124,7 +2124,7 @@ function PaymentManager() {
                             <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} required className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50" />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Method</label>
                             <select value={formData.method} onChange={e => setFormData({ ...formData, method: e.target.value })} className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-orange-500 outline-none bg-slate-50">
@@ -2171,6 +2171,19 @@ function CourseManager() {
     const game = useRef(new Chess())
     const [chapterFen, setChapterFen] = useState('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1')
     const [selectedTool, setSelectedTool] = useState<Tool>(null)
+    const [boardWidth, setBoardWidth] = useState(500)
+    const boardContainerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!boardContainerRef.current) return
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                setBoardWidth(entry.contentRect.width)
+            }
+        })
+        observer.observe(boardContainerRef.current)
+        return () => observer.disconnect()
+    }, [])
 
     const fetchCourses = async () => {
         setLoading(true)
@@ -2304,9 +2317,9 @@ function CourseManager() {
                     <Save size={18} /> Save Changes
                 </button>
             </div>
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <div className="w-80 border-r bg-gray-50 flex flex-col shrink-0">
+                <div className="w-full lg:w-80 border-b lg:border-r lg:border-b-0 bg-gray-50 flex flex-col shrink-0 max-h-[40vh] lg:max-h-full">
                     <div className="p-4 space-y-3">
                         <label className="text-xs font-bold text-gray-400 uppercase">Settings</label>
                         <input
@@ -2401,12 +2414,13 @@ function CourseManager() {
                             </div>
 
                             <div className="lg:col-span-7 flex flex-col gap-4">
-                                <div className="bg-white p-1 rounded-xl shadow-lg border border-slate-200">
+                                <div ref={boardContainerRef} className="bg-white p-1 rounded-xl shadow-lg border border-slate-200 w-full max-w-[550px] mx-auto">
                                     <Chessboard
                                         position={chapterFen}
                                         onPieceDrop={onPieceDrop}
                                         onSquareClick={onSquareClick}
                                         onSquareRightClick={onSquareRightClick}
+                                        boardWidth={boardWidth}
                                     />
                                 </div>
                                 <BoardSetupPalette
@@ -2630,7 +2644,7 @@ function CurriculumManager() {
     return (
         <div className="bg-white rounded-xl shadow-sm border p-6 min-h-[600px] flex flex-col">
             <div className="flex items-center gap-2 mb-8 pb-4 border-b justify-between">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 scrollbar-hide max-w-full">
                     <button onClick={() => { setCurrentStage(null); setBreadcrumbs([]) }} className="font-bold text-gray-400 hover:text-black transition-colors">Levels</button>
                     <ChevronRight size={16} className="text-gray-300" />
                     <span className="font-bold text-orange-600 px-2 py-1 bg-orange-50 rounded">{currentStage}</span>
@@ -2706,6 +2720,19 @@ function PuzzleCreator({ folderId, existingPuzzle, onBack }: { folderId: string,
     const [initialStars, setInitialStars] = useState<string[]>([])
     const [isPgnModalOpen, setIsPgnModalOpen] = useState(false)
     const [pgnInput, setPgnInput] = useState('')
+    const [boardWidth, setBoardWidth] = useState(500)
+    const boardContainerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!boardContainerRef.current) return
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                setBoardWidth(entry.contentRect.width)
+            }
+        })
+        observer.observe(boardContainerRef.current)
+        return () => observer.disconnect()
+    }, [])
 
     // --- EFFECT: Load Existing Data ---
     useEffect(() => {
@@ -2913,13 +2940,14 @@ function PuzzleCreator({ folderId, existingPuzzle, onBack }: { folderId: string,
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white p-6 rounded-xl border h-full min-h-[600px]">
             <div className="lg:col-span-5 flex justify-center">
-                <div className={`w-full max-w-[500px] border-4 rounded-xl shadow-lg overflow-hidden transition-colors ${mode === 'RECORD' ? 'border-green-500' : 'border-blue-500'}`}>
+                <div ref={boardContainerRef} className={`w-full max-w-[500px] border-4 rounded-xl shadow-lg overflow-hidden transition-colors ${mode === 'RECORD' ? 'border-green-500' : 'border-blue-500'}`}>
                     <Chessboard
                         position={fen}
                         onPieceDrop={onPieceDrop}
                         onSquareClick={onSquareClick}
                         onSquareRightClick={onSquareRightClick}
                         customSquareStyles={customSquareStyles}
+                        boardWidth={boardWidth}
                     />
                 </div>
             </div>
@@ -3020,6 +3048,19 @@ function AnalysisBoard() {
     const [orientation, setOrientation] = useState<'white' | 'black'>('white')
     const [setupMode, setSetupMode] = useState(false)
     const [selectedTool, setSelectedTool] = useState<Tool>(null)
+    const [boardWidth, setBoardWidth] = useState(600)
+    const boardContainerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!boardContainerRef.current) return
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                setBoardWidth(entry.contentRect.width)
+            }
+        })
+        observer.observe(boardContainerRef.current)
+        return () => observer.disconnect()
+    }, [])
 
     const updateBoard = () => setFen(game.current.fen())
 
@@ -3077,7 +3118,7 @@ function AnalysisBoard() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white p-6 rounded-xl shadow-sm border">
             <div className="lg:col-span-8 flex justify-center">
-                <div className="w-[600px] h-[600px] border-4 border-slate-700 rounded shadow-2xl relative">
+                <div ref={boardContainerRef} className="w-full max-w-[600px] aspect-square border-4 border-slate-700 rounded shadow-2xl relative" id="analysis-board-container">
                     <Chessboard
                         position={fen}
                         onPieceDrop={onPieceDrop}
@@ -3086,6 +3127,7 @@ function AnalysisBoard() {
                         customSquareStyles={squares}
                         boardOrientation={orientation}
                         arePiecesDraggable={true}
+                        boardWidth={boardWidth}
                     />
                     {setupMode && <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs font-bold rounded animate-pulse">SETUP MODE</div>}
                 </div>

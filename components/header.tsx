@@ -46,24 +46,23 @@ export function Header() {
   return (
     <>
       <header
-        className={`fixed w-full z-[100] top-0 transition-all duration-500 ${
-          isMobileMenuOpen 
-            ? "bg-white py-3 shadow-none" // Match mobile menu bg
-            : scrolled
+        className={`fixed w-full z-[100] top-0 transition-all duration-500 ${isMobileMenuOpen
+          ? "bg-white py-3 shadow-none" // Match mobile menu bg
+          : scrolled
             ? "bg-[#FDFBF7]/95 backdrop-blur-xl shadow-md py-3 border-b border-[#E6E0D4]/50"
             : "bg-transparent py-5 md:py-8"
-        }`}
+          }`}
       >
         <div className="container mx-auto px-4 md:px-8 lg:px-12">
           <div className="flex justify-between items-center">
-            
+
             {/* --- LOGO & BRAND --- */}
             <Link href="/" className="flex items-center gap-2 md:gap-3 group relative z-[110]">
-              <div className="relative w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl p-1.5 shadow-sm border border-[#E6E0D4] transition-transform duration-500 group-hover:rotate-6">
+              <div className="relative w-10 h-10 md:w-12 md:h-12">
                 <img
                   src="/logo.jpg"
                   alt="Royal Rook Logo"
-                  className="w-full h-full object-contain rounded-lg"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="flex flex-col">
@@ -83,11 +82,10 @@ export function Header() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`px-5 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-full ${
-                      pathname === item.href
-                        ? "bg-[#2D2A26] text-white"
-                        : "text-[#5C5852] hover:text-[#E76F51]"
-                    }`}
+                    className={`px-5 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-full ${pathname === item.href
+                      ? "bg-[#2D2A26] text-white"
+                      : "text-[#5C5852] hover:text-[#E76F51]"
+                      }`}
                   >
                     {item.name}
                   </Link>
@@ -103,11 +101,10 @@ export function Header() {
             <div className="lg:hidden flex items-center gap-3 relative z-[110]">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`p-2.5 rounded-2xl transition-all duration-300 border ${
-                  isMobileMenuOpen 
-                  ? "bg-[#2D2A26] border-[#2D2A26] text-white rotate-90" 
+                className={`p-2.5 rounded-2xl transition-all duration-300 border ${isMobileMenuOpen
+                  ? "bg-[#2D2A26] border-[#2D2A26] text-white rotate-90"
                   : "bg-white border-[#E6E0D4] text-[#2D2A26]"
-                } shadow-sm active:scale-90`}
+                  } shadow-sm active:scale-90`}
               >
                 {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
@@ -127,7 +124,7 @@ export function Header() {
             >
               {/* Background Decoration */}
               <div className="absolute top-1/4 -right-20 w-64 h-64 bg-[#E76F51]/5 rounded-full blur-3xl pointer-events-none" />
-              
+
               <div className="flex-1 space-y-1 overflow-y-auto no-scrollbar">
                 {navItems.map((item, i) => (
                   <motion.div
@@ -141,15 +138,13 @@ export function Header() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="group flex items-center justify-between py-5 border-b border-[#E6E0D4]/40"
                     >
-                      <span className={`text-2xl font-black uppercase tracking-tighter transition-colors ${
-                        pathname === item.href ? "text-[#E76F51]" : "text-[#2D2A26]"
-                      }`}>
+                      <span className={`text-2xl font-black uppercase tracking-tighter transition-colors ${pathname === item.href ? "text-[#E76F51]" : "text-[#2D2A26]"
+                        }`}>
                         {item.name}
                       </span>
-                      <ArrowRight 
-                        className={`w-5 h-5 transition-all ${
-                          pathname === item.href ? "text-[#E76F51] translate-x-0" : "text-[#2D2A26] opacity-30 -translate-x-4"
-                        }`} 
+                      <ArrowRight
+                        className={`w-5 h-5 transition-all ${pathname === item.href ? "text-[#E76F51] translate-x-0" : "text-[#2D2A26] opacity-30 -translate-x-4"
+                          }`}
                       />
                     </Link>
                   </motion.div>
@@ -157,7 +152,7 @@ export function Header() {
               </div>
 
               {/* Mobile Auth/Footer Section */}
-              <motion.div 
+              <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
@@ -170,7 +165,7 @@ export function Header() {
                   <p className="text-[10px] font-black text-[#5C5852] uppercase tracking-[0.2em] mb-4">Student Portal</p>
                   <AuthNav isMobile={true} />
                 </div>
-                
+
                 <p className="text-center text-[9px] font-bold text-[#5C5852] opacity-50 uppercase tracking-widest">
                   © {new Date().getFullYear()} Royal Rook Chess Academy
                 </p>
@@ -179,7 +174,7 @@ export function Header() {
           )}
         </AnimatePresence>
       </header>
-      
+
       {/* Spacer to prevent content jump */}
       <div className="h-20 md:h-24 lg:h-0" />
     </>

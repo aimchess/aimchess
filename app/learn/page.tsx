@@ -81,25 +81,25 @@ export default function StudentDashboard() {
     } catch (error) { console.error(error) }
   }, [session])
 
-// inside StudentDashboard.tsx
+  // inside StudentDashboard.tsx
 
-const fetchSchedule = useCallback(async () => {
-  if (!session?.user) return
-  try {
-    const studentId = (session.user as any).id
-    // 1. Pass the studentId to the API
-    const res = await fetch(`/api/classes?studentId=${studentId}`)
-    
-    if (res.ok) {
-      const data = await res.json()
-      // 2. The API now returns only the classes for THIS student, 
-      // so we don't need to filter it manually here anymore.
-      setClasses(data)
+  const fetchSchedule = useCallback(async () => {
+    if (!session?.user) return
+    try {
+      const studentId = (session.user as any).id
+      // 1. Pass the studentId to the API
+      const res = await fetch(`/api/classes?studentId=${studentId}`)
+
+      if (res.ok) {
+        const data = await res.json()
+        // 2. The API now returns only the classes for THIS student, 
+        // so we don't need to filter it manually here anymore.
+        setClasses(data)
+      }
+    } catch (error) {
+      console.error("Fetch Schedule Error:", error)
     }
-  } catch (error) { 
-    console.error("Fetch Schedule Error:", error) 
-  }
-}, [session])
+  }, [session])
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -210,21 +210,21 @@ const fetchSchedule = useCallback(async () => {
           </button>
         </div>
 
-        <div className="mt-8 flex gap-2 md:gap-6 border-b border-slate-200 overflow-x-auto">
+        <div className="mt-8 flex gap-2 md:gap-6 border-b border-slate-200 overflow-x-auto pb-1 scrollbar-hide">
           {/* TABS */}
-          <button onClick={() => setActiveTab('TODO')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 ${activeTab === 'TODO' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => setActiveTab('TODO')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 whitespace-nowrap ${activeTab === 'TODO' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}>
             <Clock size={18} /> To Do {pending.length > 0 && <span className="bg-orange-100 text-orange-600 text-xs px-2 py-0.5 rounded-full">{pending.length}</span>}
           </button>
-          <button onClick={() => setActiveTab('HISTORY')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 ${activeTab === 'HISTORY' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => setActiveTab('HISTORY')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 whitespace-nowrap ${activeTab === 'HISTORY' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500'}`}>
             <History size={18} /> Completed
           </button>
-          <button onClick={() => setActiveTab('LIBRARY')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 ${activeTab === 'LIBRARY' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => setActiveTab('LIBRARY')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 whitespace-nowrap ${activeTab === 'LIBRARY' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500'}`}>
             <BookOpen size={18} /> Library
           </button>
-          <button onClick={() => setActiveTab('FEES')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 ${activeTab === 'FEES' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => setActiveTab('FEES')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 whitespace-nowrap ${activeTab === 'FEES' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500'}`}>
             <CreditCard size={18} /> Fees
           </button>
-          <button onClick={() => setActiveTab('SCHEDULE')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 ${activeTab === 'SCHEDULE' ? 'border-purple-500 text-purple-600' : 'border-transparent text-slate-500'}`}>
+          <button onClick={() => setActiveTab('SCHEDULE')} className={`flex items-center gap-2 pb-4 border-b-2 text-sm font-bold px-4 whitespace-nowrap ${activeTab === 'SCHEDULE' ? 'border-purple-500 text-purple-600' : 'border-transparent text-slate-500'}`}>
             <Calendar size={18} /> Schedule
           </button>
         </div>
@@ -312,21 +312,21 @@ const fetchSchedule = useCallback(async () => {
         {/* LIBRARY TAB */}
         {activeTab === 'LIBRARY' && (
           <div className="bg-white rounded-3xl p-8 border shadow-sm animate-in fade-in">
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 border-b">
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 border-b whitespace-nowrap scrollbar-hide">
               {STAGE_ORDER.map((stage) => {
                 const locked = isStageLocked(stage);
                 return (
-                  <button key={stage} onClick={() => changeStage(stage)} disabled={locked} className={`px-4 py-2 rounded-full text-xs font-bold border flex items-center gap-2 ${libraryStage === stage ? 'bg-slate-800 text-white' : locked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-slate-500'}`}>
+                  <button key={stage} onClick={() => changeStage(stage)} disabled={locked} className={`px-4 py-2 rounded-full text-xs font-bold border flex items-center gap-2 shrink-0 ${libraryStage === stage ? 'bg-slate-800 text-white' : locked ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-slate-500'} transition-colors`}>
                     {stage} {locked && <Lock size={12} />}
                   </button>
                 )
               })}
             </div>
-            <div className="flex justify-between items-end mb-6">
-              <div className="flex items-center gap-2 text-sm font-bold text-slate-500">
-                <span onClick={() => handleBreadcrumbClick(-1)} className="cursor-pointer hover:text-black">ROOT</span>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
+              <div className="flex items-center gap-2 text-sm font-bold text-slate-500 overflow-x-auto whitespace-nowrap pb-1 w-full sm:w-auto scrollbar-hide">
+                <span onClick={() => handleBreadcrumbClick(-1)} className="cursor-pointer hover:text-black shrink-0">ROOT</span>
                 {curriculumPath.map((f, i) => (
-                  <span key={f.id} className="flex gap-2"> <ChevronRight size={14} /> <span onClick={() => handleBreadcrumbClick(i)} className="cursor-pointer hover:text-black">{f.name}</span> </span>
+                  <span key={f.id} className="flex gap-2 items-center shrink-0"> <ChevronRight size={14} className="shrink-0" /> <span onClick={() => handleBreadcrumbClick(i)} className="cursor-pointer hover:text-black shrink-0">{f.name}</span> </span>
                 ))}
               </div>
               {totalPuzzles > 0 && (
@@ -431,8 +431,8 @@ const fetchSchedule = useCallback(async () => {
                   <p className="text-slate-500 font-medium">View your transaction records and payment status.</p>
                 </div>
               </div>
-              <div className="overflow-hidden border rounded-2xl">
-                <table className="w-full text-left border-collapse">
+              <div className="overflow-x-auto border rounded-2xl">
+                <table className="w-full text-left border-collapse min-w-[500px]">
                   <thead className="bg-slate-50 border-b">
                     <tr>
                       <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Date</th>

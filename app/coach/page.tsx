@@ -53,7 +53,7 @@ export default function CoachDashboard() {
           </h1>
           <p className="text-slate-500 text-sm">Welcome back, {session?.user?.name}</p>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-lg shadow-inner">
+        <div className="flex bg-slate-100 p-1 rounded-lg shadow-inner overflow-x-auto max-w-full">
           {[
             { id: 'students', label: 'My Students', icon: Users },
             { id: 'attendance', label: 'Attendance', icon: CheckCircle },
@@ -63,7 +63,7 @@ export default function CoachDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md font-bold text-sm transition-all ${activeTab === tab.id
+              className={`flex items-center gap-2 px-4 py-2 rounded-md font-bold text-sm transition-all whitespace-nowrap ${activeTab === tab.id
                 ? 'bg-white shadow text-orange-600'
                 : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200'
                 }`}
@@ -167,7 +167,7 @@ function MyStudentsView({ coachId }: { coachId: string }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4">
       {/* Student List */}
-      <div className="lg:col-span-4 bg-white rounded-xl shadow-sm border p-4 h-[calc(100vh-140px)] flex flex-col">
+      <div className="lg:col-span-4 bg-white rounded-xl shadow-sm border p-4 h-auto lg:h-[calc(100vh-140px)] flex flex-col">
         <h2 className="font-bold text-lg mb-4 flex items-center gap-2 shrink-0">
           <Users className="text-orange-500" /> Class Roster ({students.length})
         </h2>
@@ -196,20 +196,23 @@ function MyStudentsView({ coachId }: { coachId: string }) {
       <div className="lg:col-span-8">
         {selectedStudent ? (
           <div className="bg-white rounded-xl shadow-sm border p-6 min-h-[500px] h-full overflow-y-auto animate-in fade-in zoom-in-95">
-            <div className="flex justify-between items-start mb-8">
+            <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-4">
               <div>
                 <h2 className="text-3xl font-bold text-slate-800">{selectedStudent.name}</h2>
-                <p className="text-slate-500 text-sm mt-1 flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500"></div> {selectedStudent.email}</p>
+                <div className="text-slate-500 text-sm mt-1 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  {selectedStudent.email}
+                </div>
               </div>
               <button
                 onClick={() => setIsAssignModalOpen(true)}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 shadow-lg transition transform hover:-translate-y-0.5"
+                className="w-full md:w-auto bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-bold flex items-center justify-center gap-2 shadow-lg transition transform hover:-translate-y-0.5"
               >
                 <Plus className="w-5 h-5" /> Assign Homework
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               <div className="bg-green-50 p-4 rounded-xl border border-green-100 flex flex-col items-center">
                 <span className="text-xs font-bold text-green-600 uppercase tracking-wider mb-1">Solved</span>
                 <div className="text-3xl font-bold text-green-800 flex items-center gap-2"><Trophy size={24} /> {totalSolved}</div>
@@ -622,7 +625,7 @@ function AttendanceView({ coachId }: { coachId: string }) {
         })
       })
 
-      if (res.ok) { alert("Attendance saved successfully!") } 
+      if (res.ok) { alert("Attendance saved successfully!") }
       else { alert("Failed to save attendance") }
     } catch (e) { console.error(e) }
     finally { setSaving(false) }
@@ -668,8 +671,8 @@ function AttendanceView({ coachId }: { coachId: string }) {
         <div className="flex justify-center py-20"><Loader2 className="animate-spin text-orange-500 w-10 h-10" /></div>
       ) : (
         <div className="space-y-4">
-          <div className="border rounded-xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
+          <div className="border rounded-xl overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
               <thead className="bg-slate-50 border-b">
                 <tr>
                   <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Student Name</th>
@@ -760,6 +763,19 @@ function CoursesView() {
   // Editor/Setup State
   const [setupMode, setSetupMode] = useState(false)
   const [selectedTool, setSelectedTool] = useState<Tool>(null)
+  const [boardWidth, setBoardWidth] = useState(500)
+  const boardContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!boardContainerRef.current) return
+    const observer = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setBoardWidth(entry.contentRect.width)
+      }
+    })
+    observer.observe(boardContainerRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -811,7 +827,7 @@ function CoursesView() {
     // 1. Setup Mode Logic (Drag and drop any piece anywhere)
     if (setupMode) {
       const boardPiece = game.current.get(source as any)
-      if (source === target) return false;
+      if (source === target || !boardPiece) return false;
       game.current.remove(source as any)
       game.current.put(boardPiece, target as any)
       updateBoard()
@@ -832,7 +848,8 @@ function CoursesView() {
       if (selectedTool === 'TRASH') {
         game.current.remove(square as any)
       } else {
-        game.current.put({ type: selectedTool.type as any, color: selectedTool.color }, square as any)
+        const tool = selectedTool as { type: string, color: 'w' | 'b' }
+        game.current.put({ type: tool.type as any, color: tool.color as any }, square as any)
       }
       updateBoard()
     }
@@ -888,7 +905,9 @@ function CoursesView() {
               <p className="text-slate-500 text-sm mb-6 flex-1 line-clamp-3">{c.description || "No description provided."}</p>
 
               <div className="mt-auto pt-4 border-t flex justify-between items-center">
-                <span className="text-xs font-bold text-slate-400">{c.chapters?.length || 0} Lessons</span>
+                <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 scrollbar-hide">
+                  <span className="text-xs font-bold text-slate-400">{c.chapters?.length || 0} Lessons</span>
+                </div>
                 <button
                   onClick={() => { setSelectedCourse(c); if (c.chapters?.length > 0) setActiveChapter(c.chapters[0]) }}
                   disabled={!c.chapters || c.chapters.length === 0}
@@ -955,8 +974,8 @@ function CoursesView() {
           <div className="flex-1 bg-slate-200 flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
             {/* BOARD CONTAINER - RESIZES TO FIT */}
-            <div className="w-full h-full flex justify-center items-center">
-              <div className="aspect-square h-full max-h-full w-auto shadow-2xl rounded-sm border-4 border-white relative">
+            <div ref={boardContainerRef} className="w-full h-full flex justify-center items-center overflow-hidden">
+              <div className="aspect-square w-full max-w-[600px] shadow-2xl rounded-sm border-4 border-white relative">
                 <Chessboard
                   position={boardFen}
                   onPieceDrop={onDrop}
@@ -968,6 +987,7 @@ function CoursesView() {
                   areArrowsAllowed={true} // Allow drawing arrows
                   animationDuration={200}
                   dropOffBoardAction={setupMode ? 'trash' : 'snapback'}
+                  boardWidth={boardWidth}
                 />
                 {setupMode && (
                   <div className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs font-bold rounded animate-pulse pointer-events-none z-10">
@@ -982,12 +1002,12 @@ function CoursesView() {
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white p-2 rounded-xl shadow-2xl border flex flex-col items-center gap-2 animate-in slide-in-from-bottom-4 z-20">
                 <div className="flex gap-1">
                   {['p', 'n', 'b', 'r', 'q', 'k'].map(p => (
-                    <button key={'w' + p} onClick={() => setSelectedTool({ type: p, color: 'w' })} className={`w-8 h-8 flex items-center justify-center text-xl hover:bg-gray-100 rounded border ${selectedTool?.type === p && selectedTool?.color === 'w' ? 'border-orange-500 bg-orange-50' : 'border-transparent'}`}>{getPieceSymbol(p, 'w')}</button>
+                    <button key={'w' + p} onClick={() => setSelectedTool({ type: p, color: 'w' })} className={`w-8 h-8 flex items-center justify-center text-xl hover:bg-gray-100 rounded border ${selectedTool !== 'TRASH' && selectedTool?.type === p && selectedTool?.color === 'w' ? 'border-orange-500 bg-orange-50' : 'border-transparent'}`}>{getPieceSymbol(p, 'w')}</button>
                   ))}
                 </div>
                 <div className="flex gap-1">
                   {['p', 'n', 'b', 'r', 'q', 'k'].map(p => (
-                    <button key={'b' + p} onClick={() => setSelectedTool({ type: p, color: 'b' })} className={`w-8 h-8 flex items-center justify-center text-xl bg-slate-800 text-white hover:bg-slate-700 rounded border ${selectedTool?.type === p && selectedTool?.color === 'b' ? 'border-orange-500 ring-1 ring-orange-500' : 'border-transparent'}`}>{getPieceSymbol(p, 'b')}</button>
+                    <button key={'b' + p} onClick={() => setSelectedTool({ type: p, color: 'b' })} className={`w-8 h-8 flex items-center justify-center text-xl bg-slate-800 text-white hover:bg-slate-700 rounded border ${selectedTool !== 'TRASH' && selectedTool?.type === p && selectedTool?.color === 'b' ? 'border-orange-500 ring-1 ring-orange-500' : 'border-transparent'}`}>{getPieceSymbol(p, 'b')}</button>
                   ))}
                 </div>
                 <div className="flex w-full gap-2 border-t pt-2 mt-1">
@@ -1072,7 +1092,7 @@ function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' |
 
   if (!currentStage) {
     return (
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map(stage => (
           <button key={stage} onClick={() => setCurrentStage(stage)} className="h-24 border rounded-lg bg-slate-50 hover:bg-orange-50 hover:border-orange-500 font-bold text-slate-600 shadow-sm transition-all flex flex-col items-center justify-center gap-2">
             <Layers size={24} className="text-orange-400" />
@@ -1130,8 +1150,8 @@ function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' |
       </div>
 
       {loading ? <div className="text-center py-10"><Loader2 className="animate-spin inline text-orange-500" /></div> : (
-        <div className="grid grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2">
-          {content.folders.length === 0 && content.puzzles.length === 0 && <p className="col-span-3 text-center text-gray-400 py-8 italic">No content in this folder.</p>}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2">
+          {content.folders.length === 0 && content.puzzles.length === 0 && <p className="col-span-full text-center text-gray-400 py-8 italic">No content in this folder.</p>}
 
           {/* FOLDERS */}
           {content.folders.map(f => (
@@ -1181,6 +1201,19 @@ function AnalysisView() {
   const [orientation, setOrientation] = useState<'white' | 'black'>('white')
   const [setupMode, setSetupMode] = useState(false)
   const [selectedTool, setSelectedTool] = useState<Tool>(null)
+  const [boardWidth, setBoardWidth] = useState(600)
+  const boardContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!boardContainerRef.current) return
+    const observer = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setBoardWidth(entry.contentRect.width)
+      }
+    })
+    observer.observe(boardContainerRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   const updateBoard = () => setFen(game.current.fen())
 
@@ -1242,7 +1275,7 @@ function AnalysisView() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in slide-in-from-bottom-4">
       <div className="lg:col-span-8 flex justify-center items-start">
-        <div className="w-full max-w-[650px] aspect-square border-4 border-slate-700 rounded-lg shadow-2xl relative bg-slate-800">
+        <div ref={boardContainerRef} className="w-full max-w-[650px] aspect-square border-4 border-slate-700 rounded-lg shadow-2xl relative bg-slate-800">
           <Chessboard
             position={fen}
             onPieceDrop={onDrop}
@@ -1254,6 +1287,7 @@ function AnalysisView() {
             areArrowsAllowed={true}
             animationDuration={200}
             dropOffBoardAction={setupMode ? 'trash' : 'snapback'}
+            boardWidth={boardWidth}
           />
           {setupMode && (
             <div className="absolute top-0 right-0 m-2 bg-red-600 text-white px-3 py-1 text-sm font-bold rounded shadow-lg animate-pulse z-10 pointer-events-none">

@@ -24,26 +24,25 @@ const galleryCategories = [
 
 // Using the same dummy image array
 const dummyImages = [
-  "/image.jpg", "/image1.jpg", "/image13.jpg",
-  "/image3.jpg", "/image4.jpg", "/image5.jpg",
-  "/image6.jpg", "/image7.jpg", "/image13.jpg",
-  "/image9.jpg", "/image10.jpg", "/image11.jpg", "/image12.jpg"
+  "/image.jpg", "/image13.jpg", "/image3.jpg", "/image4.jpg", "/image5.jpg",
+  "/image6.jpg", "/image7.jpg", "/image14.jpg", "/image9.jpg", "/image10.jpg",
+  "/image11.jpg", "/image15.jpg", "/image1.jpg"
 ];
 
 const galleryImages = [
-  { id: 1, src: dummyImages[0], category: "tournaments", title: "Victory Moment", desc: "A hard-fought win at the regional championships." },
-  { id: 2, src: dummyImages[1], category: "tournaments", title: "Focus & Strategy", desc: "Intense concentration during the middle game." },
-  { id: 3, src: dummyImages[2], category: "tournaments", title: "The Winning Move", desc: "Finding the decisive tactical sequence." },
-  { id: 4, src: dummyImages[3], category: "certificate", title: "Certification Ceremony", desc: "Celebrating our new Level 1 graduates." },
-  { id: 5, src: dummyImages[4], category: "certificate", title: "Award Recognition", desc: "Outstanding performance awards for the season." },
-  { id: 6, src: dummyImages[5], category: "certificate", title: "Master Achievement", desc: "Recognizing long-term dedication to the sport." },
-  { id: 7, src: dummyImages[6], category: "events", title: "Academy Gathering", desc: "Our annual community meet-up." },
-  { id: 8, src: dummyImages[7], category: "events", title: "Summer Training", desc: "Intensive 2-week masterclass program." },
-  { id: 9, src: dummyImages[8], category: "events", title: "Grandmaster Session", desc: "Learning from the best in the world." },
-  { id: 10, src: dummyImages[9], category: "events", title: "Prize Distribution", desc: "Reward for excellence and fair play." },
-  { id: 11, src: dummyImages[10], category: "events", title: "Game Analysis", desc: "Post-match review with the chief coach." },
-  { id: 12, src: dummyImages[11], category: "events", title: "Special Guest", desc: "A visit from an international title holder." },
-  { id: 13, src: dummyImages[12], category: "events", title: "Community Event", desc: "Parents and students playing together." },
+  { id: 1, src: dummyImages[0], category: "tournaments", title: "Prodigy in Action", desc: "A young student demonstrating intense focus and calculation during her championship match." },
+  { id: 2, src: dummyImages[1], category: "events", title: "The Prize Table", desc: "Rewards awaiting our champions at the grand finale of the Royal Rook tournament series." },
+  { id: 3, src: dummyImages[2], category: "events", title: "Inaugural Ceremony", desc: "Distinguished guests and grandmasters gathered to launch our annual chess festival." },
+  { id: 4, src: dummyImages[3], category: "events", title: "Wisdom Shared", desc: "Guest speaker delivering a motivational talk on the strategic parallels between chess and life." },
+  { id: 5, src: dummyImages[4], category: "certificate", title: "First Victory", desc: "The heartwarming moment a student receives her first major trophy for tactical excellence." },
+  { id: 6, src: dummyImages[5], category: "tournaments", title: "Mind Games Arena", desc: "Hundreds of young players competing simultaneously in our city-wide open tournament." },
+  { id: 7, src: dummyImages[6], category: "certificate", title: "Proud Achiever", desc: "Recognizing outstanding progress with formal certification of achievement and mastery." },
+  { id: 10, src: dummyImages[7], category: "events", title: "Grand Finale Host", desc: "Our talented host introducing the final round of the masterclass series on the main stage." },
+  { id: 11, src: dummyImages[8], category: "tournaments", title: "The Grand Hall", desc: "A panoramic view of the competitive atmosphere where hundreds of minds collide." },
+  { id: 12, src: dummyImages[9], category: "tournaments", title: "Heart of a Champion", desc: "True sportsmanship captured in a friendly gesture between young competitors before their game." },
+  { id: 13, src: dummyImages[10], category: "certificate", title: "Award Ceremony", desc: "Celebrating dedication and discipline as a student is honored for his exceptional performance." },
+  { id: 14, src: dummyImages[11], category: "events", title: "Academy Family", desc: "A joyful moment with our students and parents celebrating at the year-end gathering." },
+  { id: 15, src: dummyImages[12], category: "events", title: "Team Spirit", desc: "Our young masters and coaches gathered together after a successful tournament day." },
 ];
 
 export default function GalleryPage() {
@@ -217,14 +216,14 @@ export default function GalleryPage() {
                 </div>
 
                 {/* Nav Arrows */}
-                <button 
-                  onClick={() => navigateImage('prev')} 
+                <button
+                  onClick={() => navigateImage('prev')}
                   className="absolute left-0 top-1/2 -translate-y-1/2 p-2 md:p-4 text-white/50 hover:text-white transition-colors"
                 >
                   <ChevronLeft className="w-8 h-8 md:w-12 md:h-12" />
                 </button>
-                <button 
-                  onClick={() => navigateImage('next')} 
+                <button
+                  onClick={() => navigateImage('next')}
                   className="absolute right-0 top-1/2 -translate-y-1/2 p-2 md:p-4 text-white/50 hover:text-white transition-colors"
                 >
                   <ChevronRight className="w-8 h-8 md:w-12 md:h-12" />

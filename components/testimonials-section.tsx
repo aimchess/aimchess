@@ -12,35 +12,35 @@ import Image from "next/image";
 const testimonials = [
   {
     id: 1,
-    name: "Janina Budi",
-    role: "Faye's Mother",
+    name: "Narayanaswami K",
+    role: "",
     achievement: "Parent Success",
-    text: "Prashant has been a fantastic chess coach for our son over three years—patient, kind, and dedicated. He builds trust, provides honest feedback, and teaches that true progress comes from dedication and learning from failures.",
-    image: "/demo-priya.jpg",
+    text: "The dedication and commitment of Praveen Sir makes this academy stand out. It's situated in a clam and quiet residential area. The well lit and ventilated class room with super enthusiastic kids adds to the charm of the accademy. Recently they have introduced Online classes as well. Wishing the academy all success!",
+    image: "https://lh3.googleusercontent.com/a-/ALV-UjWuLHzG8FoBFsg-1bSNqkyidhRnXMIvwxgvOZgsvikE7HxwJExb=w108-h108-p-rp-mo-ba5-br100",
   },
   {
     id: 2,
-    name: "Jayasree Chettipilli",
-    role: "Mother of Rhea and Jay",
+    name: "Manju Biju",
+    role: "",
     achievement: "Tournament Wins",
-    text: "Patient and friendly, he makes learning fun—especially for playful Jay—while focusing on enjoyment over winning. With milestone treats and genuine encouragement, he's boosted their confidence and skills, leading to tournament wins!",
-    image: "/demo-rohan.jpg",
+    text: "Hi I am abhivanth ob.It's been 8 months in royal chess academy..The coach is supportive and good teaching and also disciplined person..I am really happy to improve my skills in royal chess academy 😊😊",
+    image: "https://lh3.googleusercontent.com/a-/ALV-UjW2zwnz3p5qLYMsR3L0hyTBVR92PqOGEN4NAWp_BxK-97x_PSE=w108-h108-p-rp-mo-br100",
   },
   {
     id: 3,
-    name: "Shanthi",
+    name: "Meenakshi Venkateshwaran",
     role: "Parent",
     achievement: "Fundamentals",
-    text: "An excellent chess coach who focuses on building strong fundamentals. My child Rooks forward to every class and has shown improvement in focus, planning, and decision-making. His teaching style is calm, disciplined, and motivating.",
-    image: "/demo-ananya.jpg",
+    text: "Excellent chess academy with a fantastic coach! The training sessions were engaging, informative, and tailored to individual needs. The coach's expertise and passion for chess are evident, and their teaching style made complex concepts easy to understand. We've seen significant improvement in my son's game since joining. Highly recommend!",
+    image: "data:image/jpeg;base64,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",
   },
   {
     id: 4,
-    name: "Praveen",
+    name: "Ashima ajayan",
     role: "Parent",
     achievement: "Strategic Thinking",
-    text: "Patient, knowledgeable, and explains concepts in a very clear and structured way. My child's understanding of chess, especially strategic thinking, has improved noticeably. We truly appreciate his dedication.",
-    image: "/demo-ananya.jpg",
+    text: "My son has been studying chess class for the last 3 months.I've seen a significant improvement and confidence in his game.The classes are well-structured and the instructor provides personalised feedback.I highly recommended this class to improve their chess skills. It's been a wonderful experience.",
+    image: "data:image/jpeg;base64,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",
   },
 ];
 
@@ -88,7 +88,7 @@ export default function StudentSuccessAndTestimonials() {
   return (
     <div className="overflow-x-hidden" style={{ backgroundColor: "#FDFBF7" }}>
       {/* --- SECTION 1: WHY OUR STUDENTS SUCCEED --- */}
-      <section className="relative w-full py-16 md:py-24 lg:py-32 overflow-hidden border-b border-[#E6E0D4]">
+      <section className="relative w-full py-6 overflow-hidden border-b border-[#E6E0D4]">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 -right-20 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#E76F51]/[0.05] rounded-full blur-[80px] md:blur-[120px]" />
         </div>
@@ -169,7 +169,7 @@ export default function StudentSuccessAndTestimonials() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {successStats.map((stat, idx) => (
               <motion.div
                 key={idx}
@@ -187,7 +187,7 @@ export default function StudentSuccessAndTestimonials() {
                 <p className="text-[#5C5852] text-xs md:text-sm font-medium leading-relaxed italic">{stat.description}</p>
               </motion.div>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
 

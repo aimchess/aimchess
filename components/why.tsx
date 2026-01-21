@@ -11,7 +11,7 @@ const benefits = [
     description: "Chess trains the brain to retain complex patterns and sequences, building a 'mental library' that lasts a lifetime.",
     color: "#E76F51", // Coral
     // On large screens spans 2 columns, on mobile spans 1
-    gridClass: "lg:col-span-2 md:col-span-2 col-span-1", 
+    gridClass: "lg:col-span-2 md:col-span-2 col-span-1",
   },
   {
     icon: Target,
@@ -47,7 +47,7 @@ export default function WhyChessBento() {
   return (
     <section className="py-16 md:py-24 px-4 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Centered Header */}
         <div className="text-center mb-12 md:mb-20">
           <motion.div
@@ -77,7 +77,7 @@ export default function WhyChessBento() {
           {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
             const isDark = benefit.color === "#2D2A26" || benefit.color === "#1A5F5F";
-            
+
             return (
               <motion.div
                 key={index}
@@ -93,7 +93,7 @@ export default function WhyChessBento() {
                   <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 ${isDark ? 'bg-white/10' : 'bg-black/5'}`}>
                     <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isDark ? 'text-white' : 'text-[#2D2A26]'}`} />
                   </div>
-                  
+
                   <h3 className={`text-xl md:text-2xl font-black tracking-tighter mb-3 ${isDark ? 'text-white' : 'text-[#2D2A26]'}`}>
                     {benefit.title}
                   </h3>
@@ -120,7 +120,7 @@ export default function WhyChessBento() {
         </div>
 
         {/* Mobile-Friendly Stat Bar */}
-        <motion.div 
+        {/* <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -138,7 +138,7 @@ export default function WhyChessBento() {
             <span className="block text-2xl md:text-3xl font-black text-[#2A9D8F]">Global</span>
             <span className="text-[9px] font-black uppercase tracking-widest text-[#5C5852]">Standard Curriculum</span>
           </div>
-        </motion.div>
+        </motion.div> */}
       </div>
     </section>
   );

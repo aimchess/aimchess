@@ -63,7 +63,7 @@ export default function AchievementsPage() {
                     </motion.div>
                 </div>
             </section>
-            <SuccessStories/>
+            <SuccessStories />
 
             {/* 2. SHARED ACHIEVEMENTS SECTION (Stats) */}
             <AchievementsSection />
@@ -85,7 +85,7 @@ export default function AchievementsPage() {
                             <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.3em] text-[#E76F51] mb-4 block">Individual Excellence</span>
                             <h2 className="text-3xl md:text-6xl font-black text-[#2D2A26] leading-tight">
                                 Mentorship of <br className="hidden md:block" />
-                                <span className="text-[#E76F51]">Grandmasters</span>
+                                <span className="text-[#E76F51]">Elite Coaches</span>
                             </h2>
                             <div className="h-1.5 w-20 bg-[#FFDA44] rounded-full mt-6 mx-auto lg:mx-0" />
                         </motion.div>
@@ -131,7 +131,7 @@ export default function AchievementsPage() {
                                     </div>
                                     <div>
                                         <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-[#5C5852]">Success Rate</p>
-                                        <p className="text-lg md:text-2xl font-black text-[#2D2A26]">100% Focused</p>
+                                        <p className="text-lg md:text-2xl font-black text-[#2D2A26]">95% Focused</p>
                                     </div>
                                 </div>
                                 <p className="text-[#5C5852] text-[10px] md:text-sm font-bold italic leading-tight">
@@ -221,7 +221,7 @@ export default function AchievementsPage() {
             </section>
 
             {/* 6. REVIEWS SECTION */}
-            <StudentSuccessAndTestimonials/>
+            <StudentSuccessAndTestimonials />
 
             {/* 7. CTA SECTION */}
             <section className="relative py-20 md:py-32 bg-[#FDFBF7] text-[#2D2A26] overflow-hidden border-t border-[#E6E0D4]">

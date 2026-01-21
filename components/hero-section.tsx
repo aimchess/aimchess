@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image"; // Switched to Next.js Image for optimization
 
 const sliderImages = [
-  "/image1.jpg",
+  "/image5.jpg",
   "/image6.jpg",
   "/image4.jpg",
   "/image.jpg",
@@ -25,7 +25,7 @@ export function HeroSection() {
 
   return (
     <section className="relative w-full min-h-screen bg-[#FDFBF7] flex items-center justify-center overflow-hidden py-12 md:py-20 lg:py-0">
-      
+
       {/* Background Decorative Elements */}
       <div className="absolute top-0 right-0 w-[50%] h-full bg-[#f8f4ec] -skew-x-12 translate-x-32 hidden lg:block -z-0" />
       <div className="absolute top-10 left-5 md:top-20 md:left-10 w-32 h-32 md:w-64 md:h-64 bg-yellow-400/10 rounded-full blur-3xl -z-0" />
@@ -37,7 +37,7 @@ export function HeroSection() {
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6 md:space-y-8 order-2 lg:order-1">
 
             {/* Top Badge */}
-            <motion_div 
+            <motion_div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm border border-[#E6E0D4]"
@@ -59,7 +59,7 @@ export function HeroSection() {
 
             {/* Subtext */}
             <p className="text-base sm:text-lg md:text-xl text-[#5C5852] max-w-lg leading-relaxed font-bold">
-              Join the world&apos;s best chess academy. Learn from Grandmasters, compete in tournaments, and elevate your strategic thinking.
+              Join the world&apos;s best chess academy. Learn from Elite Coaches, compete in tournaments, and elevate your strategic thinking.
             </p>
 
             {/* CTA Button */}
@@ -75,7 +75,7 @@ export function HeroSection() {
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-2 gap-4 md:gap-6 pt-4 w-full max-w-xs md:max-w-md">
+            {/* <div className="grid grid-cols-2 gap-4 md:gap-6 pt-4 w-full max-w-xs md:max-w-md">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-2 md:p-3 bg-[#E76F51]/10 rounded-xl">
                   <Users className="w-5 h-5 md:w-6 md:h-6 text-[#E76F51]" />
@@ -94,12 +94,12 @@ export function HeroSection() {
                   <div className="text-[10px] md:text-xs text-gray-500 font-black uppercase tracking-widest">Wins</div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* RIGHT SIDE VISUALS */}
           <div className="relative flex justify-center lg:justify-end items-center order-1 lg:order-2">
-            
+
             {/* Floating Crown - Responsive size and pos */}
             <div className="absolute -top-6 right-10 md:right-20 animate-bounce pointer-events-none z-30">
               <Crown className="w-10 h-10 md:w-16 md:h-16 text-[#FFDA44] drop-shadow-lg fill-[#FFDA44]" />
@@ -107,7 +107,7 @@ export function HeroSection() {
 
             {/* Main Image Container */}
             <div className="relative w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[420px] h-[350px] sm:h-[400px] lg:h-[480px] z-20">
-              
+
               {/* Image Frame */}
               <div className="absolute inset-0 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden border-4 md:border-8 border-white shadow-2xl bg-[#2D2A26]">
                 {sliderImages.map((img, index) => (

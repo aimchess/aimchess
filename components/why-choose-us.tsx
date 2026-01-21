@@ -10,12 +10,12 @@ export function WhyChooseUs() {
         {
             icon: Users,
             title: "Expert Coaching",
-            description: "FIDE-rated coaches and titled players with 10+ years of experience guide every lesson.",
+            description: "FIDE-rated coaches and titled players with 40+ years of experience guide every lesson.",
         },
         {
             icon: Award,
             title: "Proven Results",
-            description: "50+ tournament wins and 3 Grandmasters produced by our academy.",
+            description: "50+ tournament wins and 3 Elite Coaches produced by our academy.",
         },
         {
             icon: Clock,
@@ -53,11 +53,11 @@ export function WhyChooseUs() {
                         >
                             {/* Main Image Card */}
                             <div className="relative aspect-square sm:aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white">
-                                <Image 
-                                    src="/image5.jpg" 
-                                    alt="Chess Training" 
-                                    fill 
-                                    className="object-cover" 
+                                <Image
+                                    src="/image5.jpg"
+                                    alt="Chess Training"
+                                    fill
+                                    className="object-cover"
                                     priority
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A26]/70 via-transparent to-transparent" />
@@ -142,11 +142,11 @@ export function WhyChooseUs() {
                             viewport={{ once: true }}
                             transition={{ delay: 0.4 }}
                         >
-                            <Link 
-                                href="/about" 
+                            <Link
+                                href="/about"
                                 className="inline-flex items-center gap-2 text-[#E76F51] font-black text-sm md:text-base hover:underline group"
                             >
-                                Learn More About Us 
+                                Learn More About Us
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </motion.div>

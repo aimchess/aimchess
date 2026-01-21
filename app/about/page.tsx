@@ -1,9 +1,9 @@
 "use client";
 
 import { useScroll, useTransform, motion } from "framer-motion";
-import { 
-  Brain, Target, Scale, Gem, Heart, Crown, 
-  TrendingUp, Award, Quote 
+import {
+  Brain, Target, Scale, Gem, Heart, Crown,
+  TrendingUp, Award, Quote
 } from "lucide-react";
 import Link from "next/link";
 import { AchievementsSection } from "@/components/achievements-section";
@@ -84,7 +84,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-        
+
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -130,7 +130,7 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 pt-8 border-t border-[#E6E0D4] max-w-md mx-auto lg:mx-0">
+            {/* <div className="grid grid-cols-2 gap-6 pt-8 border-t border-[#E6E0D4] max-w-md mx-auto lg:mx-0">
               <div>
                 <h3 className="text-3xl md:text-4xl font-black text-[#2D2A26] mb-1">600+</h3>
                 <p className="text-[10px] text-[#5C5852] uppercase font-black tracking-widest">Active Students</p>
@@ -139,7 +139,7 @@ export default function AboutPage() {
                 <h3 className="text-3xl md:text-4xl font-black text-[#2D2A26] mb-1">50+</h3>
                 <p className="text-[10px] text-[#5C5852] uppercase font-black tracking-widest">Expert Coaches</p>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Visual Side */}
@@ -193,7 +193,7 @@ export default function AboutPage() {
 
               <div className="flex-1 text-center lg:text-left">
                 <h3 className="text-2xl md:text-4xl font-black text-[#2D2A26] mb-2">
-                  Prashant 
+                  Prashant
                 </h3>
                 <p className="text-[#E76F51] font-black uppercase tracking-widest text-[10px] md:text-xs mb-6">
                   Founder & Chief Coach
@@ -204,18 +204,18 @@ export default function AboutPage() {
                     Founded Royal Rook Academy with a simple yet powerful belief: that chess is not just for the gifted, but for the persistent.
                   </p>
                   <p>
-                    With over <strong className="text-[#2D2A26]">10 years</strong> of experience, he brings a depth of understanding that transforms how students perceive the game.
+                    With over <strong className="text-[#2D2A26]">40+ years</strong> of experience, he brings a depth of understanding that transforms how students perceive the game.
                   </p>
                 </div>
 
                 <div className="bg-[#2D2A26] text-white p-6 md:p-8 rounded-[1.5rem] relative mb-10">
-                   <Quote className="absolute -top-4 left-6 text-[#FFDA44] w-10 h-10 opacity-20" />
-                   <p className="font-serif italic text-base md:text-xl leading-relaxed">
+                  <Quote className="absolute -top-4 left-6 text-[#FFDA44] w-10 h-10 opacity-20" />
+                  <p className="font-serif italic text-base md:text-xl leading-relaxed">
                     &quot;Chess is life in miniature. Every move teaches patience, and every game builds a stronger character.&quot;
-                   </p>
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { val: "10+", lab: "Years Exp", bg: "bg-[#FFDA44]/10" },
                     { val: "600+", lab: "Students", bg: "bg-[#E76F51]/10" },
@@ -226,7 +226,7 @@ export default function AboutPage() {
                       <p className="text-[8px] md:text-[10px] font-black text-[#5C5852] uppercase tracking-widest">{stat.lab}</p>
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
             </div>
           </motion.div>
@@ -285,10 +285,10 @@ export default function AboutPage() {
 
         <div className="max-w-6xl mx-auto space-y-20 md:space-y-32">
           {[
-            { y: "2015", t: "The Spark", d: "Founded with a single board and a simple vision to spread chess awareness.", img: "/image1.jpg" },
-            { y: "2018", t: "Growth Phase", d: "Expanded to multiple batches as the word of our methodology spread.", img: "/image6.jpg" },
-            { y: "2021", t: "Going Digital", d: "Launched online coaching globally to reach students across different timezones.", img: "/image7.jpg" },
-            { y: "2024", t: "The Future", d: "Integrating advanced training modules as we build the next gen of masters.", img: "/image10.jpg" }
+            { y: "2024", t: "The Spark", d: "Founded with a single board and a simple vision to spread chess awareness.", img: "/image1.jpg" },
+            { y: "2025", t: "Growth Phase", d: "Expanded to multiple batches as the word of our methodology spread.", img: "/image6.jpg" },
+            { y: "2026", t: "Going Digital", d: "Launched online coaching globally to reach students across different timezones.", img: "/image7.jpg" },
+            { y: "2026", t: "The Future", d: "Integrating advanced training modules as we build the next gen of masters.", img: "/image10.jpg" }
           ].map((item, i) => (
             <div key={i} className={`flex flex-col lg:flex-row items-center gap-10 md:gap-16 ${i % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
               <div className="flex-1 space-y-4 text-center lg:text-left">
