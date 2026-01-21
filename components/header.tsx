@@ -24,6 +24,11 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -46,65 +51,74 @@ export function Header() {
   return (
     <>
       <header
-        className={`fixed w-full z-[100] top-0 transition-all duration-500 ${isMobileMenuOpen
-          ? "bg-white py-3 shadow-none" // Match mobile menu bg
-          : scrolled
-            ? "bg-[#FDFBF7]/95 backdrop-blur-xl shadow-md py-3 border-b border-[#E6E0D4]/50"
-            : "bg-transparent py-5 md:py-8"
-          }`}
+        className={`fixed w-full z-[100] top-0 transition-all duration-300 ${
+          isMobileMenuOpen
+            ? "bg-white py-3"
+            : scrolled
+            ? "bg-[#FDFBF7]/90 backdrop-blur-xl shadow-sm py-3 border-b border-[#E6E0D4]/50"
+            : "bg-transparent py-4 md:py-6"
+        }`}
       >
-        <div className="container mx-auto px-4 md:px-8 lg:px-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex justify-between items-center">
-
+            
             {/* --- LOGO & BRAND --- */}
-            <Link href="/" className="flex items-center gap-2 md:gap-3 group relative z-[110]">
-              <div className="relative w-10 h-10 md:w-12 md:h-12">
+            <Link href="/" className="flex items-center gap-2 md:gap-3 group relative z-[110] shrink-0">
+              <div className="relative w-9 h-9 md:w-11 md:h-11">
                 <img
                   src="/logo.jpg"
                   alt="Royal Rook Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-lg"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-lg md:text-xl font-black text-[#2D2A26] tracking-tight leading-none uppercase">
+                <span className="text-base md:text-lg lg:text-xl font-black text-[#2D2A26] tracking-tight leading-none uppercase">
                   Royal Rook
                 </span>
-                <span className="text-[8px] md:text-[10px] font-black text-[#E76F51] tracking-[0.2em] uppercase mt-0.5">
+                <span className="text-[7px] md:text-[9px] font-black text-[#E76F51] tracking-[0.15em] uppercase mt-0.5">
                   Chess Academy
                 </span>
               </div>
             </Link>
 
-            {/* --- DESKTOP NAVIGATION --- */}
-            <nav className="hidden lg:flex items-center">
-              <div className="flex bg-white/40 backdrop-blur-md rounded-full px-2 py-1.5 border border-[#E6E0D4] shadow-sm mr-6">
+            {/* --- DESKTOP NAVIGATION (Hidden below XL to prevent crowding) --- */}
+            <nav className="hidden xl:flex items-center">
+              <div className="flex bg-white/50 backdrop-blur-md rounded-full px-1.5 py-1 border border-[#E6E0D4] shadow-sm mr-4">
                 {navItems.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`px-5 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-full ${pathname === item.href
-                      ? "bg-[#2D2A26] text-white"
-                      : "text-[#5C5852] hover:text-[#E76F51]"
-                      }`}
+                    className={`px-4 py-2 text-[11px] font-black uppercase tracking-wider transition-all rounded-full ${
+                      pathname === item.href
+                        ? "bg-[#2D2A26] text-white"
+                        : "text-[#5C5852] hover:text-[#E76F51]"
+                    }`}
                   >
                     {item.name}
                   </Link>
                 ))}
               </div>
 
-              <div className="pl-6 border-l border-[#E6E0D4]">
+              <div className="pl-4 border-l border-[#E6E0D4]">
                 <AuthNav />
               </div>
             </nav>
 
-            {/* --- MOBILE TOGGLE --- */}
-            <div className="lg:hidden flex items-center gap-3 relative z-[110]">
+            {/* --- TABLET/MOBILE TOGGLE --- */}
+            <div className="xl:hidden flex items-center gap-3 relative z-[110]">
+              {/* Show AuthNav icon only on tablet, or hide completely for mobile menu */}
+              <div className="hidden sm:block">
+                 {!isMobileMenuOpen && <AuthNav />}
+              </div>
+              
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`p-2.5 rounded-2xl transition-all duration-300 border ${isMobileMenuOpen
-                  ? "bg-[#2D2A26] border-[#2D2A26] text-white rotate-90"
-                  : "bg-white border-[#E6E0D4] text-[#2D2A26]"
-                  } shadow-sm active:scale-90`}
+                aria-label="Toggle Menu"
+                className={`p-2 md:p-2.5 rounded-xl transition-all duration-300 border ${
+                  isMobileMenuOpen
+                    ? "bg-[#2D2A26] border-[#2D2A26] text-white rotate-90"
+                    : "bg-white border-[#E6E0D4] text-[#2D2A26]"
+                } shadow-sm active:scale-95`}
               >
                 {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
@@ -112,71 +126,84 @@ export function Header() {
           </div>
         </div>
 
-        {/* --- MOBILE MENU OVERLAY (WHITE BACKGROUND) --- */}
+        {/* --- MOBILE/TABLET MENU OVERLAY --- */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, x: "100%" }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed inset-0 bg-white z-[100] flex flex-col pt-24 px-6 pb-10 shadow-2xl"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="xl:hidden fixed inset-0 bg-white z-[100] flex flex-col"
             >
-              {/* Background Decoration */}
-              <div className="absolute top-1/4 -right-20 w-64 h-64 bg-[#E76F51]/5 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="flex-1 space-y-1 overflow-y-auto no-scrollbar">
-                {navItems.map((item, i) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ x: 20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                  >
-                    <Link
-                      href={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="group flex items-center justify-between py-5 border-b border-[#E6E0D4]/40"
+              {/* Inner container for centering/scrolling content */}
+              <div className="flex flex-col h-full pt-24 px-6 pb-10 overflow-y-auto">
+                <div className="flex-1 space-y-1">
+                  {navItems.map((item, i) => (
+                    <motion.div
+                      key={item.name}
+                      initial={{ x: -10, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: i * 0.05 }}
                     >
-                      <span className={`text-2xl font-black uppercase tracking-tighter transition-colors ${pathname === item.href ? "text-[#E76F51]" : "text-[#2D2A26]"
-                        }`}>
-                        {item.name}
-                      </span>
-                      <ArrowRight
-                        className={`w-5 h-5 transition-all ${pathname === item.href ? "text-[#E76F51] translate-x-0" : "text-[#2D2A26] opacity-30 -translate-x-4"
+                      <Link
+                        href={item.href}
+                        className="group flex items-center justify-between py-4 border-b border-[#E6E0D4]/40"
+                      >
+                        <span
+                          className={`text-xl md:text-2xl font-black uppercase tracking-tight transition-colors ${
+                            pathname === item.href ? "text-[#E76F51]" : "text-[#2D2A26]"
                           }`}
-                      />
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Mobile Auth/Footer Section */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="mt-6 space-y-6 pt-6 border-t border-[#E6E0D4]/40"
-              >
-                <div className="bg-[#FDFBF7] p-6 rounded-[2rem] border border-[#E6E0D4] shadow-sm text-center relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-4 opacity-5">
-                    <Sparkles size={40} className="text-[#E76F51]" />
-                  </div>
-                  <p className="text-[10px] font-black text-[#5C5852] uppercase tracking-[0.2em] mb-4">Student Portal</p>
-                  <AuthNav isMobile={true} />
+                        >
+                          {item.name}
+                        </span>
+                        <ArrowRight
+                          className={`w-5 h-5 transition-all ${
+                            pathname === item.href
+                              ? "text-[#E76F51] translate-x-0"
+                              : "text-[#2D2A26] opacity-30 -translate-x-4"
+                          }`}
+                        />
+                      </Link>
+                    </motion.div>
+                  ))}
                 </div>
 
-                <p className="text-center text-[9px] font-bold text-[#5C5852] opacity-50 uppercase tracking-widest">
-                  © {new Date().getFullYear()} Royal Rook Chess Academy
-                </p>
-              </motion.div>
+                {/* Bottom Section */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="mt-8 space-y-6"
+                >
+                  <div className="bg-[#FDFBF7] p-6 rounded-[2rem] border border-[#E6E0D4] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                      <Sparkles size={32} className="text-[#E76F51]" />
+                    </div>
+                    <p className="text-[10px] font-black text-[#5C5852] uppercase tracking-[0.2em] mb-4 text-center">
+                      Student Portal
+                    </p>
+                    <div className="flex justify-center">
+                      <AuthNav isMobile={true} />
+                    </div>
+                  </div>
+
+                  <p className="text-center text-[10px] font-bold text-[#5C5852]/50 uppercase tracking-widest">
+                    © {new Date().getFullYear()} Royal Rook Chess Academy
+                  </p>
+                </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
 
-      {/* Spacer to prevent content jump */}
-      <div className="h-20 md:h-24 lg:h-0" />
+      {/* 
+          DYNAMIC SPACER 
+          Ensures content doesn't hide under the fixed header. 
+          Matches the height/padding of the header at different breakpoints.
+      */}
+      <div className="h-[72px] md:h-[88px] xl:h-[100px] pointer-events-none" />
     </>
   );
 }
