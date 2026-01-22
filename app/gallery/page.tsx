@@ -31,7 +31,7 @@ const dummyImages = [
 
 const galleryImages = [
   { id: 1, src: dummyImages[0], category: "tournaments", title: "Prodigy in Action", desc: "A young student demonstrating intense focus and calculation during her championship match." },
-  { id: 2, src: dummyImages[1], category: "events", title: "The Prize Table", desc: "Rewards awaiting our champions at the grand finale of the Royal Rook tournament series." },
+  { id: 2, src: dummyImages[1], category: "events", title: "The Prize Table", desc: "Rewards awaiting our champions at the grand finale of the Royal Rooks tournament series." },
   { id: 3, src: dummyImages[2], category: "events", title: "Inaugural Ceremony", desc: "Distinguished guests and grandmasters gathered to launch our annual chess festival." },
   { id: 4, src: dummyImages[3], category: "events", title: "Wisdom Shared", desc: "Guest speaker delivering a motivational talk on the strategic parallels between chess and life." },
   { id: 5, src: dummyImages[4], category: "certificate", title: "First Victory", desc: "The heartwarming moment a student receives her first major trophy for tactical excellence." },
@@ -256,7 +256,7 @@ export default function GalleryPage() {
 
                 <div className="pt-6 border-t border-[#E6E0D4] flex justify-between items-center">
                   <span className="text-[9px] font-black text-[#5C5852]/50 uppercase tracking-[0.2em]">
-                    Royal Rook Academy
+                    Royal Rooks Academy
                   </span>
                   <div className="flex gap-2">
                     <Button variant="ghost" size="icon" className="rounded-full">

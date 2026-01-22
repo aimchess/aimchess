@@ -1954,7 +1954,7 @@ export default function AdminDashboard() {
                 <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between lg:items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold shadow-orange-200 shadow-lg shrink-0">C</div>
-                        <h1 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap">Royal Rook Admin</h1>
+                        <h1 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap">Royal Rooks Admin</h1>
                     </div>
                     
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0">
@@ -3595,7 +3595,7 @@ function PuzzleCreator({ folderId, existingPuzzle, onBack }: { folderId: string,
                 <Modal isOpen={isPgnModalOpen} onClose={() => setIsPgnModalOpen(false)} title="Import PGN Sequence">
                     <div className="space-y-4">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paste PGN Text Below:</p>
-                        <textarea className="w-full h-48 border-2 border-slate-50 rounded-2xl p-4 font-mono text-xs focus:ring-4 ring-orange-50 outline-none bg-slate-50/50" value={pgnInput} onChange={(e) => setPgnInput(e.target.value)} placeholder="[Event 'Royal Rook Drill'] ..." />
+                        <textarea className="w-full h-48 border-2 border-slate-50 rounded-2xl p-4 font-mono text-xs focus:ring-4 ring-orange-50 outline-none bg-slate-50/50" value={pgnInput} onChange={(e) => setPgnInput(e.target.value)} placeholder="[Event 'Royal Rooks Drill'] ..." />
                         <div className="flex justify-end gap-3">
                             <button onClick={() => setIsPgnModalOpen(false)} className="px-5 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:bg-slate-50 rounded-xl">Abort</button>
                             <button onClick={handleImportPgn} className="px-8 py-2.5 bg-slate-900 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition-all active:scale-95">Translate PGN</button>

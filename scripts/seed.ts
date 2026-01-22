@@ -12,7 +12,7 @@ async function main() {
     where: { email: 'admin@Royal Rook.com' },
     update: {},
     create: {
-      email: 'admin@Royal Rook.com',
+      email: 'admin@Royal Rooks.com',
       password: hashedPassword,
       name: 'Admin User',
       role: 'ADMIN',

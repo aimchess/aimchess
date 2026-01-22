@@ -69,13 +69,13 @@ export function Footer() {
               >
                 <img
                   src="/logo.jpg"
-                  alt="Royal Rook Chess Academy Logo"
+                  alt="Royal Rooks Chess Academy Logo"
                   className="w-full h-full object-contain rounded-xl"
                 />
               </div>
               <div>
                 <h3 className="font-serif font-bold text-2xl leading-none tracking-tight">
-                  Royal Rook<br />
+                  Royal Rooks<br />
                   <span className="text-[#FFDA44] text-[10px] font-sans tracking-[0.3em] uppercase">Academy</span>
                 </h3>
               </div>
@@ -188,7 +188,7 @@ export function Footer() {
         <div className="border-t border-white/10 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
           <div className="space-y-2">
              <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">
-              © {new Date().getFullYear()} Royal Rook Chess Academy. All rights reserved.
+              © {new Date().getFullYear()} Royal Rooks Chess Academy. All rights reserved.
              </p>
              <p className="text-[9px] font-black text-[#FFDA44] opacity-60 uppercase tracking-[0.2em]">
               India Time: {currentTime}

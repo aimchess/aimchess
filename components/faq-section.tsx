@@ -110,7 +110,7 @@ export function FaqSection() {
                                     <div className="p-4 bg-white/90 backdrop-blur-sm border border-[#E6E0D4] rounded-xl flex items-center gap-3">
                                         <Sparkles size={18} className="text-[#E76F51]" />
                                         <p className="text-[#2D2A26] font-bold text-xs uppercase tracking-widest">
-                                            Royal Rook Training
+                                            Royal Rooks Training
                                         </p>
                                     </div>
                                 </div>

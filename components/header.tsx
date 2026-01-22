@@ -73,7 +73,7 @@ export function Header() {
               </div>
               <div className="flex flex-col">
                 <span className="text-base md:text-lg lg:text-xl font-black text-[#2D2A26] tracking-tight leading-none uppercase">
-                  Royal Rook
+                  Royal Rooks
                 </span>
                 <span className="text-[7px] md:text-[9px] font-black text-[#E76F51] tracking-[0.15em] uppercase mt-0.5">
                   Chess Academy
@@ -189,7 +189,7 @@ export function Header() {
                   </div>
 
                   <p className="text-center text-[10px] font-bold text-[#5C5852]/50 uppercase tracking-widest">
-                    © {new Date().getFullYear()} Royal Rook Chess Academy
+                    © {new Date().getFullYear()} Royal Rooks Chess Academy
                   </p>
                 </motion.div>
               </div>

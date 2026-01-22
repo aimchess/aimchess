@@ -1,2 +1,2 @@
 #!/bin/bash
-GIT_WORK_TREE=/home/Royal Rook/public_html git checkout -f
+GIT_WORK_TREE=/home/Royal Rooks/public_html git checkout -f

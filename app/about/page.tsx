@@ -123,7 +123,7 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4 text-base md:text-lg text-[#5C5852] leading-relaxed font-medium max-w-2xl mx-auto lg:mx-0">
                 <p>
-                  Most academies teach you &lsquo;what&rsquo; to move. At Royal Rook, we obsess over &lsquo;why&rsquo;. We are building a generation of players who understand that every move has a consequence.
+                  Most academies teach you &lsquo;what&rsquo; to move. At Royal Rooks, we obsess over &lsquo;why&rsquo;. We are building a generation of players who understand that every move has a consequence.
                 </p>
                 <p>
                   Whether you are 6 or 60, our structured path takes you from absolute beginner to confident competitor, one pure move at a time.
@@ -202,7 +202,7 @@ export default function AboutPage() {
 
                 <div className="space-y-4 text-sm md:text-base text-[#5C5852] font-medium leading-relaxed mb-8 max-w-2xl">
                   <p>
-                    Founded Royal Rook Academy with a simple yet powerful belief: that chess is not just for the gifted, but for the persistent.
+                    Founded Royal Rooks Academy with a simple yet powerful belief: that chess is not just for the gifted, but for the persistent.
                   </p>
                   <p>
                     With over <strong className="text-[#2D2A26]">40+ years</strong> of experience, he brings a depth of understanding that transforms how students perceive the game.

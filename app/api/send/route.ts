@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       reply_to: email,
       html: `
         <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee;">
-          <h2 style="color: #E76F51;">New Message from Royal Rook</h2>
+          <h2 style="color: #E76F51;">New Message from Royal Rooks</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> ${email}</p>
           <p><strong>Phone:</strong> ${phone || 'Not provided'}</p>

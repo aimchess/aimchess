@@ -89,7 +89,7 @@ export function WhyChooseUs() {
                             viewport={{ once: true }}
                             className="text-[10px] md:text-sm font-black uppercase tracking-[0.2em] text-[#E76F51] mb-4 block"
                         >
-                            The Royal Rook Advantage
+                            The Royal Rooks Advantage
                         </motion.span>
 
                         <motion.h2
