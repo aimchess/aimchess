@@ -10,6 +10,7 @@ import { AchievementsSection } from "@/components/achievements-section";
 import { FaqSection } from "@/components/faq-section";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { FounderSection } from "@/components/founder";
 
 
 const foundationItems = [
@@ -163,76 +164,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 3. FOUNDER SECTION */}
-      <section className="py-16 md:py-24 px-4 bg-white relative overflow-hidden">
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-12 md:mb-16">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E76F51] mb-3 block">The Visionary</span>
-            <h2 className="text-3xl md:text-5xl font-black text-[#2D2A26] mb-4">
-              Meet the <span className="text-[#E76F51]">Founder</span>
-            </h2>
-            <div className="h-1.5 w-20 bg-[#FFDA44] mx-auto rounded-full" />
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-gradient-to-br from-[#FDFBF7] to-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-2xl border border-[#E6E0D4] relative"
-          >
-            <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12 relative z-10">
-              <div className="w-full lg:w-1/3 flex-shrink-0">
-                <div className="relative">
-                  <div className="aspect-square max-w-[320px] md:max-w-[400px] mx-auto rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border-4 border-white shadow-xl">
-                    <Image src="/image3.jpg" alt="Founder" fill className="object-cover" />
-                  </div>
-                  <div className="absolute -bottom-4 -right-4 bg-[#5C1F1C] text-white p-3 md:p-4 rounded-2xl shadow-lg">
-                    <Award className="w-6 h-6 md:w-8 md:h-8 text-[#FFDA44]" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 text-center lg:text-left">
-                <h3 className="text-2xl md:text-4xl font-black text-[#2D2A26] mb-2">
-                  Prashant
-                </h3>
-                <p className="text-[#E76F51] font-black uppercase tracking-widest text-[10px] md:text-xs mb-6">
-                  Founder & Chief Coach
-                </p>
-
-                <div className="space-y-4 text-sm md:text-base text-[#5C5852] font-medium leading-relaxed mb-8 max-w-2xl">
-                  <p>
-                    Founded Royal Rooks Academy with a simple yet powerful belief: that chess is not just for the gifted, but for the persistent.
-                  </p>
-                  <p>
-                    With over <strong className="text-[#2D2A26]">40+ years</strong> of experience, he brings a depth of understanding that transforms how students perceive the game.
-                  </p>
-                </div>
-
-                <div className="bg-[#2D2A26] text-white p-6 md:p-8 rounded-[1.5rem] relative mb-10">
-                  <Quote className="absolute -top-4 left-6 text-[#FFDA44] w-10 h-10 opacity-20" />
-                  <p className="font-serif italic text-base md:text-xl leading-relaxed">
-                    &quot;Chess is life in miniature. Every move teaches patience, and every game builds a stronger character.&quot;
-                  </p>
-                </div>
-
-                {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { val: "10+", lab: "Years Exp", bg: "bg-[#FFDA44]/10" },
-                    { val: "600+", lab: "Students", bg: "bg-[#E76F51]/10" },
-                    { val: "50+", lab: "Tournament Wins", bg: "bg-[#2A9D8F]/10" }
-                  ].map((stat, i) => (
-                    <div key={i} className={`text-center p-4 rounded-2xl ${stat.bg}`}>
-                      <p className="text-xl md:text-2xl font-black text-[#2D2A26]">{stat.val}</p>
-                      <p className="text-[8px] md:text-[10px] font-black text-[#5C5852] uppercase tracking-widest">{stat.lab}</p>
-                    </div>
-                  ))}
-                </div> */}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <FounderSection/>
 
       {/* 4. PILLARS */}
       <section className="py-16 md:py-24 px-4">
