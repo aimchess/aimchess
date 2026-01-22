@@ -42,7 +42,6 @@ const galleryImages = [
   { id: 12, src: dummyImages[9], category: "tournaments", title: "Heart of a Champion", desc: "True sportsmanship captured in a friendly gesture between young competitors before their game." },
   { id: 13, src: dummyImages[10], category: "certificate", title: "Award Ceremony", desc: "Celebrating dedication and discipline as a student is honored for his exceptional performance." },
   { id: 14, src: dummyImages[11], category: "events", title: "Academy Family", desc: "A joyful moment with our students and parents celebrating at the year-end gathering." },
-  { id: 15, src: dummyImages[12], category: "events", title: "Team Spirit", desc: "Our young masters and coaches gathered together after a successful tournament day." },
 ];
 
 export default function GalleryPage() {

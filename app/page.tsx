@@ -45,7 +45,7 @@ export default function HomePage() {
 
   // 2. If NOT logged in (Unauthenticated), show the Landing Page
   return (
-    <div className="min-h-screen py-10">
+    <div className="min-h-screen py-0">
       <main>
         <HeroSection />
         <WhyChooseUs />
