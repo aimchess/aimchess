@@ -21,7 +21,7 @@ export function AchievementsSection() {
         },
         {
             icon: Medal,
-            count: "40+",
+            count: "30+",
             label: "Years Experience",
             description: "Journey of Excellence",
             gradient: "from-[#2A9D8F] via-[#21867A] to-[#264653]",

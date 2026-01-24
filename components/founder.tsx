@@ -48,7 +48,7 @@ export function FounderSection() {
                 <div className="absolute -bottom-6 -right-2 md:-right-6 bg-[#5C1F1C] text-white p-4 md:p-5 rounded-2xl shadow-xl flex items-center gap-3">
                   <Award className="w-8 h-8 md:w-10 md:h-10 text-[#FFDA44]" />
                   <div>
-                    <p className="text-xl md:text-2xl font-black leading-none">40+</p>
+                    <p className="text-xl md:text-2xl font-black leading-none">30+</p>
                     <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest opacity-80">Years Exp</p>
                   </div>
                 </div>
@@ -87,7 +87,7 @@ export function FounderSection() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { val: "1000+", lab: "Students Coached", color: "text-[#E76F51]" },
-                  { val: "40+ Yrs", lab: "Deep Involvement", color: "text-[#2D2A26]" },
+                  { val: "30+ Yrs", lab: "Deep Involvement", color: "text-[#2D2A26]" },
                   { val: "Elite", lab: "Training Method", color: "text-[#bda030]" }
                 ].map((stat, i) => (
                   <div key={i} className="flex items-center gap-3 bg-white p-4 rounded-2xl border border-[#E6E0D4] shadow-sm">

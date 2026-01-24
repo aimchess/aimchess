@@ -10,7 +10,7 @@ export function WhyChooseUs() {
         {
             icon: Users,
             title: "Expert Coaching",
-            description: "FIDE-rated coaches and titled players with 40+ years of experience guide every lesson.",
+            description: "FIDE-rated coaches and titled players with 30+ years of experience guide every lesson.",
         },
         {
             icon: Award,
