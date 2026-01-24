@@ -28,9 +28,9 @@ export function Footer() {
   });
 
   const socialLinks = [
-    { icon: Facebook, href: "https://www.facebook.com/chessacademy", label: "Facebook" },
+    { icon: Facebook, href: "https://www.facebook.com/share/19WmFAAzhk/", label: "Facebook" },
     { icon: Twitter, href: "https://twitter.com/RoyalRook", label: "Twitter" },
-    { icon: Instagram, href: "https://instagram.com/RoyalRookacademy", label: "Instagram" },
+    { icon: Instagram, href: "https://www.instagram.com/royalrooksacademy?utm_source=qr&igsh=MnRiZHk0MHRvMXg1", label: "Instagram" },
     { icon: Youtube, href: "https://youtube.com/@RoyalRookacademy", label: "YouTube" },
   ];
 
