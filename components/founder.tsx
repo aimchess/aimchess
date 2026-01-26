@@ -68,7 +68,7 @@ export function FounderSection() {
 
               <div className="space-y-5 text-sm md:text-lg text-[#5C5852] leading-relaxed font-medium mb-8">
                 <p>
-                  With over four decades of deep involvement in chess, Praveen Kumar brings a rare blend of experience, insight, and practical coaching wisdom to the academy. Having devoted more than 40 years to playing, studying, and teaching the game, he has personally coached over <strong className="text-[#2D2A26] font-black">1,000+ students</strong> across different age groups.
+                  With over four decades of deep involvement in chess, Praveen Kumar brings a rare blend of experience, insight, and practical coaching wisdom to the academy. Having devoted more than 30 years to playing, studying, and teaching the game, he has personally coached over <strong className="text-[#2D2A26] font-black">1,000+ students</strong> across different age groups.
                 </p>
                 <p>
                   His coaching philosophy focuses on building <span className="text-[#2D2A26] font-bold underline decoration-[#FFDA44] decoration-4">strong fundamentals</span>, disciplined thinking, and long-term skill development. Under his guidance, students learn to think strategically and stay resilient under pressure.

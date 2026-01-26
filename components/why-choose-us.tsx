@@ -26,7 +26,7 @@ export function WhyChooseUs() {
 
     const checkpoints = [
         "Personalized training",
-        "Small batches (max 6)",
+        "Small Online batches (max 6)",
         "Progress dashboard",
         "Tournament prep",
         "Parent reports",
