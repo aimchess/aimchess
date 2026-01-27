@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { CoursesSection } from "@/components/courses-section";
 
 export default function CoursesPage() {
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
@@ -124,51 +125,7 @@ export default function CoursesPage() {
         </div>
       </section>
 
-      {/* 2. COURSES GRID */}
-      <section className="py-12 md:py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {courses.map((course, idx) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                onClick={() => setSelectedCourse(course)}
-                className="cursor-pointer group h-full"
-              >
-                <div className="bg-white rounded-[2rem] border border-[#E6E0D4] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 h-full flex flex-col">
-                  <div className={`h-2 w-full ${course.bgColor}`} />
-                  <div className="p-6 md:p-8 flex-1 flex flex-col">
-                    <div className="flex justify-between items-start mb-6">
-                      <Badge className={`${course.lightBg} ${course.color} border-none font-black text-[10px] tracking-widest`}>
-                        {course.elo}
-                      </Badge>
-                      <ArrowRight className={`w-5 h-5 ${course.color} group-hover:translate-x-1 transition-transform`} />
-                    </div>
-                    <h3 className="text-2xl font-black text-[#2D2A26] mb-3">{course.title}</h3>
-                    <p className="text-[#5C5852] text-sm md:text-base font-medium leading-relaxed mb-6 flex-1">
-                      {course.description}
-                    </p>
-                    <div className="space-y-3 pt-6 border-t border-[#E6E0D4]">
-                      {course.features.map((feature, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs md:text-sm text-[#2D2A26] font-bold">
-                          <Check className={`w-4 h-4 ${course.color}`} />
-                          <span>{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="p-4 bg-[#FDFBF7] text-center border-t border-[#E6E0D4] group-hover:bg-[#2D2A26] transition-colors">
-                    <span className="text-[10px] font-black text-[#5C5852] group-hover:text-white uppercase tracking-[0.2em]">View Syllabus</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CoursesSection/>
 
       {/* 3. PHILOSOPHY */}
       <section className="py-16 md:py-24 px-4 bg-white">
