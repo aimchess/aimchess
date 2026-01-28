@@ -29,9 +29,7 @@ export function Footer() {
 
   const socialLinks = [
     { icon: Facebook, href: "https://www.facebook.com/share/19WmFAAzhk/", label: "Facebook" },
-    { icon: Twitter, href: "https://twitter.com/RoyalRook", label: "Twitter" },
     { icon: Instagram, href: "https://www.instagram.com/royalrooksacademy?utm_source=qr&igsh=MnRiZHk0MHRvMXg1", label: "Instagram" },
-    { icon: Youtube, href: "https://youtube.com/@RoyalRookacademy", label: "YouTube" },
   ];
 
   const quickLinks = [
@@ -39,7 +37,7 @@ export function Footer() {
     { name: "About", href: "/about" },
     { name: "Courses", href: "/courses" },
     { name: "Coaches", href: "/coaches" },
-    { name: "Achievements", href: "/achievements" },
+    // { name: "Achievements", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
