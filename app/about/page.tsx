@@ -11,6 +11,7 @@ import { FaqSection } from "@/components/faq-section";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { FounderSection } from "@/components/founder";
+import { CoachProfile } from "@/components/coach";
 
 
 const foundationItems = [
@@ -165,6 +166,8 @@ export default function AboutPage() {
       </section>
 
       <FounderSection/>
+
+      <CoachProfile/>
 
       {/* 4. PILLARS */}
       <section className="py-16 md:py-24 px-4">
