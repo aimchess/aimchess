@@ -43,7 +43,7 @@ export function Header() {
     { name: "About", href: "/about" },
     { name: "Courses", href: "/courses" },
     { name: "Gallery", href: "/gallery" },
-    // { name: "Achievements", href: "/achievements" },
+    { name: "Achievements", href: "/achievements" },
     { name: "Blogs", href: "/blogs" },
     { name: "Contact", href: "/contact" },
   ];
