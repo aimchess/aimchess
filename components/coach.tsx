@@ -62,7 +62,7 @@ export function CoachProfile() {
                   Fadil C Basheer
                 </h3>
                 <p className="text-[#E76F51] font-black uppercase tracking-[0.2em] text-xs md:text-sm">
-                  FIDE Rated Player & Arena Candidate Master
+                  Coach
                 </p>
               </div>
 
