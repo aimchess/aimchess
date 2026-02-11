@@ -103,7 +103,7 @@ export default function ContactPage() {
               Grandmaster&apos;s <br /> <span className="italic font-serif text-[#E76F51]">Office</span>
             </h1>
             <p className="text-base md:text-xl text-[#5C5852] max-w-2xl mx-auto font-medium leading-relaxed">
-              Whether you&apos;re Rooking for tournament details or just want to talk chess strategy, our door is always open.
+              Whether you’re just starting out or aiming to sharpen your strategy, our coaching helps you build strong thinking habits through chess — and our door is always open.
             </p>
           </motion.div>
         </div>
