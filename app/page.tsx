@@ -52,7 +52,7 @@ export default function HomePage() {
         <CoursesSection />
         <AchievementsSection />
         <StudentSuccessAndTestimonials />
-        <SuccessStories/>
+        {/* <SuccessStories/> */}
         {/* <StatsSection /> */}
         <WhyChessBento/>
         <FaqSection />
