@@ -42,10 +42,8 @@ export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const inquiryTypes = [
-    "General Information",
     "Course Enrollment",
-    "Private Coaching",
-    "Tournament Registration",
+    "General Information",
     "Other",
   ];
 

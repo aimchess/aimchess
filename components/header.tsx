@@ -41,7 +41,7 @@ export function Header() {
   const navItems: NavItem[] = [
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
-    { name: "Courses", href: "/courses" },
+    { name: "Curriculum", href: "/courses" },
     { name: "Gallery", href: "/gallery" },
     { name: "Achievements", href: "/achievements" },
     { name: "Blogs", href: "/blogs" },

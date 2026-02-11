@@ -74,7 +74,7 @@ export function Footer() {
               <div>
                 <h3 className="font-serif font-bold text-2xl leading-none tracking-tight">
                   Royal Rooks<br />
-                  <span className="text-[#FFDA44] text-[10px] font-sans tracking-[0.3em] uppercase">Academy</span>
+                  <span className="text-[#FFDA44] text-[10px] font-sans tracking-[0.3em] uppercase">Chess Academy</span>
                 </h3>
               </div>
             </Link>
