@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const { name, email, phone, inquiryType, message } = await req.json();
 
     const data = await resend.emails.send({
-      from: 'Royal Rook <onboarding@resend.dev>', // See note below about custom domains
+      from: 'Royal Rooks <onboarding@resend.dev>', // See note below about custom domains
       to: ['royalrookschesscoach@gmail.com'],
       subject: `New Contact Inquiry: ${inquiryType}`,
       reply_to: email,

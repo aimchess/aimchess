@@ -48,7 +48,7 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Royal Rook Academy - Professional Chess Training",
+  title: "Royal Rooks Academy - Professional Chess Training",
   description: "Learn chess from FIDE-rated coaches. Online & offline classes.",
 };
 

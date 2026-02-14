@@ -67,7 +67,7 @@ export function Header() {
               <div className="relative w-9 h-9 md:w-11 md:h-11">
                 <img
                   src="/logo.jpg"
-                  alt="Royal Rook Logo"
+                  alt="Royal Rooks Logo"
                   className="w-full h-full object-contain rounded-lg"
                 />
               </div>
