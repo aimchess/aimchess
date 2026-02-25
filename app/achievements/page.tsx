@@ -202,8 +202,9 @@ export default function AchievementsPage() {
                                         </h2>
                                         <div className="flex items-center gap-3 text-[#5C5852]">
                                             <div className="w-8 h-[2px] bg-[#E76F51]" />
+                                            {/* Logic: index 0 is Agnee (Parents), others are (Parent) */}
                                             <p className="text-xs md:text-sm font-black uppercase tracking-[0.2em]">
-                                                Parents: {story.parents}
+                                                {index === 0 ? "Parents" : "Parent"}: {story.parents}
                                             </p>
                                         </div>
                                     </div>
