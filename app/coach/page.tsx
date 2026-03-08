@@ -1459,7 +1459,7 @@ export default function CoachDashboard() {
               <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Instructor: {session?.user?.name}</p>
             </div>
           </div>
-          
+
           <nav className="flex bg-slate-100 p-1 rounded-xl shadow-inner overflow-x-auto no-scrollbar max-w-full">
             {[
               { id: 'students', label: 'Students', icon: Users },
@@ -2031,10 +2031,10 @@ function CoursesView() {
             <p className="text-[9px] md:text-[10px] font-bold text-orange-400 uppercase tracking-widest">Active Classroom Mode</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2 hover:bg-slate-800 rounded-xl" title="Toggle Lesson List">
-             {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <button onClick={() => setOrientation(o => o === 'white' ? 'black' : 'white')} className="p-2 hover:bg-slate-800 rounded-xl" title="Flip Board">
             <ArrowUpDown size={18} />
@@ -2130,7 +2130,7 @@ function CoursesView() {
                 <RotateCcw size={18} />
               </button>
             </div>
-            
+
             <div className="p-6 md:p-8 overflow-y-auto flex-1 no-scrollbar">
               <p className="whitespace-pre-wrap text-slate-500 leading-relaxed text-sm font-medium">
                 {activeChapter?.content || "Focus on board positions for this module."}
@@ -2218,7 +2218,7 @@ function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' |
             </div>
             {currentFolderId && !loading && (
               <button onClick={() => onAssign(currentFolderId, 'FOLDER', dueDate, audioUrl)} className="w-full sm:w-auto bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-xl hover:bg-black transition-all active:scale-95 shadow-lg shadow-slate-100">
-                 Assign Folder
+                Assign Folder
               </button>
             )}
           </div>
@@ -2364,11 +2364,11 @@ function AnalysisView() {
 
         {setupMode && (
           <div className="bg-white p-6 rounded-3xl border-2 border-slate-50 shadow-2xl animate-in slide-in-from-top-6">
-             <div className="flex justify-between items-center mb-6">
-               <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-800">Piece Palette</h4>
-               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-             </div>
-             <div className="flex justify-center gap-1.5 flex-wrap mb-3">
+            <div className="flex justify-between items-center mb-6">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-800">Piece Palette</h4>
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            </div>
+            <div className="flex justify-center gap-1.5 flex-wrap mb-3">
               {['p', 'n', 'b', 'r', 'q', 'k'].map(p => (
                 <button key={'w' + p} onClick={() => setSelectedTool({ type: p, color: 'w' })} className={`w-10 h-10 flex items-center justify-center text-2xl hover:bg-slate-50 rounded-xl border-2 transition-all ${selectedTool !== 'TRASH' && selectedTool?.type === p && selectedTool.color === 'w' ? 'border-orange-500 bg-orange-50' : 'border-transparent'}`}>{getPieceSymbol(p, 'w')}</button>
               ))}

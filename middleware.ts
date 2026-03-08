@@ -1,59 +1,67 @@
-// // middleware.ts - FINAL VERSION (Handles case-insensitive roles like "ADMIN" or "admin")
+// middleware.ts - CRM-only mode: all routes redirect to CRM
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
 
-  // 1. If user is logged in → kick them OUT of login/signup pages
-  if (token && (pathname.startsWith("/auth/signin") || pathname.startsWith("/auth/signup"))) {
-    let role = token.role as string;
-
-    // FIX: Normalize role to lowercase for case-insensitivity
-    role = role.toLowerCase();
-
-    if (role === "admin") return NextResponse.redirect(new URL("/admin", req.url));
-    if (role === "coach") return NextResponse.redirect(new URL("/coach", req.url));
-    return NextResponse.redirect(new URL("/learn", req.url));
-  }
-
-  // 2. If NOT logged in → protect these routes
-  const protectedRoutes = ["/learn", "/coach", "/admin", "/puzzle", "/payment"];
-  if (!token && protectedRoutes.some((r) => pathname.startsWith(r))) {
-    const url = new URL("/auth/signin", req.url);
-    url.searchParams.set("callbackUrl", req.url);
-    return NextResponse.redirect(url);
-  }
-
-  // 3. Role-based access control (ONLY IF LOGGED IN)
-  if (token) {
-    let role = token.role as string;
-
-    // FIX: Normalize role to lowercase
-    role = role.toLowerCase();
-
-    // Block non-admins from /admin
-    if (pathname.startsWith("/admin") && role !== "admin") {
-      return NextResponse.redirect(new URL("/learn", req.url));
+  // ==========================================
+  // DEV BYPASS — set DEV_BYPASS=true in .env to skip all auth
+  // Remove this when DB is fixed!
+  // ==========================================
+  if (process.env.DEV_BYPASS === "true") {
+    // Still redirect non-CRM routes to CRM dashboard
+    if (!pathname.startsWith("/crm")) {
+      return NextResponse.redirect(new URL("/crm/dashboard", req.url));
     }
+    // Redirect login/signup to dashboard (no need to login)
+    if (pathname.startsWith("/crm/login") || pathname.startsWith("/crm/signup")) {
+      return NextResponse.redirect(new URL("/crm/dashboard", req.url));
+    }
+    return NextResponse.next();
+  }
 
-    // Block non-coaches (and non-admins) from /coach
-    if (pathname.startsWith("/coach") && role !== "coach" && role !== "admin") {
-      return NextResponse.redirect(new URL("/learn", req.url));
+  // ==========================================
+  // NORMAL AUTH FLOW (when DEV_BYPASS is not set)
+  // ==========================================
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  // CRM public pages (login/signup) — redirect authenticated users to CRM dashboard
+  if (token && (pathname.startsWith("/crm/login") || pathname.startsWith("/crm/signup"))) {
+    return NextResponse.redirect(new URL("/crm/dashboard", req.url));
+  }
+
+  // CRM protected pages — require login
+  if (!token && pathname.startsWith("/crm") && !pathname.startsWith("/crm/login") && !pathname.startsWith("/crm/signup")) {
+    return NextResponse.redirect(new URL("/crm/login", req.url));
+  }
+
+  // CRM role-based access — only ADMIN and COACH can access CRM dashboard/pages
+  if (token && pathname.startsWith("/crm") && !pathname.startsWith("/crm/login") && !pathname.startsWith("/crm/signup")) {
+    const role = (token.role as string).toLowerCase();
+    if (role !== "admin" && role !== "coach") {
+      return NextResponse.redirect(new URL("/crm/login", req.url));
     }
   }
 
-  // Everything else → allow
+  // ==========================================
+  // REDIRECT ALL OTHER ROUTES TO CRM
+  // ==========================================
+  if (!pathname.startsWith("/crm")) {
+    if (token) {
+      const role = (token.role as string).toLowerCase();
+      if (role === "admin" || role === "coach") {
+        return NextResponse.redirect(new URL("/crm/dashboard", req.url));
+      }
+    }
+    return NextResponse.redirect(new URL("/crm/login", req.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
-// export { default } from 'next-auth/middleware'
-// export const config = {
-// matcher: []
-// }
