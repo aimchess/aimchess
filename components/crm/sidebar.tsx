@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
     LayoutDashboard,
     Users,
@@ -23,15 +23,16 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-
 type NavSection = {
     label: string;
+    roles: string[]; // which roles can see this section
     items: { href: string; label: string; icon: any }[];
 };
 
 const navSections: NavSection[] = [
     {
         label: "Admin",
+        roles: ["ADMIN"],
         items: [
             { href: "/crm/dashboard", label: "Dashboard", icon: LayoutDashboard },
             { href: "/crm/students", label: "Students", icon: Users },
@@ -45,7 +46,9 @@ const navSections: NavSection[] = [
     },
     {
         label: "Coach",
+        roles: ["COACH"],
         items: [
+            { href: "/crm/coach-dashboard", label: "Dashboard", icon: LayoutDashboard },
             { href: "/crm/coach-students", label: "My Students", icon: Users },
             { href: "/crm/coach-attendance", label: "Attendance", icon: ClipboardCheck },
             { href: "/crm/coach-library", label: "Library", icon: Library },
@@ -54,7 +57,9 @@ const navSections: NavSection[] = [
     },
     {
         label: "Student",
+        roles: ["STUDENT"],
         items: [
+            { href: "/crm/student-dashboard", label: "Dashboard", icon: LayoutDashboard },
             { href: "/crm/student-todo", label: "To Do", icon: ListTodo },
             { href: "/crm/student-history", label: "Completed", icon: History },
             { href: "/crm/student-library", label: "Library", icon: BookOpen },
@@ -66,7 +71,15 @@ const navSections: NavSection[] = [
 
 export default function CRMSidebar() {
     const pathname = usePathname();
+    const { data: session } = useSession();
     const [collapsed, setCollapsed] = useState(false);
+
+    const userRole = ((session?.user as any)?.role || "").toUpperCase();
+
+    // Filter sections based on user role
+    const visibleSections = navSections.filter(
+        (section) => section.roles.includes(userRole) || userRole === ""
+    );
 
     return (
         <aside
@@ -99,7 +112,7 @@ export default function CRMSidebar() {
 
             {/* Navigation */}
             <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-                {navSections.map((section) => (
+                {visibleSections.map((section) => (
                     <div key={section.label} className="mb-2">
                         {!collapsed && (
                             <div className="px-3 pt-4 pb-2 text-[10px] font-bold text-white/30 uppercase tracking-widest">

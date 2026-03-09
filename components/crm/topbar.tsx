@@ -18,11 +18,13 @@ const pageTitles: Record<string, string> = {
     "/crm/coach-attendance": "Coach Attendance",
     "/crm/coach-library": "Teaching Library",
     "/crm/coach-analysis": "Coach Analysis",
+    "/crm/coach-dashboard": "Coach Dashboard",
     "/crm/student-todo": "My Assignments",
     "/crm/student-history": "Completed Work",
     "/crm/student-library": "Learning Library",
     "/crm/student-fees": "Fee History",
     "/crm/student-schedule": "My Schedule",
+    "/crm/student-dashboard": "Student Dashboard",
 };
 
 export default function CRMTopbar({
@@ -58,20 +60,20 @@ export default function CRMTopbar({
 
                 <div className="flex items-center gap-2 sm:gap-3">
                     {/* Search */}
-                    <div className={`transition-all duration-300 overflow-hidden ${searchOpen ? "w-40 sm:w-64" : "w-0"}`}>
+                    {/* <div className={`transition-all duration-300 overflow-hidden ${searchOpen ? "w-40 sm:w-64" : "w-0"}`}>
                         <input type="text" placeholder="Search..."
                             className="w-full px-4 py-2 text-sm bg-gray-100 rounded-xl border-0 focus:ring-2 focus:ring-sky-400/50 outline-none" />
                     </div>
                     <button onClick={() => setSearchOpen(!searchOpen)}
                         className="p-2 sm:p-2.5 rounded-xl hover:bg-sky-50 transition-colors">
                         <Search size={18} className="text-gray-500" />
-                    </button>
+                    </button> */}
 
                     {/* Notifications */}
-                    <button className="p-2 sm:p-2.5 rounded-xl hover:bg-sky-50 transition-colors relative">
+                    {/* <button className="p-2 sm:p-2.5 rounded-xl hover:bg-sky-50 transition-colors relative">
                         <Bell size={18} className="text-gray-500" />
                         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-yellow-500 rounded-full" />
-                    </button>
+                    </button> */}
 
                     {/* User Avatar */}
                     <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-gray-200">

@@ -66,9 +66,9 @@ export const authOptions: NextAuthOptions = {
     }
   },
   pages: {
-    signIn: '/auth/signin',
-    signOut: '/auth/signout',
-    error: '/auth/error',
+    signIn: '/crm/login',
+    signOut: '/crm/login',
+    error: '/crm/login',
   },
   session: {
     strategy: 'jwt'

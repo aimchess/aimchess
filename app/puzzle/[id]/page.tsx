@@ -616,7 +616,7 @@ export default function PuzzlePage() {
       if (folderId) query.set("folderId", folderId);
       router.push(`/puzzle/${nextPuzzleId}?${query.toString()}`);
     } else {
-      router.push("/learn");
+      router.push("/crm/student-todo");
     }
   };
 

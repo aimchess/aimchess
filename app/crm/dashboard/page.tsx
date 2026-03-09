@@ -1,5 +1,7 @@
 "use client";
 
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CRMShellLayout from "@/components/crm/crm-shell";
 import {
@@ -9,11 +11,29 @@ import {
 import Link from "next/link";
 
 export default function CRMDashboard() {
+    const { data: session, status } = useSession();
+    const router = useRouter();
     const [stats, setStats] = useState({ students: 0, coaches: 0, classes: 0, revenue: 0, payments: 0 });
     const [recentPayments, setRecentPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const userRole = ((session?.user as any)?.role || "").toUpperCase();
+
+    // Redirect non-admin users to their own dashboard
     useEffect(() => {
+        if (status !== "authenticated") return;
+        if (userRole === "COACH") {
+            router.replace("/crm/coach-dashboard");
+            return;
+        }
+        if (userRole === "STUDENT") {
+            router.replace("/crm/student-dashboard");
+            return;
+        }
+    }, [status, userRole, router]);
+
+    useEffect(() => {
+        if (userRole !== "ADMIN") return;
         const fetchData = async () => {
             try {
                 const [usersRes, classesRes, paymentsRes] = await Promise.all([
@@ -38,7 +58,18 @@ export default function CRMDashboard() {
             finally { setLoading(false); }
         };
         fetchData();
-    }, []);
+    }, [userRole]);
+
+    // Show loading for non-admin users while redirecting
+    if (userRole !== "ADMIN") {
+        return (
+            <CRMShellLayout>
+                <div className="flex items-center justify-center h-[60vh]">
+                    <Loader2 className="w-8 h-8 text-sky-500 animate-spin" />
+                </div>
+            </CRMShellLayout>
+        );
+    }
 
     const statCards = [
         { label: "Total Students", value: stats.students, icon: Users, color: "from-sky-500 to-sky-600", shadowColor: "shadow-sky-500/20", change: "+12%", up: true },
