@@ -123,7 +123,7 @@ export default function CRMLoginPage() {
                         ))}
                     </div>
 
-                    <div className="bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] rounded-2xl p-4 xl:p-5">
+                    {/* <div className="bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] rounded-2xl p-4 xl:p-5">
                         <div className="flex gap-1 mb-2 xl:mb-3">
                             {[1, 2, 3, 4, 5].map(i => (<span key={i} className="text-amber-400 text-sm">★</span>))}
                         </div>
@@ -137,7 +137,7 @@ export default function CRMLoginPage() {
                                 <div className="text-white/30 text-[10px]">AIM Chess Academy</div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 

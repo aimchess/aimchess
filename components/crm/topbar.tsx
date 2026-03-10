@@ -25,6 +25,7 @@ const pageTitles: Record<string, string> = {
     "/crm/student-fees": "Fee History",
     "/crm/student-schedule": "My Schedule",
     "/crm/student-dashboard": "Student Dashboard",
+    "/crm/leaderboard": "Leaderboard",
 };
 
 export default function CRMTopbar({
@@ -77,8 +78,16 @@ export default function CRMTopbar({
 
                     {/* User Avatar */}
                     <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-gray-200">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-sky-500/20">
-                            {initials}
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-sky-500/20 overflow-hidden">
+                            {(session?.user as any)?.photoUrl ? (
+                                <img 
+                                    src={(session?.user as any).photoUrl} 
+                                    alt={session?.user?.name || "Avatar"} 
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                initials
+                            )}
                         </div>
                         <div className="hidden md:block">
                             <p className="text-sm font-semibold text-gray-800 leading-tight">{session?.user?.name || "Admin"}</p>

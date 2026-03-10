@@ -20,6 +20,7 @@ import {
     Library,
     Wallet,
     Calendar,
+    Trophy,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -42,6 +43,7 @@ const navSections: NavSection[] = [
             { href: "/crm/courses", label: "Courses", icon: BookOpen },
             { href: "/crm/puzzles", label: "Puzzles", icon: Puzzle },
             { href: "/crm/analysis", label: "Analysis", icon: MousePointer2 },
+            { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
         ],
     },
     {
@@ -53,6 +55,7 @@ const navSections: NavSection[] = [
             { href: "/crm/coach-attendance", label: "Attendance", icon: ClipboardCheck },
             { href: "/crm/coach-library", label: "Library", icon: Library },
             { href: "/crm/coach-analysis", label: "Analysis", icon: MousePointer2 },
+            { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
         ],
     },
     {
@@ -65,6 +68,7 @@ const navSections: NavSection[] = [
             { href: "/crm/student-library", label: "Library", icon: BookOpen },
             { href: "/crm/student-fees", label: "Fees", icon: Wallet },
             { href: "/crm/student-schedule", label: "Schedule", icon: Calendar },
+            { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
         ],
     },
 ];

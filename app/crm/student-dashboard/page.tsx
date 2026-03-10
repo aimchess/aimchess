@@ -6,14 +6,16 @@ import CRMShellLayout from "@/components/crm/crm-shell"
 import Link from 'next/link'
 import {
   ListTodo, BookOpen, Calendar, Wallet,
-  Loader2, Activity, ArrowUpRight, CheckCircle, Clock, PlayCircle
+  Loader2, Activity, ArrowUpRight, CheckCircle, Clock, PlayCircle, Camera
 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function StudentDashboardPage() {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const studentId = (session?.user as any)?.id || ''
 
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
   const [pendingCount, setPendingCount] = useState(0)
   const [completedCount, setCompletedCount] = useState(0)
   const [classCount, setClassCount] = useState(0)
@@ -49,6 +51,41 @@ export default function StudentDashboardPage() {
     fetchData()
   }, [studentId])
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size must be less than 2MB")
+      return
+    }
+
+    setUploading(true)
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = async () => {
+      const base64 = reader.result as string
+      try {
+        const res = await fetch("/api/user/profile-photo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ photoUrl: base64 }),
+        })
+
+        if (res.ok) {
+          await update({ photoUrl: base64 })
+          toast.success("Profile photo updated successfully!")
+        } else {
+          toast.error("Failed to update profile photo")
+        }
+      } catch (error) {
+        toast.error("An error occurred during upload")
+      } finally {
+        setUploading(false)
+      }
+    }
+  }
+
   if (loading) {
     return (
       <CRMShellLayout>
@@ -62,10 +99,39 @@ export default function StudentDashboardPage() {
   return (
     <CRMShellLayout>
       <div className="space-y-6">
-        {/* Welcome */}
-        <div className="bg-gradient-to-r from-[#0b1d3a] to-[#1a3a6a] rounded-2xl p-6 md:p-8 text-white">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Let's train, {session?.user?.name}! 🧠♟️</h1>
-          <p className="text-sky-200 text-sm">Keep up the great work. Here's your learning overview.</p>
+        <div className="bg-gradient-to-r from-[#0b1d3a] to-[#1a3a6a] rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center overflow-hidden shadow-2xl transition-transform group-hover:scale-105">
+                {(session?.user as any)?.photoUrl ? (
+                  <img src={(session?.user as any).photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-3xl md:text-4xl font-black text-sky-300">
+                    {session?.user?.name ? (session?.user as any).name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2) : "S"}
+                  </span>
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-white animate-spin" />
+                  </div>
+                )}
+              </div>
+              <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-sky-500 hover:bg-sky-600 rounded-lg flex items-center justify-center cursor-pointer shadow-lg border-2 border-[#0b1d3a] transition-all hover:scale-110">
+                <Camera size={16} className="text-white" />
+                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={uploading} />
+              </label>
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2 tracking-tight">Let&apos;s train, {session?.user?.name}! 🧠♟️</h1>
+              <p className="text-sky-200 text-sm">Keep up the great work. Here&apos;s your learning overview.</p>
+            </div>
+          </div>
+          <div className="hidden lg:block">
+            <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 text-center">
+              <p className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Level</p>
+              <p className="text-xl font-black">{(session?.user as any)?.stage || 'BEGINNER'}</p>
+            </div>
+          </div>
         </div>
 
         {/* Stat Cards */}
