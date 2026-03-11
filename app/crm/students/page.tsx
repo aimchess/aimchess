@@ -227,7 +227,7 @@ export default function StudentsPage() {
                             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400 outline-none transition-all"
                         />
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <Filter size={14} className="text-gray-400" />
                         {["ALL", "STUDENT", "COACH", "ADMIN"].map((role) => (
                             <button
@@ -252,7 +252,7 @@ export default function StudentsPage() {
                 ) : (
                     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                            <table className="w-full text-left min-w-[700px]">
                                 <thead className="bg-gray-50/80 border-b border-gray-100">
                                     <tr>
                                         <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-wider">

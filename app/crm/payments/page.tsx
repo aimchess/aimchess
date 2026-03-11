@@ -85,7 +85,7 @@ export default function PaymentsPage() {
                             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2"><CreditCard size={16} className="text-emerald-500" /> Transaction History</h3>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left">
+                            <table className="w-full text-left min-w-[700px]">
                                 <thead className="bg-gray-50/50 border-b border-gray-100">
                                     <tr>
                                         <th className="p-4 text-xs font-bold text-gray-500 uppercase">Student</th>
@@ -143,7 +143,7 @@ export default function PaymentsPage() {
                                     </select>
                                 </div>
                             )}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Amount (₹)</label>
                                     <input type="number" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} required className="w-full p-2.5 border border-gray-200 rounded-xl text-sm outline-none" placeholder="0" />
@@ -153,7 +153,7 @@ export default function PaymentsPage() {
                                     <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} required className="w-full p-2.5 border border-gray-200 rounded-xl text-sm outline-none" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Method</label>
                                     <select value={formData.method} onChange={e => setFormData({ ...formData, method: e.target.value })} className="w-full p-2.5 border border-gray-200 rounded-xl text-sm bg-white">

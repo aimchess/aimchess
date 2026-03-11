@@ -97,7 +97,7 @@ export default function LeaderboardPage() {
         {/* Leaderboard Grid/List */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left min-w-[550px]">
               <thead>
                 <tr className="bg-gray-50/50 border-b border-gray-100">
                   <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Rank</th>
@@ -141,7 +141,7 @@ export default function LeaderboardPage() {
                           </div>
                           <div>
                             <p className="font-bold text-gray-900 leading-tight">{student.name}</p>
-                            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mt-0.5">Player ID: #{student.id.slice(0, 8)}</p>
+                            <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider mt-0.5 hidden sm:block">Player ID: #{student.id.slice(0, 8)}</p>
                           </div>
                         </div>
                       </td>
