@@ -201,7 +201,7 @@ export default function StudentDashboard() {
     if (currentFolderId) params.set('folderId', currentFolderId)
     else params.set('stage', libraryStage)
 
-    router.push(`/mcq/${mcqId}?${params.toString()}`)
+    router.push(`/crm/student-mcq/${mcqId}?${params.toString()}`)
   }
 
   const isStageLocked = (targetStage: string) => {

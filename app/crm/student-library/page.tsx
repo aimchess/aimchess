@@ -111,7 +111,7 @@ export default function StudentLibraryPage() {
     const currentFolderId = curriculumPath.length > 0 ? curriculumPath[curriculumPath.length - 1].id : null
     if (currentFolderId) params.set('folderId', currentFolderId)
     else params.set('stage', libraryStage)
-    router.push(`/mcq/${mcqId}?${params.toString()}`)
+    router.push(`/crm/student-mcq/${mcqId}?${params.toString()}`)
   }
 
   const totalPuzzles = curriculumItems.puzzles.length + curriculumItems.mcqs.length

@@ -49,7 +49,7 @@ export default function StudentTodoPage() {
     const params = new URLSearchParams()
     if (nextMcqId) params.set('next', nextMcqId)
     params.set('context', 'todo')
-    router.push(`/mcq/${mcqId}?${params.toString()}`)
+    router.push(`/crm/student-mcq/${mcqId}?${params.toString()}`)
   }
 
   if (loading) return <CRMShellLayout><div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-4 border-sky-500"></div></div></CRMShellLayout>
