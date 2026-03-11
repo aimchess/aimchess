@@ -34,14 +34,14 @@ export default function StudentHistoryPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {completed.length === 0 && <p className="col-span-full text-center text-slate-400 py-20 bg-white rounded-2xl border-2 border-dashed border-sky-100">No completed puzzles yet.</p>}
+        {completed.length === 0 && <p className="col-span-full text-center text-slate-400 py-20 bg-white rounded-2xl border-2 border-dashed border-sky-100">No completed tasks yet.</p>}
         {completed.map((item) => (
           <div key={item.id} className="bg-white rounded-xl p-5 border border-sky-100 opacity-80 hover:opacity-100 transition">
             <div className="flex justify-between items-center mb-3">
               <CheckCircle size={16} className="text-green-600" />
               <span className="text-xs font-bold text-slate-400">{new Date(item.assignedAt).toLocaleDateString()}</span>
             </div>
-            <h3 className="font-bold text-slate-700 line-through decoration-slate-300">{item.puzzle.title}</h3>
+            <h3 className="font-bold text-slate-700 line-through decoration-slate-300">{item.mcqId ? item.mcq.question : item.puzzle.title}</h3>
           </div>
         ))}
       </div>

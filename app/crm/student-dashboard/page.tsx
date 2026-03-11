@@ -6,7 +6,7 @@ import CRMShellLayout from "@/components/crm/crm-shell"
 import Link from 'next/link'
 import {
   ListTodo, BookOpen, Calendar, Wallet,
-  Loader2, Activity, ArrowUpRight, CheckCircle, Clock, PlayCircle, Camera
+  Loader2, Activity, ArrowUpRight, CheckCircle, Clock, PlayCircle, Camera, HelpCircle
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -158,7 +158,7 @@ export default function StudentDashboardPage() {
               </div>
             </div>
             <div className="text-2xl font-black text-gray-900">{completedCount}</div>
-            <p className="text-xs text-gray-500 font-medium mt-1">Puzzles Completed</p>
+            <p className="text-xs text-gray-500 font-medium mt-1">Exercises Completed</p>
           </div>
 
           <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
@@ -205,11 +205,11 @@ export default function StudentDashboardPage() {
                   return (
                     <div key={item.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${isOverdue ? 'border-red-200 bg-red-50/50' : 'border-gray-100 hover:bg-sky-50'}`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isOverdue ? 'bg-red-100' : 'bg-sky-100'}`}>
-                          <PlayCircle size={18} className={isOverdue ? 'text-red-500' : 'text-sky-600'} />
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isOverdue ? 'bg-red-100' : !!item.mcqId ? 'bg-emerald-100' : 'bg-sky-100'}`}>
+                          {!!item.mcqId ? <HelpCircle size={18} className={isOverdue ? 'text-red-500' : 'text-emerald-600'} /> : <PlayCircle size={18} className={isOverdue ? 'text-red-500' : 'text-sky-600'} />}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{item.puzzle?.title}</p>
+                          <p className="text-sm font-semibold text-gray-900">{item.mcqId ? item.mcq.question : item.puzzle?.title}</p>
                           <p className="text-[10px] text-gray-500">By Coach {item.assignedBy}</p>
                         </div>
                       </div>

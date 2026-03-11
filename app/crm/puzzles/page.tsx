@@ -8,6 +8,7 @@ import {
     Puzzle, Folder, FileText, ChevronRight, Plus, Trash2,
     ArrowLeft, RotateCcw, Play, Copy, Loader2, MoreVertical,
     FolderInput, X, Star, CheckSquare, Square, Pencil,
+    HelpCircle,
 } from "lucide-react";
 
 type Tool = { type: string; color: "w" | "b" } | "TRASH" | null;
@@ -280,18 +281,134 @@ function PuzzleCreator({ folderId, existingPuzzle, onBack }: { folderId: string;
     );
 }
 
-// ====== MAIN PUZZLES PAGE ======
+// ====== MCQ CREATOR ======
+function MCQCreator({ folderId, existingMCQ, onBack }: { folderId: string; existingMCQ?: any; onBack: () => void }) {
+    const [fen, setFen] = useState(existingMCQ?.position || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    const [manualFen, setManualFen] = useState(fen);
+    const [question, setQuestion] = useState(existingMCQ?.question || "");
+    const [explanation, setExplanation] = useState(existingMCQ?.explanation || "");
+    const [options, setOptions] = useState<string[]>(existingMCQ?.options || ["", "", "", ""]);
+    const [correctOptions, setCorrectOptions] = useState<number[]>(existingMCQ?.correctOptions || []);
+    const [selectedTool, setSelectedTool] = useState<Tool>(null);
+    const game = useRef(new Chess());
+    const [boardWidth, setBoardWidth] = useState(500);
+    const boardContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!boardContainerRef.current) return;
+        const observer = new ResizeObserver((entries) => { for (const e of entries) setBoardWidth(e.contentRect.width); });
+        observer.observe(boardContainerRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        try { game.current.load(fen); } catch { }
+    }, [fen]);
+
+    const handleManualFenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setManualFen(e.target.value);
+        try { game.current.load(e.target.value); setFen(game.current.fen()); } catch { setFen(e.target.value); }
+    };
+
+    const onSquareClick = (sq: string) => {
+        if (!selectedTool) return;
+        if (selectedTool === "TRASH") game.current.remove(sq as any);
+        else game.current.put({ type: selectedTool.type as any, color: selectedTool.color as any }, sq as any);
+        setFen(game.current.fen()); setManualFen(game.current.fen());
+    };
+
+    const onPieceDrop = (source: string, target: string) => {
+        const p = game.current.get(source as any); if (!p) return false;
+        game.current.remove(source as any); game.current.put(p as any, target as any);
+        setFen(game.current.fen()); setManualFen(game.current.fen()); return true;
+    };
+
+    const toggleCorrectOption = (idx: number) => {
+        if (correctOptions.includes(idx)) setCorrectOptions(correctOptions.filter(i => i !== idx));
+        else setCorrectOptions([...correctOptions, idx]);
+    };
+
+    const saveMCQ = async () => {
+        if (!question || options.some(o => !o) || correctOptions.length === 0) {
+            alert("Please fill question, all options, and select at least one correct answer.");
+            return;
+        }
+        const payload: any = {
+            position: fen,
+            question,
+            options,
+            correctOptions,
+            explanation,
+            folderId: folderId === "root" ? null : folderId,
+        };
+        const method = existingMCQ ? "PUT" : "POST";
+        const url = existingMCQ ? `/api/mcq/${existingMCQ.id}` : "/api/mcq";
+
+        try {
+            const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            if (res.ok) { alert(existingMCQ ? "MCQ Updated!" : "MCQ Saved!"); onBack(); }
+            else alert("Failed to save MCQ");
+        } catch (e) { console.error(e); }
+    };
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white p-6 rounded-2xl border border-gray-100 min-h-[600px]">
+            <div className="lg:col-span-5 flex flex-col gap-4">
+                <div ref={boardContainerRef} className="w-full max-w-[500px] border-4 border-sky-500 rounded-xl shadow-lg overflow-hidden">
+                    <Chessboard position={fen} onPieceDrop={onPieceDrop} onSquareClick={onSquareClick} boardWidth={boardWidth} />
+                </div>
+                <BoardSetupPalette selectedTool={selectedTool} setSelectedTool={setSelectedTool} onClear={() => { game.current.clear(); setFen(game.current.fen()); }} onReset={() => { game.current.reset(); setFen(game.current.fen()); }} />
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <label className="text-xs font-bold text-gray-400 uppercase mb-2 block">Direct FEN Input</label>
+                    <input type="text" className="w-full border border-gray-200 p-2.5 rounded-xl text-sm font-mono text-gray-600 focus:ring-2 focus:ring-sky-400/30 focus:border-sky-400 outline-none" value={manualFen} onChange={handleManualFenChange} placeholder="Paste FEN..." />
+                </div>
+            </div>
+            <div className="lg:col-span-7 flex flex-col gap-6">
+                <div className="flex items-center gap-2 border-b pb-4">
+                    <button onClick={onBack} className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors"><ArrowLeft size={20} /></button>
+                    <h2 className="text-xl font-bold text-gray-900">{existingMCQ ? "Edit MCQ" : "New MCQ"}</h2>
+                </div>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-sm font-bold text-gray-700 block mb-1">Question</label>
+                        <textarea className="w-full border-2 border-gray-100 rounded-xl p-3 focus:border-sky-500 outline-none min-h-[80px]" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Enter the chess question..." />
+                    </div>
+                    <div className="space-y-3">
+                        <label className="text-sm font-bold text-gray-700 block">Options (Check the box for correct answers)</label>
+                        {options.map((opt, idx) => (
+                            <div key={idx} className="flex gap-3 items-center">
+                                <button onClick={() => toggleCorrectOption(idx)} className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all ${correctOptions.includes(idx) ? "bg-emerald-500 border-emerald-500 text-white" : "bg-white border-gray-200 text-gray-300 hover:border-sky-300"}`}>
+                                    {correctOptions.includes(idx) ? <CheckSquare size={20} /> : <Square size={20} />}
+                                </button>
+                                <input className="flex-1 border-2 border-gray-100 rounded-xl p-3 focus:border-sky-500 outline-none" value={opt} onChange={(e) => { const no = [...options]; no[idx] = e.target.value; setOptions(no); }} placeholder={`Option ${idx + 1}`} />
+                            </div>
+                        ))}
+                    </div>
+                    <div>
+                        <label className="text-sm font-bold text-gray-700 block mb-1">Explanation (Optional)</label>
+                        <textarea className="w-full border-2 border-gray-100 rounded-xl p-3 focus:border-sky-500 outline-none min-h-[80px]" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explain the correct answer..." />
+                    </div>
+                    <button onClick={saveMCQ} className="w-full bg-gradient-to-r from-sky-500 to-sky-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-sky-500/20 hover:scale-[1.01] transition-all">
+                        {existingMCQ ? "Update MCQ" : "Save MCQ"}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function PuzzlesPage() {
     const [currentStage, setCurrentStage] = useState<string | null>(null);
     const [breadcrumbs, setBreadcrumbs] = useState<any[]>([]);
-    const [content, setContent] = useState<{ folders: any[]; puzzles: any[] }>({ folders: [], puzzles: [] });
-    const [view, setView] = useState<"BROWSE" | "CREATE_PUZZLE">("BROWSE");
+    const [content, setContent] = useState<{ folders: any[]; puzzles: any[]; mcqs: any[] }>({ folders: [], puzzles: [], mcqs: [] });
+    const [view, setView] = useState<"BROWSE" | "CREATE_PUZZLE" | "CREATE_MCQ">("BROWSE");
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [moveModalOpen, setMoveModalOpen] = useState(false);
-    const [movingItem, setMovingItem] = useState<{ id: string; type: "FOLDER" | "PUZZLE" } | null>(null);
+    const [movingItem, setMovingItem] = useState<{ id: string; type: "FOLDER" | "PUZZLE" | "MCQ" } | null>(null);
     const [availableFolders, setAvailableFolders] = useState<any[]>([]);
     const [newFolderName, setNewFolderName] = useState("");
     const [editingPuzzle, setEditingPuzzle] = useState<any>(null);
+    const [editingMCQ, setEditingMCQ] = useState<any>(null);
     const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
     useEffect(() => {
@@ -301,7 +418,7 @@ export default function PuzzlesPage() {
         if (parentId) params.append("parentId", parentId);
         else params.append("stage", currentStage);
         fetch(`/api/content?${params.toString()}`).then((r) => r.json()).then((data) => {
-            if (data) { setContent({ folders: data.folders || [], puzzles: data.puzzles || [] }); setSelectedItems(new Set()); }
+            if (data) { setContent({ folders: data.folders || [], puzzles: data.puzzles || [], mcqs: data.mcqs || [] }); setSelectedItems(new Set()); }
         }).catch(console.error);
     }, [currentStage, breadcrumbs, refreshTrigger]);
 
@@ -317,7 +434,8 @@ export default function PuzzlesPage() {
         if (!confirm(`Delete ${selectedItems.size} items?`)) return;
         const promises = Array.from(selectedItems).map((id) => {
             const isFolder = content.folders.some((f) => f.id === id);
-            return fetch("/api/content", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, type: isFolder ? "FOLDER" : "PUZZLE" }) });
+            const isMCQ = content.mcqs.some((m) => m.id === id);
+            return fetch("/api/content", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, type: isFolder ? "FOLDER" : isMCQ ? "MCQ" : "PUZZLE" }) });
         });
         await Promise.all(promises);
         setRefreshTrigger((p) => p + 1);
@@ -330,7 +448,7 @@ export default function PuzzlesPage() {
         setSelectedItems(ns);
     };
 
-    const prepareMove = async (item: any, type: "FOLDER" | "PUZZLE") => {
+    const prepareMove = async (item: any, type: "FOLDER" | "PUZZLE" | "MCQ") => {
         setMovingItem({ id: item.id, type });
         try {
             const res = await fetch("/api/content/folders");
@@ -344,7 +462,7 @@ export default function PuzzlesPage() {
         try {
             const res = await fetch("/api/content/move", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId: movingItem.id, targetFolderId }) });
             if (res.ok) { setMoveModalOpen(false); setMovingItem(null); setRefreshTrigger((p) => p + 1); }
-            else alert("Move failed");
+            else { const err = await res.json(); alert(err.error || "Move failed"); }
         } catch (e) { console.error(e); }
     };
 
@@ -360,12 +478,12 @@ export default function PuzzlesPage() {
         } catch (e) { console.error(e); }
     };
 
-    const ItemCard = ({ item, type }: { item: any; type: "FOLDER" | "PUZZLE" }) => {
+    const ItemCard = ({ item, type }: { item: any; type: "FOLDER" | "PUZZLE" | "MCQ" }) => {
         const [showMenu, setShowMenu] = useState(false);
         const isSelected = selectedItems.has(item.id);
         return (
             <div className={`relative group h-36 rounded-2xl border-2 flex flex-col items-center justify-center cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg
-        ${isSelected ? "bg-sky-50 border-sky-500 ring-1 ring-sky-500" : type === "FOLDER" ? "bg-indigo-50 border-indigo-100 hover:border-indigo-300" : "bg-white border-gray-100 hover:border-sky-300"}`}
+        ${isSelected ? "bg-sky-50 border-sky-500 ring-1 ring-sky-500" : type === "FOLDER" ? "bg-indigo-50 border-indigo-100 hover:border-indigo-300" : type === "MCQ" ? "bg-emerald-50 border-emerald-100 hover:border-emerald-300" : "bg-white border-gray-100 hover:border-sky-300"}`}
                 onClick={() => { if (selectedItems.size > 0) toggleSelection(item.id); else if (type === "FOLDER") setBreadcrumbs([...breadcrumbs, item]); }}>
                 <div className="absolute top-2 left-2 z-10" onClick={(e) => { e.stopPropagation(); toggleSelection(item.id); }}>
                     {isSelected ? <CheckSquare className="text-sky-600" /> : <Square className="text-gray-300 hover:text-gray-500" />}
@@ -375,14 +493,15 @@ export default function PuzzlesPage() {
                     {showMenu && (
                         <div className="absolute right-0 top-6 bg-white shadow-xl border border-gray-100 rounded-xl w-32 z-20 py-1 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                             {type === "PUZZLE" && (<button onClick={() => { setEditingPuzzle(item); setView("CREATE_PUZZLE"); }} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-gray-100 flex items-center gap-2 text-gray-700"><Pencil size={12} /> Edit</button>)}
+                            {type === "MCQ" && (<button onClick={() => { setEditingMCQ(item); setView("CREATE_MCQ"); }} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-gray-100 flex items-center gap-2 text-gray-700"><Pencil size={12} /> Edit</button>)}
                             <button onClick={() => prepareMove(item, type)} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-gray-100 flex items-center gap-2 text-gray-700"><FolderInput size={12} /> Move</button>
                             <button onClick={() => handleDelete(item.id, type)} className="w-full text-left px-3 py-2 text-xs font-medium hover:bg-red-50 text-red-600 flex items-center gap-2"><Trash2 size={12} /> Delete</button>
                         </div>
                     )}
                     {showMenu && <div className="fixed inset-0 z-10 cursor-default" onClick={(e) => { e.stopPropagation(); setShowMenu(false); }} />}
                 </div>
-                {type === "FOLDER" ? <Folder className="w-10 h-10 text-indigo-500 mb-2" /> : <FileText className="w-8 h-8 text-sky-500 mb-2" />}
-                <span className={`font-bold text-sm px-4 text-center truncate w-full ${type === "FOLDER" ? "text-indigo-900" : "text-gray-700"}`}>{type === "FOLDER" ? item.name : item.title}</span>
+                {type === "FOLDER" ? <Folder className="w-10 h-10 text-indigo-500 mb-2" /> : type === "MCQ" ? <HelpCircle className="w-8 h-8 text-emerald-500 mb-2" /> : <FileText className="w-8 h-8 text-sky-500 mb-2" />}
+                <span className={`font-bold text-sm px-4 text-center truncate w-full ${type === "FOLDER" ? "text-indigo-900" : type === "MCQ" ? "text-emerald-900" : "text-gray-700"}`}>{type === "FOLDER" ? item.name : type === "MCQ" ? item.question : item.title}</span>
             </div>
         );
     };
@@ -392,6 +511,15 @@ export default function PuzzlesPage() {
         return (
             <CRMShellLayout>
                 <PuzzleCreator folderId={parent?.id || "root"} existingPuzzle={editingPuzzle} onBack={() => { setView("BROWSE"); setRefreshTrigger((p) => p + 1); setEditingPuzzle(null); }} />
+            </CRMShellLayout>
+        );
+    }
+
+    if (view === "CREATE_MCQ") {
+        const parent = breadcrumbs[breadcrumbs.length - 1];
+        return (
+            <CRMShellLayout>
+                <MCQCreator folderId={parent?.id || "root"} existingMCQ={editingMCQ} onBack={() => { setView("BROWSE"); setRefreshTrigger((p) => p + 1); setEditingMCQ(null); }} />
             </CRMShellLayout>
         );
     }
@@ -453,8 +581,13 @@ export default function PuzzlesPage() {
                     </div>
                     {content.folders.map((f) => <ItemCard key={f.id} item={f} type="FOLDER" />)}
                     {content.puzzles.map((p) => <ItemCard key={p.id} item={p} type="PUZZLE" />)}
+                    {content.mcqs.map((m) => <ItemCard key={m.id} item={m} type="MCQ" />)}
                 </div>
-                <div className="border-t pt-6 mt-6 flex justify-end">
+                <div className="border-t pt-6 mt-6 flex justify-end gap-4">
+                    <button onClick={() => { setEditingMCQ(null); setView("CREATE_MCQ"); }}
+                        className="bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98] font-bold transition-all">
+                        <Plus size={20} /> New MCQ
+                    </button>
                     <button onClick={() => { setEditingPuzzle(null); setView("CREATE_PUZZLE"); }}
                         className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-6 py-3 rounded-xl shadow-lg shadow-sky-500/20 flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98] font-bold transition-all">
                         <Plus size={20} /> New Puzzle

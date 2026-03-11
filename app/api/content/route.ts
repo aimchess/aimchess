@@ -27,15 +27,20 @@ export async function GET(req: Request) {
 
     // --- FETCH PUZZLES ---
     let puzzles = [];
-    // Only fetch puzzles if we are inside a specific folder (parentId exists)
+    let mcqs = [];
+    // Only fetch puzzles and mcqs if we are inside a specific folder (parentId exists)
     if (parentId && parentId !== "root") {
       puzzles = await prisma.puzzle.findMany({
         where: { folderId: parentId },
         orderBy: { title: "asc" },
       });
+      mcqs = await prisma.mCQ.findMany({
+        where: { folderId: parentId },
+        orderBy: { createdAt: "desc" },
+      });
     }
 
-    return NextResponse.json({ folders, puzzles });
+    return NextResponse.json({ folders, puzzles, mcqs });
   } catch (error) {
     console.error("GET /content error:", error);
     return NextResponse.json(
@@ -151,7 +156,7 @@ export async function PUT(req: Request) {
   }
 }
 
-// 4. DELETE: Remove Folder or Puzzle
+// 4. DELETE: Remove Folder or Puzzle or MCQ
 export async function DELETE(req: Request) {
   try {
     const body = await req.json();
@@ -185,6 +190,17 @@ export async function DELETE(req: Request) {
       return NextResponse.json({
         success: true,
         message: "Puzzle deleted",
+      });
+    }
+
+    if (type === "MCQ") {
+      await prisma.mCQ.delete({
+        where: { id },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "MCQ deleted",
       });
     }
 

@@ -7,6 +7,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const folderId = searchParams.get("folderId");
     const currentId = searchParams.get("currentId");
+    const type = searchParams.get("type") || "PUZZLE"; // PUZZLE or MCQ
 
     if (!folderId || !currentId) {
       return NextResponse.json(
@@ -15,36 +16,39 @@ export async function GET(req: Request) {
       );
     }
 
-    // All puzzles in this folder, ordered by title (or id)
-    const puzzles = await prisma.puzzle.findMany({
-      where: {
-        folderId,
-      },
-      orderBy: {
-        title: "asc", // or id: "asc"
-      },
-      select: {
-        id: true,
-      },
-    });
+    let items: any[] = [];
 
-    if (!puzzles.length) {
+    if (type === "MCQ") {
+      items = await prisma.mCQ.findMany({
+        where: { folderId },
+        orderBy: { createdAt: "asc" },
+        select: { id: true },
+      });
+    } else {
+      items = await prisma.puzzle.findMany({
+        where: { folderId },
+        orderBy: { title: "asc" },
+        select: { id: true },
+      });
+    }
+
+    if (!items.length) {
       return NextResponse.json({ id: null });
     }
 
-    const index = puzzles.findIndex((p: { id: string }) => p.id === currentId);
+    const index = items.findIndex((p: { id: string }) => p.id === currentId);
 
     if (index === -1) {
       return NextResponse.json({ id: null });
     }
 
-    const nextPuzzle = puzzles[index + 1];
+    const nextItem = items[index + 1];
 
     return NextResponse.json({
-      id: nextPuzzle ? nextPuzzle.id : null,
+      id: nextItem ? nextItem.id : null,
     });
   } catch (error) {
-    console.error("Error fetching next folder puzzle:", error);
+    console.error("Error fetching next item:", error);
     return NextResponse.json(
       { error: "Server error" },
       { status: 500 }

@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import CRMShellLayout from "@/components/crm/crm-shell"
 import {
-  Clock, PlayCircle, CheckCircle, RefreshCcw, Volume2
+  Clock, PlayCircle, CheckCircle, RefreshCcw, Volume2, HelpCircle
 } from 'lucide-react'
 
 export default function StudentTodoPage() {
@@ -41,6 +41,17 @@ export default function StudentTodoPage() {
     router.push(`/puzzle/${puzzleId}?${params.toString()}`)
   }
 
+  const launchMCQ = (mcqId: string, nextMcqId?: string, dueDate?: string) => {
+    if (dueDate && new Date() > new Date(dueDate)) {
+      alert("This assignment's deadline has passed.")
+      return
+    }
+    const params = new URLSearchParams()
+    if (nextMcqId) params.set('next', nextMcqId)
+    params.set('context', 'todo')
+    router.push(`/mcq/${mcqId}?${params.toString()}`)
+  }
+
   if (loading) return <CRMShellLayout><div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-4 border-sky-500"></div></div></CRMShellLayout>
 
   return (
@@ -65,18 +76,19 @@ export default function StudentTodoPage() {
         )}
         {pending.map((item, index) => {
           const nextAssignment = pending[index + 1]
-          const nextId = nextAssignment ? nextAssignment.puzzle.id : undefined
+          const nextId = nextAssignment ? (nextAssignment.puzzle?.id || nextAssignment.mcq?.id) : undefined
           const isOverdue = item.dueDate && new Date() > new Date(item.dueDate)
+          const isMCQ = !!item.mcqId
 
           return (
             <div
               key={item.id}
-              onClick={() => launchPuzzle(item.puzzle.id, nextId, item.dueDate)}
-              className={`group bg-white rounded-2xl p-6 border shadow-sm transition cursor-pointer relative overflow-hidden ${isOverdue ? 'opacity-75 border-red-200' : 'hover:shadow-lg hover:border-sky-300 border-sky-100'}`}
+              onClick={() => isMCQ ? launchMCQ(item.mcq.id, nextId, item.dueDate) : launchPuzzle(item.puzzle.id, nextId, item.dueDate)}
+              className={`group bg-white rounded-2xl p-6 border shadow-sm transition cursor-pointer relative overflow-hidden ${isOverdue ? 'opacity-75 border-red-200' : isMCQ ? 'hover:shadow-lg hover:border-emerald-300 border-emerald-100' : 'hover:shadow-lg hover:border-sky-300 border-sky-100'}`}
             >
-              <div className={`absolute top-0 left-0 w-1.5 h-full transition-all ${isOverdue ? 'bg-red-500' : 'bg-sky-500 group-hover:w-3'}`} />
+              <div className={`absolute top-0 left-0 w-1.5 h-full transition-all ${isOverdue ? 'bg-red-500' : isMCQ ? 'bg-emerald-500 group-hover:w-3' : 'bg-sky-500 group-hover:w-3'}`} />
               <div className="flex justify-between mb-4 pl-3">
-                <div className={`${isOverdue ? 'bg-red-50 text-red-600' : 'bg-sky-50 text-sky-600'} p-3 rounded-full`}><PlayCircle size={24} /></div>
+                <div className={`${isOverdue ? 'bg-red-50 text-red-600' : isMCQ ? 'bg-emerald-50 text-emerald-600' : 'bg-sky-50 text-sky-600'} p-3 rounded-full`}>{isMCQ ? <HelpCircle size={24} /> : <PlayCircle size={24} />}</div>
                 <div className="flex flex-col items-end gap-1">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isOverdue ? 'bg-red-100 text-red-700' : 'bg-sky-50 text-sky-500'}`}>
                     {isOverdue ? 'DEADLINE PASSED' : 'ASSIGNED'}
@@ -89,7 +101,7 @@ export default function StudentTodoPage() {
                 </div>
               </div>
               <div className="pl-3">
-                <h3 className={`text-xl font-bold ${isOverdue ? 'text-slate-500' : 'text-[#0b1d3a]'}`}>{item.puzzle.title}</h3>
+                <h3 className={`text-xl font-bold ${isOverdue ? 'text-slate-500' : 'text-[#0b1d3a]'}`}>{isMCQ ? item.mcq.question : item.puzzle.title}</h3>
                 <div className="text-sm text-slate-500 mt-1">By Coach {item.assignedBy}</div>
 
                 {item.audioUrl && (

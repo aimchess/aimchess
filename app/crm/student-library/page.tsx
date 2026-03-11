@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import CRMShellLayout from "@/components/crm/crm-shell"
 import {
   BookOpen, ChevronRight, Folder, FileText,
-  CheckCircle, Lock, BarChart3, Volume2, Star
+  CheckCircle, Lock, BarChart3, Volume2, Star, HelpCircle
 } from 'lucide-react'
 
 const STAGE_ORDER = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']
@@ -18,8 +18,9 @@ export default function StudentLibraryPage() {
   const [studentStage, setStudentStage] = useState<string>('BEGINNER')
   const [libraryStage, setLibraryStage] = useState<string>('BEGINNER')
   const [curriculumPath, setCurriculumPath] = useState<any[]>([])
-  const [curriculumItems, setCurriculumItems] = useState<{ folders: any[], puzzles: any[] }>({ folders: [], puzzles: [] })
+  const [curriculumItems, setCurriculumItems] = useState<{ folders: any[], puzzles: any[], mcqs: any[] }>({ folders: [], puzzles: [], mcqs: [] })
   const [puzzleProgress, setPuzzleProgress] = useState<Record<string, any>>({})
+  const [mcqProgress, setMcqProgress] = useState<Record<string, any>>({})
   const [courses, setCourses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -27,16 +28,26 @@ export default function StudentLibraryPage() {
     if (!session?.user) return
     try {
       const query = parentId ? `parentId=${parentId}` : `stage=${stage}`
-      const [contentRes, progressRes] = await Promise.all([
+      const [contentRes, puzzleProgressRes, mcqProgressRes] = await Promise.all([
         fetch(`/api/content?${query}`, { cache: 'no-store' }),
-        fetch(`/api/progress?studentId=${(session.user as any).id}`, { cache: 'no-store' })
+        fetch(`/api/progress?studentId=${(session.user as any).id}`, { cache: 'no-store' }),
+        fetch(`/api/mcq/progress?studentId=${(session.user as any).id}`, { cache: 'no-store' })
       ])
-      if (contentRes.ok) setCurriculumItems(await contentRes.json())
-      if (progressRes.ok) {
-        const progressList = await progressRes.json()
+      if (contentRes.ok) {
+        const content = await contentRes.json()
+        setCurriculumItems({ folders: content.folders || [], puzzles: content.puzzles || [], mcqs: content.mcqs || [] })
+      }
+      if (puzzleProgressRes.ok) {
+        const progressList = await puzzleProgressRes.json()
         const progressMap: Record<string, any> = {}
         progressList.forEach((p: any) => { progressMap[p.puzzleId] = p })
         setPuzzleProgress(progressMap)
+      }
+      if (mcqProgressRes.ok) {
+        const progressList = await mcqProgressRes.json()
+        const progressMap: Record<string, any> = {}
+        progressList.forEach((p: any) => { progressMap[p.mcqId] = p })
+        setMcqProgress(progressMap)
       }
     } catch (error) { console.error(error) }
   }, [session])
@@ -94,8 +105,18 @@ export default function StudentLibraryPage() {
     router.push(`/puzzle/${puzzleId}?${params.toString()}`)
   }
 
-  const totalPuzzles = curriculumItems.puzzles.length
-  const solvedCount = curriculumItems.puzzles.filter(p => puzzleProgress[p.id]?.isSolved).length
+  const launchMCQ = (mcqId: string, nextMcqId?: string) => {
+    const params = new URLSearchParams()
+    if (nextMcqId) params.set('next', nextMcqId)
+    const currentFolderId = curriculumPath.length > 0 ? curriculumPath[curriculumPath.length - 1].id : null
+    if (currentFolderId) params.set('folderId', currentFolderId)
+    else params.set('stage', libraryStage)
+    router.push(`/mcq/${mcqId}?${params.toString()}`)
+  }
+
+  const totalPuzzles = curriculumItems.puzzles.length + curriculumItems.mcqs.length
+  const solvedCount = curriculumItems.puzzles.filter(p => puzzleProgress[p.id]?.isSolved).length +
+    curriculumItems.mcqs.filter(m => mcqProgress[m.id]?.isCorrect).length
 
   if (loading) return <CRMShellLayout><div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-4 border-sky-500"></div></div></CRMShellLayout>
 
@@ -176,8 +197,8 @@ export default function StudentLibraryPage() {
           </div>
         )}
 
-        {/* Puzzles */}
-        {curriculumItems.puzzles.length === 0 && curriculumItems.folders.length === 0 && (
+        {/* Puzzles & MCQs */}
+        {curriculumItems.puzzles.length === 0 && curriculumItems.mcqs.length === 0 && curriculumItems.folders.length === 0 && (
           <div className="text-center py-20 text-slate-400 flex flex-col items-center border-2 border-dashed border-sky-100 rounded-xl">
             <Folder size={48} className="mb-4 opacity-20" />
             <p>This folder is empty.</p>
@@ -203,6 +224,29 @@ export default function StudentLibraryPage() {
                   </div>
                 </div>
                 {!isSolved && <ChevronRight size={16} className="text-slate-300 group-hover:text-sky-500 transition-transform group-hover:translate-x-1" />}
+              </div>
+            )
+          })}
+
+          {curriculumItems.mcqs.map((m, index) => {
+            const progress = mcqProgress[m.id]
+            const isSolved = progress?.isCorrect
+            const nextMCQ = curriculumItems.mcqs[index + 1]
+            const nextId = nextMCQ ? nextMCQ.id : undefined
+            return (
+              <div
+                key={m.id}
+                onClick={() => launchMCQ(m.id, nextId)}
+                className={`group p-4 border rounded-xl cursor-pointer transition flex items-center justify-between ${isSolved ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-sky-100 hover:border-emerald-400 hover:shadow-md'}`}
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  {isSolved ? <CheckCircle className="text-emerald-600 shrink-0" size={20} /> : <HelpCircle className="text-slate-300 group-hover:text-emerald-500 shrink-0" size={20} />}
+                  <div className="truncate">
+                    <span className={`font-bold text-sm block truncate ${isSolved ? 'text-emerald-800' : 'text-slate-700'}`}>{m.question}</span>
+                    {progress && <span className="text-[10px] text-slate-500 font-medium">{progress.attempts} Attempt{progress.attempts !== 1 ? 's' : ''}</span>}
+                  </div>
+                </div>
+                {!isSolved && <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-500 transition-transform group-hover:translate-x-1" />}
               </div>
             )
           })}

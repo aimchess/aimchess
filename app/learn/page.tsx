@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import {
   Clock, BookOpen, ChevronRight, Folder, FileText,
   PlayCircle, CheckCircle, History, RefreshCcw, Lock, BarChart3,
-  CreditCard, Wallet, Calendar, Video, Clock as ClockIcon, Volume2, Star
+  CreditCard, Wallet, Calendar, Video, Clock as ClockIcon, Volume2, Star,
+  HelpCircle
 } from 'lucide-react'
 
 const STAGE_ORDER = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
@@ -27,10 +28,11 @@ export default function StudentDashboard() {
   // Library State
   const [libraryStage, setLibraryStage] = useState<string>('BEGINNER')
   const [curriculumPath, setCurriculumPath] = useState<any[]>([])
-  const [curriculumItems, setCurriculumItems] = useState<{ folders: any[], puzzles: any[] }>({ folders: [], puzzles: [] })
+  const [curriculumItems, setCurriculumItems] = useState<{ folders: any[], puzzles: any[], mcqs: any[] }>({ folders: [], puzzles: [], mcqs: [] })
 
   // Progress State (Map puzzleId -> Progress Object)
   const [puzzleProgress, setPuzzleProgress] = useState<Record<string, any>>({})
+  const [mcqProgress, setMcqProgress] = useState<Record<string, any>>({})
   const [payments, setPayments] = useState<any[]>([])
   const [classes, setClasses] = useState<any[]>([])
   const [courses, setCourses] = useState<any[]>([])
@@ -51,23 +53,33 @@ export default function StudentDashboard() {
   const fetchLibrary = useCallback(async (stage: string, parentId: string | null) => {
     try {
       const query = parentId ? `parentId=${parentId}` : `stage=${stage}`
-      const [contentRes, progressRes] = await Promise.all([
+      const [contentRes, puzzleProgressRes, mcqProgressRes] = await Promise.all([
         fetch(`/api/content?${query}`, { cache: 'no-store' }),
-        fetch(`/api/progress?studentId=${(session?.user as any).id}`, { cache: 'no-store' })
+        fetch(`/api/progress?studentId=${(session?.user as any).id}`, { cache: 'no-store' }),
+        fetch(`/api/mcq/progress?studentId=${(session?.user as any).id}`, { cache: 'no-store' })
       ])
 
       if (contentRes.ok) {
         const content = await contentRes.json()
-        setCurriculumItems(content)
+        setCurriculumItems({
+          folders: content.folders || [],
+          puzzles: content.puzzles || [],
+          mcqs: content.mcqs || []
+        })
       }
 
-      if (progressRes.ok) {
-        const progressList = await progressRes.json()
+      if (puzzleProgressRes.ok) {
+        const progressList = await puzzleProgressRes.json()
         const progressMap: Record<string, any> = {}
-        progressList.forEach((p: any) => {
-          progressMap[p.puzzleId] = p
-        })
+        progressList.forEach((p: any) => { progressMap[p.puzzleId] = p })
         setPuzzleProgress(progressMap)
+      }
+
+      if (mcqProgressRes.ok) {
+        const progressList = await mcqProgressRes.json()
+        const progressMap: Record<string, any> = {}
+        progressList.forEach((p: any) => { progressMap[p.mcqId] = p })
+        setMcqProgress(progressMap)
       }
 
     } catch (error) { console.error("Error fetching library:", error) }
@@ -181,6 +193,17 @@ export default function StudentDashboard() {
     router.push(`/puzzle/${puzzleId}?${params.toString()}`)
   }
 
+  const launchMCQ = (mcqId: string, nextMcqId?: string) => {
+    const params = new URLSearchParams()
+    if (nextMcqId) params.set('next', nextMcqId)
+
+    const currentFolderId = curriculumPath.length > 0 ? curriculumPath[curriculumPath.length - 1].id : null
+    if (currentFolderId) params.set('folderId', currentFolderId)
+    else params.set('stage', libraryStage)
+
+    router.push(`/mcq/${mcqId}?${params.toString()}`)
+  }
+
   const isStageLocked = (targetStage: string) => {
     const currentIndex = STAGE_ORDER.indexOf(studentStage);
     const targetIndex = STAGE_ORDER.indexOf(targetStage);
@@ -190,8 +213,9 @@ export default function StudentDashboard() {
   const pending = assignments.filter(a => !a.isCompleted)
   const completed = assignments.filter(a => a.isCompleted)
 
-  const totalPuzzles = curriculumItems.puzzles.length
-  const solvedCount = curriculumItems.puzzles.filter(p => puzzleProgress[p.id]?.isSolved).length
+  const totalPuzzles = curriculumItems.puzzles.length + curriculumItems.mcqs.length
+  const solvedCount = curriculumItems.puzzles.filter(p => puzzleProgress[p.id]?.isSolved).length +
+    curriculumItems.mcqs.filter(m => mcqProgress[m.id]?.isCorrect).length
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-4 border-orange-500"></div></div>
 
@@ -244,18 +268,19 @@ export default function StudentDashboard() {
             )}
             {pending.map((item, index) => {
               const nextAssignment = pending[index + 1];
-              const nextId = nextAssignment ? nextAssignment.puzzle.id : undefined;
+              const nextId = nextAssignment ? (nextAssignment.puzzle?.id || nextAssignment.mcq?.id) : undefined;
               const isOverdue = item.dueDate && new Date() > new Date(item.dueDate);
+              const isMCQ = !!item.mcqId;
 
               return (
                 <div
                   key={item.id}
-                  onClick={() => launchPuzzle(item.puzzle.id, 'TODO', nextId, item.dueDate)}
-                  className={`group bg-white rounded-2xl p-6 border shadow-sm transition cursor-pointer relative overflow-hidden ${isOverdue ? 'opacity-75 border-red-200' : 'hover:shadow-lg hover:border-orange-300'}`}
+                  onClick={() => isMCQ ? launchMCQ(item.mcq.id, nextId) : launchPuzzle(item.puzzle.id, 'TODO', nextId, item.dueDate)}
+                  className={`group bg-white rounded-2xl p-6 border shadow-sm transition cursor-pointer relative overflow-hidden ${isOverdue ? 'opacity-75 border-red-200' : isMCQ ? 'hover:shadow-lg hover:border-emerald-300' : 'hover:shadow-lg hover:border-orange-300'}`}
                 >
-                  <div className={`absolute top-0 left-0 w-1.5 h-full transition-all ${isOverdue ? 'bg-red-500' : 'bg-orange-500 group-hover:w-3'}`} />
+                  <div className={`absolute top-0 left-0 w-1.5 h-full transition-all ${isOverdue ? 'bg-red-500' : isMCQ ? 'bg-emerald-500 group-hover:w-3' : 'bg-orange-500 group-hover:w-3'}`} />
                   <div className="flex justify-between mb-4 pl-3">
-                    <div className={`${isOverdue ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'} p-3 rounded-full`}><PlayCircle size={24} /></div>
+                    <div className={`${isOverdue ? 'bg-red-50 text-red-600' : isMCQ ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'} p-3 rounded-full`}>{isMCQ ? <HelpCircle size={24} /> : <PlayCircle size={24} />}</div>
                     <div className="flex flex-col items-end gap-1">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isOverdue ? 'bg-red-100 text-red-700' : 'bg-slate-50 text-slate-400'}`}>
                         {isOverdue ? 'DEADLINE PASSED' : 'ASSIGNED'}
@@ -268,7 +293,7 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                   <div className="pl-3">
-                    <h3 className={`text-xl font-bold ${isOverdue ? 'text-slate-500' : 'text-slate-800'}`}>{item.puzzle.title}</h3>
+                    <h3 className={`text-xl font-bold ${isOverdue ? 'text-slate-500' : 'text-slate-800'}`}>{isMCQ ? item.mcq.question : item.puzzle.title}</h3>
                     <div className="text-sm text-slate-500 mt-1">By Coach {item.assignedBy}</div>
 
                     {item.audioUrl && (
@@ -303,7 +328,7 @@ export default function StudentDashboard() {
                   <CheckCircle size={16} className="text-green-600" />
                   <span className="text-xs font-bold text-slate-400">{new Date(item.assignedAt).toLocaleDateString()}</span>
                 </div>
-                <h3 className="font-bold text-slate-700 line-through decoration-slate-300">{item.puzzle.title}</h3>
+                <h3 className="font-bold text-slate-700 line-through decoration-slate-300">{item.mcqId ? item.mcq.question : item.puzzle.title}</h3>
               </div>
             ))}
           </div>
@@ -374,8 +399,8 @@ export default function StudentDashboard() {
             {curriculumItems.folders.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
                 {curriculumItems.folders.map(f => (
-                  <div key={f.id} onClick={() => handleFolderClick(f)} className="aspect-[4/3] bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition">
-                    <Folder className="w-8 h-8 text-blue-400 mb-2" />
+                  <div key={f.id} onClick={() => handleFolderClick(f)} className="aspect-[4/3] bg-gradient-to-br from-indigo-50 to-white border border-indigo-100 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition text-indigo-600">
+                    <Folder className="w-8 h-8 opacity-80 mb-2" />
                     <span className="text-sm font-bold text-slate-700 text-center px-2">{f.name}</span>
                   </div>
                 ))}
@@ -412,6 +437,33 @@ export default function StudentDashboard() {
                         </div>
                       </div>
                       {!isSolved && <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-500 transition-transform group-hover:translate-x-1" />}
+                    </div>
+                  )
+                })}
+
+                {curriculumItems.mcqs.map((m, index) => {
+                  const progress = mcqProgress[m.id]
+                  const isSolved = progress?.isCorrect
+                  const nextMCQ = curriculumItems.mcqs[index + 1];
+                  const nextId = nextMCQ ? nextMCQ.id : undefined;
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => launchMCQ(m.id, nextId)}
+                      className={`group p-4 border rounded-xl cursor-pointer transition flex items-center justify-between ${isSolved ? 'bg-emerald-50 border-emerald-200' : 'bg-white hover:border-emerald-500 hover:shadow-md'}`}
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        {isSolved ? <CheckCircle className="text-emerald-600 shrink-0" size={20} /> : <HelpCircle className="text-slate-300 group-hover:text-emerald-500 shrink-0" size={20} />}
+                        <div className="truncate">
+                          <span className={`font-bold text-sm block truncate ${isSolved ? 'text-emerald-800' : 'text-slate-700'}`}>{m.question}</span>
+                          {progress && (
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              {progress.attempts} Attempt{progress.attempts !== 1 ? 's' : ''}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {!isSolved && <ChevronRight size={16} className="text-slate-300 group-hover:text-emerald-500 transition-transform group-hover:translate-x-1" />}
                     </div>
                   )
                 })}

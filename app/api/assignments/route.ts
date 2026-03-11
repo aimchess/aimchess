@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 // ---------------------------------------------
-// POST – Assign puzzle(s) or Folder to a student
+// POST – Assign puzzle(s), MCQ(s) or Folder to a student
 // ---------------------------------------------
 export async function POST(req: Request) {
   try {
@@ -13,117 +13,107 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get input. Supports both new 'itemId/type' and legacy 'puzzleId'
     const body = await req.json();
     const { studentId, itemId, type, puzzleId, dueDate, audioUrl } = body;
 
     const targetId = itemId || puzzleId;
-    const targetType = type || 'PUZZLE'; // Default to single puzzle
+    const targetType = type || 'PUZZLE';
 
-    // 1. Validate Input
     if (!studentId || !targetId) {
-      return NextResponse.json(
-        { error: "studentId and ID are required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "studentId and ID are required" }, { status: 400 });
     }
 
-    // 2. Authorization Check
     const userRole = (session.user as any)?.role;
-    const userId = (session.user as any)?.id; // We use ID to satisfy UUID column requirements
+    const userId = (session.user as any)?.id;
 
     if (userRole !== "ADMIN" && userRole !== "COACH") {
-      return NextResponse.json(
-        { error: "Only coaches or admins can assign puzzles" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Only coaches or admins can assign content" }, { status: 403 });
     }
 
-    // 3. Verify Student
     const student = await prisma.user.findUnique({ where: { id: studentId } });
     if (!student || student.role !== "STUDENT") {
       return NextResponse.json({ error: "Invalid student" }, { status: 404 });
     }
 
-    // ---------------------------------------------------------
-    // SCENARIO A: BULK ASSIGN FOLDER
-    // ---------------------------------------------------------
     if (targetType === 'FOLDER') {
-      // Find all puzzles in this folder
-      const puzzlesInFolder = await prisma.puzzle.findMany({
-        where: { folderId: targetId },
-        select: { id: true }
-      });
+      const [puzzles, mcqs] = await Promise.all([
+        prisma.puzzle.findMany({ where: { folderId: targetId }, select: { id: true } }),
+        prisma.mCQ.findMany({ where: { folderId: targetId }, select: { id: true } })
+      ]);
 
-      if (puzzlesInFolder.length === 0) {
+      if (puzzles.length === 0 && mcqs.length === 0) {
         return NextResponse.json({ message: "Folder is empty", count: 0 });
       }
 
-      // FIX: Use 'userId' (UUID) for assignedBy, not email
-      const assignmentsData = puzzlesInFolder.map((p: any) => ({
-        studentId,
-        puzzleId: p.id,
-        assignedBy: userId, // Must be UUID if DB column is UUID
-        assignedAt: new Date(),
-        dueDate: dueDate ? new Date(dueDate) : null,
-        audioUrl: audioUrl || null
-      }));
+      const assignmentsData = [
+        ...puzzles.map((p: any) => ({
+          studentId,
+          puzzleId: p.id,
+          assignedBy: userId,
+          assignedAt: new Date(),
+          dueDate: dueDate ? new Date(dueDate) : null,
+          audioUrl: audioUrl || null
+        })),
+        ...mcqs.map((m: any) => ({
+          studentId,
+          mcqId: m.id,
+          assignedBy: userId,
+          assignedAt: new Date(),
+          dueDate: dueDate ? new Date(dueDate) : null,
+          audioUrl: audioUrl || null
+        }))
+      ];
 
-      // Bulk Insert
       const result = await prisma.assignment.createMany({
         data: assignmentsData,
         skipDuplicates: true
       });
 
-      return NextResponse.json({
-        message: "Folder assigned successfully",
-        count: result.count
-      });
-    }
+      return NextResponse.json({ message: "Folder assigned successfully", count: result.count });
+    } else if (targetType === 'MCQ') {
+      const mcq = await prisma.mCQ.findUnique({ where: { id: targetId } });
+      if (!mcq) return NextResponse.json({ error: "MCQ not found" }, { status: 404 });
 
-    // ---------------------------------------------------------
-    // SCENARIO B: SINGLE PUZZLE ASSIGNMENT
-    // ---------------------------------------------------------
-    else {
-      // Check puzzle exists
-      const puzzle = await prisma.puzzle.findUnique({ where: { id: targetId } });
-      if (!puzzle) {
-        return NextResponse.json({ error: "Puzzle not found" }, { status: 404 });
-      }
-
-      // Check duplicate
       const alreadyAssigned = await prisma.assignment.findFirst({
-        where: { studentId, puzzleId: targetId }
+        where: { studentId, mcqId: targetId }
       });
+      if (alreadyAssigned) return NextResponse.json({ error: "Already assigned" }, { status: 409 });
 
-      if (alreadyAssigned) {
-        return NextResponse.json(
-          { error: "This puzzle is already assigned" },
-          { status: 409 }
-        );
-      }
-
-      // Create Assignment
       const assignment = await prisma.assignment.create({
         data: {
           studentId,
-          puzzleId: targetId,
-          assignedBy: userId, // FIX: Use UUID
+          mcqId: targetId,
+          assignedBy: userId,
           assignedAt: new Date(),
           dueDate: dueDate ? new Date(dueDate) : null,
           audioUrl: audioUrl || null
         }
       });
+      return NextResponse.json(assignment);
+    } else {
+      const puzzle = await prisma.puzzle.findUnique({ where: { id: targetId } });
+      if (!puzzle) return NextResponse.json({ error: "Puzzle not found" }, { status: 404 });
 
+      const alreadyAssigned = await prisma.assignment.findFirst({
+        where: { studentId, puzzleId: targetId }
+      });
+      if (alreadyAssigned) return NextResponse.json({ error: "Already assigned" }, { status: 409 });
+
+      const assignment = await prisma.assignment.create({
+        data: {
+          studentId,
+          puzzleId: targetId,
+          assignedBy: userId,
+          assignedAt: new Date(),
+          dueDate: dueDate ? new Date(dueDate) : null,
+          audioUrl: audioUrl || null
+        }
+      });
       return NextResponse.json(assignment);
     }
-
   } catch (e) {
     console.error("Assignment POST error:", e);
-    return NextResponse.json(
-      { error: "Failed to assign homework. Check server logs." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to assign homework" }, { status: 500 });
   }
 }
 
@@ -134,29 +124,19 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const studentId = searchParams.get("studentId");
-
-    if (!studentId) {
-      return NextResponse.json(
-        { error: "Student ID required" },
-        { status: 400 }
-      );
-    }
+    if (!studentId) return NextResponse.json({ error: "Student ID required" }, { status: 400 });
 
     const assignments = await prisma.assignment.findMany({
       where: { studentId },
       include: {
-        puzzle: true
+        puzzle: true,
+        mcq: true
       },
       orderBy: { assignedAt: "desc" }
     });
-
     return NextResponse.json(assignments);
-
   } catch (e) {
     console.error("Assignment GET error:", e);
-    return NextResponse.json(
-      { error: "Failed to load assignments" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to load assignments" }, { status: 500 });
   }
 }

@@ -7,7 +7,7 @@ import AudioRecorder from '@/components/AudioRecorder'
 import {
   Users, Folder, FileText, ChevronRight,
   CheckCircle, XCircle, Clock, RotateCcw, Plus,
-  Loader2, AlertCircle, Activity, BookOpen, Layers, Trophy, Target, X
+  Loader2, AlertCircle, Activity, BookOpen, Layers, Trophy, Target, X, HelpCircle
 } from 'lucide-react'
 
 /* ---- Modal ---- */
@@ -29,10 +29,10 @@ const Modal = ({ isOpen, onClose, title, children }: any) => {
 }
 
 /* ---- Homework Browser ---- */
-function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' | 'FOLDER', dueDate?: string, audioUrl?: string | null) => void }) {
+function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' | 'FOLDER' | 'MCQ', dueDate?: string, audioUrl?: string | null) => void }) {
   const [currentStage, setCurrentStage] = useState<string | null>(null)
   const [breadcrumbs, setBreadcrumbs] = useState<any[]>([])
-  const [content, setContent] = useState<{ folders: any[], puzzles: any[] }>({ folders: [], puzzles: [] })
+  const [content, setContent] = useState<{ folders: any[], puzzles: any[], mcqs: any[] }>({ folders: [], puzzles: [], mcqs: [] })
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState('')
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -42,7 +42,7 @@ function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' |
     setLoading(true)
     const parent = breadcrumbs[breadcrumbs.length - 1]
     const url = parent ? `/api/content?parentId=${parent.id}` : `/api/content?stage=${currentStage}`
-    fetch(url).then(r => r.json()).then(data => setContent({ folders: data.folders || [], puzzles: data.puzzles || [] })).catch(console.error).finally(() => setLoading(false))
+    fetch(url).then(r => r.json()).then(data => setContent({ folders: data.folders || [], puzzles: data.puzzles || [], mcqs: data.mcqs || [] })).catch(console.error).finally(() => setLoading(false))
   }, [currentStage, breadcrumbs])
 
   if (!currentStage) {
@@ -113,7 +113,16 @@ function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' |
               </button>
             </div>
           ))}
-          {content.folders.length === 0 && content.puzzles.length === 0 && <div className="col-span-full py-10 text-center text-slate-300 font-bold uppercase text-xs">Folder is empty</div>}
+          {content.mcqs.map(m => (
+            <div key={m.id} className="p-4 bg-white border-2 border-slate-50 rounded-2xl flex flex-col items-center justify-center relative group hover:border-emerald-200 transition-all shadow-sm h-32 active:scale-95">
+              <HelpCircle className="text-emerald-400 mb-2" size={28} />
+              <span className="text-xs font-bold text-center text-slate-700 line-clamp-2">{m.question}</span>
+              <button onClick={() => onAssign(m.id, 'MCQ', dueDate, audioUrl)} className="absolute inset-0 bg-[#0b1d3a]/90 text-white text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-2xl transition-all">
+                Assign Now
+              </button>
+            </div>
+          ))}
+          {content.folders.length === 0 && content.puzzles.length === 0 && content.mcqs.length === 0 && <div className="col-span-full py-10 text-center text-slate-300 font-bold uppercase text-xs">Folder is empty</div>}
         </div>
       )}
     </div>
@@ -169,7 +178,7 @@ export default function CoachStudentsPage() {
   const totalSolved = stats.filter(s => s.isSolved).length
   const successRate = stats.length > 0 ? Math.round((totalSolved / stats.length) * 100) : 0
 
-  const handleAssign = async (id: string, type: 'PUZZLE' | 'FOLDER', dueDate?: string, audioUrl?: string | null) => {
+  const handleAssign = async (id: string, type: 'PUZZLE' | 'FOLDER' | 'MCQ', dueDate?: string, audioUrl?: string | null) => {
     try {
       const res = await fetch('/api/assignments', {
         method: 'POST',

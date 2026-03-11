@@ -81,12 +81,30 @@ export async function GET(req: Request) {
       );
     }
 
-    const progress = await prisma.progress.findMany({
-      where: { studentId },
-      orderBy: { lastPlayed: "desc" }
+    const [puzzleProgress, mcqProgress] = await Promise.all([
+      prisma.progress.findMany({
+        where: { studentId },
+        include: { puzzle: true },
+        orderBy: { lastPlayed: "desc" }
+      }),
+      prisma.mCQProgress.findMany({
+        where: { studentId },
+        include: { mcq: true },
+        orderBy: { id: "desc" } // MCQProgress doesn't have lastPlayed yet, but we can add it or use id
+      })
+    ]);
+
+    // Combine and sort by date if possible
+    const combined = [
+      ...puzzleProgress.map((p: any) => ({ ...p, type: 'PUZZLE' })),
+      ...mcqProgress.map((m: any) => ({ ...m, type: 'MCQ', isSolved: m.isCorrect, puzzle: { title: m.mcq.question } }))
+    ].sort((a: any, b: any) => {
+      const dateA = a.lastPlayed ? new Date(a.lastPlayed).getTime() : 0;
+      const dateB = b.lastPlayed ? new Date(b.lastPlayed).getTime() : 0;
+      return dateB - dateA;
     });
 
-    return NextResponse.json(progress);
+    return NextResponse.json(combined);
 
   } catch (error) {
     console.error("Progress Fetch Error:", error);

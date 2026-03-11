@@ -22,6 +22,11 @@ export async function middleware(req: NextRequest) {
   // All logged-in users (ADMIN, COACH, STUDENT) can access CRM pages
   // No role restriction — role-based UI is handled in the sidebar
 
+  // Allow authenticated users to access puzzle and MCQ solver pages
+  if (token && (pathname.startsWith("/puzzle") || pathname.startsWith("/mcq"))) {
+    return NextResponse.next();
+  }
+
   // Redirect all other routes to role-specific CRM dashboard
   if (!pathname.startsWith("/crm")) {
     if (token) {
