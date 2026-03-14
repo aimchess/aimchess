@@ -19,6 +19,7 @@ export default function StudentDashboardPage() {
   const [pendingCount, setPendingCount] = useState(0)
   const [completedCount, setCompletedCount] = useState(0)
   const [classCount, setClassCount] = useState(0)
+  const [isIdCardModalOpen, setIsIdCardModalOpen] = useState(false)
   const [nextClass, setNextClass] = useState<any>(null)
   const [recentAssignments, setRecentAssignments] = useState<any[]>([])
 
@@ -60,29 +61,79 @@ export default function StudentDashboardPage() {
       return
     }
 
-    setUploading(true)
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = async () => {
-      const base64 = reader.result as string
-      try {
-        const res = await fetch("/api/user/profile-photo", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ photoUrl: base64 }),
-        })
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'aimchess')
 
-        if (res.ok) {
-          await update({ photoUrl: base64 })
-          toast.success("Profile photo updated successfully!")
-        } else {
-          toast.error("Failed to update profile photo")
-        }
-      } catch (error) {
-        toast.error("An error occurred during upload")
-      } finally {
-        setUploading(false)
+    try {
+      const uploadRes = await fetch("https://api.cloudinary.com/v1_1/dieciekpa/image/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!uploadRes.ok) throw new Error("Cloudinary upload failed")
+      const uploadData = await uploadRes.json()
+      const cloudinaryUrl = uploadData.secure_url
+
+      const res = await fetch("/api/user/profile-photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoUrl: cloudinaryUrl }),
+      })
+
+      if (res.ok) {
+        await update({ photoUrl: cloudinaryUrl })
+        toast.success("Profile photo updated successfully!")
+      } else {
+        toast.error("Failed to update profile photo in database")
       }
+    } catch (error) {
+      console.error(error)
+      toast.error("An error occurred during upload")
+    }
+  }
+
+  const handleIdCardUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size must be less than 2MB")
+      return
+    }
+
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', 'aimchess')
+
+    try {
+      const uploadRes = await fetch("https://api.cloudinary.com/v1_1/dieciekpa/image/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!uploadRes.ok) throw new Error("Cloudinary upload failed")
+      const uploadData = await uploadRes.json()
+      const cloudinaryUrl = uploadData.secure_url
+
+      const res = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: studentId, idCardUrl: cloudinaryUrl }),
+      })
+
+      if (res.ok) {
+        await update({ idCardUrl: cloudinaryUrl })
+        toast.success("ID Card updated successfully!")
+      } else {
+        toast.error("Failed to update ID Card in database")
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error("An error occurred during upload")
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -126,11 +177,20 @@ export default function StudentDashboardPage() {
               <p className="text-sky-200 text-sm">Keep up the great work. Here&apos;s your learning overview.</p>
             </div>
           </div>
-          <div className="hidden lg:block">
+          <div className="flex items-center gap-3">
             <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 text-center">
               <p className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Level</p>
               <p className="text-xl font-black">{(session?.user as any)?.stage || 'BEGINNER'}</p>
             </div>
+            {(session?.user as any)?.idCardUrl && (
+              <button 
+                onClick={() => setIsIdCardModalOpen(true)}
+                className="px-4 py-2 bg-emerald-500/20 backdrop-blur-md rounded-xl border border-emerald-500/30 text-center hover:bg-emerald-500/30 transition-all"
+              >
+                <p className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">ID Card</p>
+                <p className="text-xs font-bold text-white flex items-center gap-1"><CheckCircle size={10} /> Verified</p>
+              </button>
+            )}
           </div>
         </div>
 
@@ -242,6 +302,12 @@ export default function StudentDashboardPage() {
                   <action.icon size={18} /> {action.label}
                 </Link>
               ))}
+              <div className="pt-2">
+                <label className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all border bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200 cursor-pointer">
+                  <Camera size={18} /> Update ID Card
+                  <input type="file" className="hidden" accept="image/*" onChange={handleIdCardUpload} disabled={uploading} />
+                </label>
+              </div>
             </div>
 
             {/* Next Class Card */}
@@ -261,6 +327,35 @@ export default function StudentDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ID Card Modal */}
+      {isIdCardModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setIsIdCardModalOpen(false)}>
+          <div className="relative max-w-2xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-900">Student ID Card</h3>
+              <button onClick={() => setIsIdCardModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-all">
+                <X size={20} className="text-gray-500" />
+              </button>
+            </div>
+            <div className="p-4 md:p-8 flex items-center justify-center bg-gray-50">
+              <img 
+                src={(session?.user as any)?.idCardUrl} 
+                alt="ID Card" 
+                className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-lg border-4 border-white"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </CRMShellLayout>
   )
 }
+
+// Simple X icon for modal
+const X = ({ size, className }: { size: number, className: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+)

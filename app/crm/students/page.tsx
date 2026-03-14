@@ -284,8 +284,16 @@ export default function StudentsPage() {
                                         >
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-600 text-xs font-bold">
-                                                        {u.name?.[0]?.toUpperCase() || "?"}
+                                                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm">
+                                                        {u.photoUrl ? (
+                                                            <img 
+                                                                src={u.photoUrl} 
+                                                                alt={u.name} 
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            u.name?.[0]?.toUpperCase() || "?"
+                                                        )}
                                                     </div>
                                                     <div>
                                                         <div className="font-semibold text-gray-900 text-sm">
@@ -597,9 +605,21 @@ export default function StudentsPage() {
                                                 onChange={async (e) => {
                                                     const file = e.target.files?.[0];
                                                     if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => setFormData({ ...formData, photoUrl: reader.result as string });
-                                                        reader.readAsDataURL(file);
+                                                        const formDataCloud = new FormData();
+                                                        formDataCloud.append("file", file);
+                                                        formDataCloud.append("upload_preset", "aimchess");
+                                                        try {
+                                                            const res = await fetch("https://api.cloudinary.com/v1_1/dieciekpa/image/upload", {
+                                                                method: "POST",
+                                                                body: formDataCloud,
+                                                            });
+                                                            const data = await res.json();
+                                                            if (data.secure_url) {
+                                                                setFormData({ ...formData, photoUrl: data.secure_url });
+                                                            }
+                                                        } catch (error) {
+                                                            console.error("Cloudinary upload failed", error);
+                                                        }
                                                     }
                                                 }} />
                                             {formData.photoUrl && <img src={formData.photoUrl} className="w-16 h-16 object-cover rounded-xl mt-2 border border-gray-200" alt="Preview" />}
@@ -612,9 +632,21 @@ export default function StudentsPage() {
                                                 onChange={async (e) => {
                                                     const file = e.target.files?.[0];
                                                     if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => setFormData({ ...formData, idCardUrl: reader.result as string });
-                                                        reader.readAsDataURL(file);
+                                                        const formDataCloud = new FormData();
+                                                        formDataCloud.append("file", file);
+                                                        formDataCloud.append("upload_preset", "aimchess");
+                                                        try {
+                                                            const res = await fetch("https://api.cloudinary.com/v1_1/dieciekpa/image/upload", {
+                                                                method: "POST",
+                                                                body: formDataCloud,
+                                                            });
+                                                            const data = await res.json();
+                                                            if (data.secure_url) {
+                                                                setFormData({ ...formData, idCardUrl: data.secure_url });
+                                                            }
+                                                        } catch (error) {
+                                                            console.error("Cloudinary upload failed", error);
+                                                        }
                                                     }
                                                 }} />
                                             {formData.idCardUrl && <img src={formData.idCardUrl} className="w-16 h-16 object-cover rounded-xl mt-2 border border-gray-200" alt="ID Preview" />}

@@ -65,9 +65,9 @@ export default function CRMSignupPage() {
 
                 <div className="relative z-10 flex flex-col items-center">
                     <div className="relative w-20 h-20 mb-4">
-                        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 blur-md opacity-60 animate-pulse" />
-                        <div className="relative w-full h-full rounded-2xl overflow-hidden bg-white shadow-xl p-2">
-                            <img src="/aim-logo.jpeg" alt="AIM Chess Academy" className="w-full h-full object-contain rounded-xl" />
+                        <div className="absolute bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 blur-md opacity-60 animate-pulse" />
+                        <div className="relative w-full h-full overflow-hidden bg-white shadow-xl p-2">
+                            <img src="/aim-logo.jpeg" alt="AIM Chess Academy" className="w-full h-full object-contain" />
                         </div>
                     </div>
                     <h2 className="text-xl font-extrabold text-white tracking-tight">AIM Chess Academy</h2>
@@ -94,9 +94,9 @@ export default function CRMSignupPage() {
 
                 <div className="relative z-10 px-12 xl:px-16 max-w-lg w-full">
                     <div className="relative w-28 h-28 xl:w-32 xl:h-32 mx-auto mb-6 xl:mb-8">
-                        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 blur-md opacity-60 animate-pulse" />
-                        <div className="relative w-full h-full rounded-3xl overflow-hidden bg-white shadow-2xl shadow-sky-500/30 p-2 xl:p-3">
-                            <img src="/aim-logo.jpeg" alt="AIM Chess Academy" className="w-full h-full object-contain rounded-2xl" />
+                        <div className="absolute bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 blur-md opacity-60 animate-pulse" />
+                        <div className="relative w-full h-full overflow-hidden bg-white shadow-2xl shadow-sky-500/30 p-2 xl:p-3">
+                            <img src="/aim-logo.jpeg" alt="AIM Chess Academy" className="w-full h-full object-contain" />
                         </div>
                     </div>
 

@@ -177,7 +177,37 @@ export default function StudentLibraryPage() {
                   <p className="text-sm text-slate-500 mb-4 line-clamp-2">{course.description}</p>
                   <div className="flex items-center justify-between mt-auto pt-4 border-t border-sky-100">
                     <span className="text-xs font-bold text-slate-400">{course.chapters?.length || 0} Lessons</span>
-                    <span className="text-sm font-bold text-sky-600">View Details</span>
+                    <button 
+                      onClick={() => {
+                        const currentFolders = curriculumItems.folders;
+                        console.log("Searching for folder matching course:", course.title);
+                        console.log("Current folders at root:", currentFolders);
+                        
+                        // 1. Try name matching
+                        let folder = currentFolders.find(f => {
+                          const fName = (f.name || "").trim().toLowerCase();
+                          const cTitle = (course.title || "").trim().toLowerCase();
+                          return fName === cTitle || fName.includes(cTitle) || cTitle.includes(fName);
+                        });
+
+                        // 2. Fallback: if only one folder exists and stage matches, assume it's the one
+                        if (!folder && currentFolders.length === 1) {
+                          console.log("Using single folder fallback");
+                          folder = currentFolders[0];
+                        }
+
+                        if (folder) {
+                          console.log("Selected folder:", folder);
+                          handleFolderClick(folder);
+                        } else {
+                          const folderNames = currentFolders.map(f => f.name).join(", ") || "None";
+                          alert(`No matching folder found for "${course.title}".\nAvailable folders: ${folderNames}\n\nPlease ensure the folder name matches the course title.`);
+                        }
+                      }}
+                      className="text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline transition-colors"
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
               ))}
@@ -186,7 +216,7 @@ export default function StudentLibraryPage() {
         )}
 
         {/* Folders */}
-        {curriculumItems.folders.length > 0 && (
+        {curriculumPath.length > 0 && curriculumItems.folders.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
             {curriculumItems.folders.map(f => (
               <div key={f.id} onClick={() => handleFolderClick(f)} className="aspect-[4/3] bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition">

@@ -153,8 +153,16 @@ export default function CRMDashboard() {
                                 {recentPayments.map((p: any) => (
                                     <div key={p.id} className="flex items-center justify-between py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                                                {p.student?.name?.[0] || "?"}
+                                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden border border-gray-100 shadow-sm">
+                                                {p.student?.photoUrl ? (
+                                                    <img 
+                                                        src={p.student.photoUrl} 
+                                                        alt={p.student.name} 
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    p.student?.name?.[0] || "?"
+                                                )}
                                             </div>
                                             <div>
                                                 <p className="text-sm font-semibold text-gray-900">{p.student?.name || "Unknown"}</p>

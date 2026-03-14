@@ -21,7 +21,7 @@ export default function LeaderboardPage() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await fetch('/api/leaderboard')
+        const res = await fetch('/api/leaderboard', { cache: 'no-store' })
         if (res.ok) {
           const data = await res.json()
           setLeaderboard(data)
@@ -120,14 +120,15 @@ export default function LeaderboardPage() {
                         className="hover:bg-sky-50/30 transition-colors group"
                     >
                       <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
-                          {isTop3 ? (
-                            <div className={`p-2 rounded-xl bg-opacity-10 flex items-center justify-center ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-orange-500'}`}>
-                                <Medal className={medalColor} size={20} />
-                            </div>
-                          ) : (
-                            <span className="w-9 h-9 flex items-center justify-center font-bold text-gray-400 text-sm">{index + 1}</span>
-                          )}
+                        <div className="flex items-center gap-2">
+                           <span className={`text-base font-black ${isTop3 ? 'text-gray-900' : 'text-gray-400'}`}>
+                               #{index + 1}
+                           </span>
+                           {isTop3 && (
+                             <div className={`p-1 rounded-lg bg-opacity-10 ${index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-orange-500'}`}>
+                                 <Medal className={medalColor} size={16} />
+                             </div>
+                           )}
                         </div>
                       </td>
                       <td className="px-6 py-5">

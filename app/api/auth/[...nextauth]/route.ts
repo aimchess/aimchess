@@ -15,6 +15,8 @@ declare module "next-auth" {
       id: string;
       role: string;
       stage: string;
+      photoUrl?: string | null;
+      idCardUrl?: string | null;
     } & DefaultSession["user"];
   }
 
@@ -22,6 +24,8 @@ declare module "next-auth" {
     id: string;
     role: string;
     stage: string;
+    photoUrl?: string | null;
+    idCardUrl?: string | null;
   }
 }
 
@@ -30,6 +34,8 @@ declare module "next-auth/jwt" {
     id: string;
     role: string;
     stage: string;
+    photoUrl?: string | null;
+    idCardUrl?: string | null;
   }
 }
 
@@ -101,6 +107,8 @@ export const authOptions: NextAuthOptions = {
             name: user.name || "",
             role: user.role as string,
             stage: user.stage as string,
+            photoUrl: user.photoUrl,
+            idCardUrl: user.idCardUrl,
           };
         } catch (error) {
           console.error("Auth Error:", error);
@@ -114,24 +122,32 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     // 1. Save data from User (DB) to Token (Cookie)
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.name = user.name;
         token.email = user.email;
+        token.photoUrl = (user as any).photoUrl;
+        token.idCardUrl = (user as any).idCardUrl;
+      }
+      if (trigger === "update" && session) {
+        if (session.photoUrl) token.photoUrl = session.photoUrl;
+        if (session.name) token.name = session.name;
+        if (session.idCardUrl) token.idCardUrl = session.idCardUrl;
       }
       return token;
     },
 
     // 2. Save data from Token (Cookie) to Session (Client)
-    // Removed ': any' so TypeScript checks this properly now
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
         session.user.email = token.email;
         session.user.name = token.name;
+        (session.user as any).photoUrl = token.photoUrl;
+        (session.user as any).idCardUrl = token.idCardUrl;
       }
       return session;
     },
