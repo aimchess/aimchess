@@ -1,2 +1,1 @@
-﻿
-# aim-chess-academy
+﻿# aim-chess-academy
