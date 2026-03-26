@@ -538,7 +538,7 @@ export default function PuzzlesPage() {
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {["BEGINNER", "INTERMEDIATE", "ADVANCED"].map((stage) => (
+                        {["BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"].map((stage) => (
                             <button key={stage} onClick={() => setCurrentStage(stage)}
                                 className="h-48 group relative overflow-hidden bg-white border-2 hover:border-sky-500 rounded-2xl shadow-sm hover:shadow-xl transition-all flex flex-col items-center justify-center gap-4">
                                 <div className="absolute inset-0 bg-sky-50 opacity-0 group-hover:opacity-100 transition-opacity" />

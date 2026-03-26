@@ -76,6 +76,19 @@ export default function PaymentPage() {
         'All previous content included',
         'Priority support'
       ]
+    },
+    EXPERT: {
+      name: 'Expert',
+      price: 19999, // 199.99
+      features: [
+        'Access to 200+ expert puzzles',
+        'Grandmaster-level strategies',
+        'Advanced positional play',
+        'Tournament preparation',
+        'All previous content included',
+        'Priority support',
+        '1-on-1 coaching sessions'
+      ]
     }
   }
 

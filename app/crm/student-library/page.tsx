@@ -11,7 +11,7 @@ import {
   ArrowLeft
 } from 'lucide-react'
 
-const STAGE_ORDER = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED']
+const STAGE_ORDER = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']
 
 export default function StudentLibraryPage() {
   const { data: session } = useSession()

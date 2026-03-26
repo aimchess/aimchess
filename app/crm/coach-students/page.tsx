@@ -48,7 +48,7 @@ function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' |
   if (!currentStage) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-2">
-        {['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map(stage => (
+        {['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].map(stage => (
           <button key={stage} onClick={() => setCurrentStage(stage)} className="h-32 border-2 border-sky-100 rounded-2xl bg-sky-50/50 hover:bg-sky-100 hover:border-sky-200 transition-all active:scale-95 flex flex-col items-center justify-center gap-3">
             <Layers size={32} className="text-sky-500" />
             <span className="text-xs font-bold uppercase tracking-widest text-slate-600">{stage}</span>

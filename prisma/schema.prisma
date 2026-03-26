@@ -19,6 +19,7 @@ enum Stage {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+  EXPERT
 }
 
 model User {

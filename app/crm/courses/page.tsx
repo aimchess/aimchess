@@ -7,7 +7,7 @@ import CRMShellLayout from "@/components/crm/crm-shell";
 import AudioRecorder from "@/components/AudioRecorder";
 import {
     BookOpen, Plus, Edit, Trash2, ArrowLeft, Save, Loader2,
-    ChevronRight, RotateCcw, Settings, X,
+    ChevronRight, RotateCcw, Settings, X, Filter,
 } from "lucide-react";
 
 type Tool = { type: string; color: "w" | "b" } | "TRASH" | null;
@@ -56,6 +56,7 @@ const BoardSetupPalette = ({ selectedTool, setSelectedTool, onClear, onReset }: 
 
 export default function CoursesPage() {
     const [view, setView] = useState<"LIST" | "EDIT_COURSE">("LIST");
+    const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
     const [courses, setCourses] = useState<any[]>([]);
     const [editingCourse, setEditingCourse] = useState<any>(null);
     const [loading, setLoading] = useState(false);
@@ -146,6 +147,7 @@ export default function CoursesPage() {
         BEGINNER: "bg-emerald-50 text-emerald-700",
         INTERMEDIATE: "bg-sky-50 text-sky-700",
         ADVANCED: "bg-indigo-50 text-indigo-700",
+        EXPERT: "bg-amber-50 text-amber-700",
     };
 
     if (view === "LIST") {
@@ -168,17 +170,45 @@ export default function CoursesPage() {
                         </button>
                     </div>
 
-                    {loading ? (
+                    {/* Category Filter */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Filter size={16} className="text-gray-400" />
+                        {["ALL", "BEGINNER", "INTERMEDIATE", "ADVANCED", "EXPERT"].map((lvl) => (
+                            <button
+                                key={lvl}
+                                onClick={() => setSelectedLevel(lvl)}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all border ${
+                                    selectedLevel === lvl
+                                        ? lvl === "ALL"
+                                            ? "bg-gray-900 text-white border-gray-900 shadow-md"
+                                            : lvl === "BEGINNER"
+                                            ? "bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20"
+                                            : lvl === "INTERMEDIATE"
+                                            ? "bg-sky-500 text-white border-sky-500 shadow-md shadow-sky-500/20"
+                                            : lvl === "ADVANCED"
+                                            ? "bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/20"
+                                            : "bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20"
+                                        : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700"
+                                }`}
+                            >
+                                {lvl === "ALL" ? "All" : lvl.charAt(0) + lvl.slice(1).toLowerCase()}
+                            </button>
+                        ))}
+                    </div>
+
+                    {(() => {
+                        const filteredCourses = selectedLevel === "ALL" ? courses : courses.filter((c) => c.level === selectedLevel);
+                        return loading ? (
                         <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 text-sky-500 animate-spin" /></div>
-                    ) : courses.length === 0 ? (
+                    ) : filteredCourses.length === 0 ? (
                         <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400">
                             <BookOpen className="mx-auto mb-3 text-gray-300" size={40} />
-                            <p className="text-sm font-medium">No courses found</p>
-                            <p className="text-xs mt-1">Click &quot;Create Course&quot; to get started</p>
+                            <p className="text-sm font-medium">{selectedLevel === "ALL" ? "No courses found" : `No ${selectedLevel.toLowerCase()} courses found`}</p>
+                            <p className="text-xs mt-1">{selectedLevel === "ALL" ? 'Click "Create Course" to get started' : "Try selecting a different category"}</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {courses.map((c) => (
+                            {filteredCourses.map((c) => (
                                 <div key={c.id} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group flex flex-col justify-between h-48">
                                     <div>
                                         <div className="flex justify-between items-start">
@@ -198,7 +228,8 @@ export default function CoursesPage() {
                                 </div>
                             ))}
                         </div>
-                    )}
+                    );
+                    })()}
                 </div>
             </CRMShellLayout>
         );
@@ -231,6 +262,7 @@ export default function CoursesPage() {
                                 <option value="BEGINNER">Beginner</option>
                                 <option value="INTERMEDIATE">Intermediate</option>
                                 <option value="ADVANCED">Advanced</option>
+                                <option value="EXPERT">Expert</option>
                             </select>
                             <div className="pt-2">
                                 <AudioRecorder

@@ -148,6 +148,7 @@ export default function LeaderboardPage() {
                       </td>
                       <td className="px-6 py-5">
                         <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${
+                          student.stage === 'EXPERT' ? 'bg-amber-50 text-amber-600 border-amber-100' :
                           student.stage === 'ADVANCED' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                           student.stage === 'INTERMEDIATE' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                           'bg-green-50 text-green-600 border-green-100'

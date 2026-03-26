@@ -110,6 +110,8 @@ export async function POST(req: NextRequest) {
         newUserStage = 'INTERMEDIATE'
       } else if (purchasedStage === 'ADVANCED') {
         newUserStage = 'ADVANCED'
+      } else if (purchasedStage === 'EXPERT') {
+        newUserStage = 'EXPERT'
       }
 
       // Update User

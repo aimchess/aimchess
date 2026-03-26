@@ -489,6 +489,7 @@ export default function StudentsPage() {
                                                 <option value="BEGINNER">Beginner</option>
                                                 <option value="INTERMEDIATE">Intermediate</option>
                                                 <option value="ADVANCED">Advanced</option>
+                                                <option value="EXPERT">Expert</option>
                                             </select>
                                         </div>
                                         <div>

@@ -2183,7 +2183,7 @@ function HomeworkBrowser({ onAssign }: { onAssign: (id: string, type: 'PUZZLE' |
   if (!currentStage) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-2">
-        {['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map(stage => (
+        {['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].map(stage => (
           <button key={stage} onClick={() => setCurrentStage(stage)} className="h-32 md:h-40 border-2 border-slate-100 rounded-3xl bg-slate-50/50 hover:bg-orange-50 hover:border-orange-200 transition-all active:scale-95 flex flex-col items-center justify-center gap-3">
             <Layers size={32} className="text-orange-400" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">{stage}</span>
@@ -2284,7 +2284,7 @@ function AnalysisView() {
   const onDrop = (source: string, target: string) => {
     if (setupMode) {
       const boardPiece = game.current.get(source as any)
-      if (source === target) return false;
+      if (source === target || !boardPiece) return false;
       game.current.remove(source as any)
       game.current.put(boardPiece, target as any)
       updateBoard()

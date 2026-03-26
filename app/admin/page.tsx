@@ -2213,6 +2213,7 @@ function UserManager() {
                                         <option value="BEGINNER">Beginner</option>
                                         <option value="INTERMEDIATE">Intermediate</option>
                                         <option value="ADVANCED">Advanced</option>
+                                        <option value="EXPERT">Expert</option>
                                     </select>
                                 </div>
                                 <div>
@@ -2890,6 +2891,7 @@ function CourseManager() {
                             <option value="BEGINNER">Beginner Level</option>
                             <option value="INTERMEDIATE">Intermediate Level</option>
                             <option value="ADVANCED">Advanced Level</option>
+                            <option value="EXPERT">Expert Level</option>
                         </select>
 
                         <div className="pt-2">
@@ -3185,7 +3187,7 @@ function CurriculumManager() {
             <div className="bg-white rounded-3xl shadow-sm border p-4 md:p-10 min-h-[500px]">
                 <h2 className="text-xl md:text-2xl font-black mb-8 text-slate-800 uppercase tracking-tight text-center md:text-left">Select Database Segment</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map(stage => (
+                    {['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'].map(stage => (
                         <button key={stage} onClick={() => setCurrentStage(stage)} className="h-48 md:h-64 group relative overflow-hidden bg-slate-50 border-2 border-slate-100 hover:border-orange-500 rounded-[2.5rem] transition-all flex flex-col items-center justify-center gap-4 active:scale-95 shadow-sm hover:shadow-2xl">
                             <div className="absolute inset-0 bg-gradient-to-br from-orange-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="relative z-10 p-6 bg-white rounded-3xl text-orange-600 group-hover:scale-110 shadow-sm transition-transform"><Folder size={40} /></div>
