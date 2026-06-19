@@ -62,6 +62,15 @@ model User {
 
   // MCQ Progress
   mcqProgress    MCQProgress[]
+
+  // Live Play & Tournament Relations
+  challengesSent Challenge[] @relation("Challenger")
+  challengesReceived Challenge[] @relation("Challenged")
+  whiteGames     Game[] @relation("WhitePlayer")
+  blackGames     Game[] @relation("BlackPlayer")
+  tournamentParticipations TournamentParticipant[]
+  performanceReports PerformanceReport[]
+  lastActiveAt DateTime?
 }
 
 enum AttendanceStatus {
@@ -276,4 +285,105 @@ model FeePayment {
 
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+}
+
+// ==========================================
+// 3. CHALLENGE & LIVE PLAY (New)
+// ==========================================
+
+enum ChallengeStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+model Challenge {
+  id          String   @id @default(uuid())
+  challengerId String
+  challenger   User    @relation("Challenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  challengedId String
+  challenged   User    @relation("Challenged", fields: [challengedId], references: [id], onDelete: Cascade)
+  status      ChallengeStatus @default(PENDING)
+  timeControl String?   // e.g. "10+0"
+  gameId      String?   @unique
+  game        Game?     @relation(fields: [gameId], references: [id])
+  tournamentId String?
+  tournament  Tournament? @relation(fields: [tournamentId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum GameStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABORTED
+}
+
+model Game {
+  id          String   @id @default(uuid())
+  whiteId     String
+  white       User     @relation("WhitePlayer", fields: [whiteId], references: [id], onDelete: Cascade)
+  blackId     String
+  black       User     @relation("BlackPlayer", fields: [blackId], references: [id], onDelete: Cascade)
+  pgn         String?  @db.Text
+  fen         String?  @db.Text
+  status      GameStatus @default(IN_PROGRESS)
+  winnerId    String?
+  result      String?  // e.g., "1-0", "0-1", "1/2-1/2"
+  challenge   Challenge?
+  tournamentId String?
+  tournament  Tournament? @relation(fields: [tournamentId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ==========================================
+// 4. TOURNAMENT SYSTEM (New)
+// ==========================================
+
+model Tournament {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   @default("UPCOMING") // UPCOMING, ONGOING, COMPLETED
+  participants TournamentParticipant[]
+  games       Game[]
+  challenges  Challenge[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TournamentParticipant {
+  id           String     @id @default(uuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score        Float      @default(0)
+  joinedAt     DateTime   @default(now())
+  @@unique([tournamentId, userId])
+}
+
+// ==========================================
+// 5. PERFORMANCE REPORT SYSTEM (New)
+// ==========================================
+
+model PerformanceReport {
+  id          String   @id @default(uuid())
+  studentId   String
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  month       Int      // 1 to 12
+  year        Int      // e.g. 2024
+  attendancePoints Float @default(0) // max 40
+  homeworkPoints   Float @default(0) // max 20
+  assignmentPoints Float @default(0) // max 20
+  tournamentPoints Float @default(0) // max 20
+  totalPoints      Float @default(0) // max 100
+  award            String? // Gold Star, Silver Star, Bronze Star, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  @@unique([studentId, month, year])
 }

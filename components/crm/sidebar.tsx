@@ -22,6 +22,9 @@ import {
     Calendar,
     Trophy,
     X,
+    Gamepad2,
+    BarChart,
+    FileUp,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -45,6 +48,9 @@ const navSections: NavSection[] = [
             { href: "/crm/puzzles", label: "Puzzles", icon: Puzzle },
             { href: "/crm/analysis", label: "Analysis", icon: MousePointer2 },
             { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
+            { href: "/crm/tournaments", label: "Tournaments", icon: Trophy },
+            { href: "/crm/reports", label: "Reports", icon: BarChart },
+            { href: "/crm/syllabus", label: "Syllabus Upload", icon: FileUp },
         ],
     },
     {
@@ -57,6 +63,9 @@ const navSections: NavSection[] = [
             { href: "/crm/coach-library", label: "Library", icon: Library },
             { href: "/crm/coach-analysis", label: "Analysis", icon: MousePointer2 },
             { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
+            { href: "/crm/play", label: "Play & Challenges", icon: Gamepad2 },
+            { href: "/crm/tournaments", label: "Tournaments", icon: Trophy },
+            { href: "/crm/reports", label: "Scorecards", icon: BarChart },
         ],
     },
     {
@@ -70,6 +79,9 @@ const navSections: NavSection[] = [
             { href: "/crm/student-fees", label: "Fees", icon: Wallet },
             { href: "/crm/student-schedule", label: "Schedule", icon: Calendar },
             { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
+            { href: "/crm/play", label: "Play & Challenges", icon: Gamepad2 },
+            { href: "/crm/tournaments", label: "Tournaments", icon: Trophy },
+            { href: "/crm/reports", label: "My Scorecard", icon: BarChart },
         ],
     },
 ];
