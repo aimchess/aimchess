@@ -122,7 +122,7 @@ export default function CoachDashboardPage() {
             </h3>
             <div className="space-y-3">
               <div>
-                <span className="text-xs font-black text-yellow-600 uppercase block mb-1">🏅 Gold Star Player (>= 90 pts)</span>
+                <span className="text-xs font-black text-yellow-600 uppercase block mb-1">🏅 Gold Star Player (&gt;= 90 pts)</span>
                 {dashboardMetrics?.goldEligible?.length === 0 ? (
                   <span className="text-xs text-gray-400">None</span>
                 ) : (
@@ -134,7 +134,7 @@ export default function CoachDashboardPage() {
                 )}
               </div>
               <div>
-                <span className="text-xs font-black text-slate-500 uppercase block mb-1">🥈 Silver Star Player (>= 80 pts)</span>
+                <span className="text-xs font-black text-slate-500 uppercase block mb-1">🥈 Silver Star Player (&gt;= 80 pts)</span>
                 {dashboardMetrics?.silverEligible?.length === 0 ? (
                   <span className="text-xs text-gray-400">None</span>
                 ) : (
@@ -146,7 +146,7 @@ export default function CoachDashboardPage() {
                 )}
               </div>
               <div>
-                <span className="text-xs font-black text-orange-600 block mb-1">🥉 Bronze Star Player (>= 70 pts)</span>
+                <span className="text-xs font-black text-orange-600 block mb-1">🥉 Bronze Star Player (&gt;= 70 pts)</span>
                 {dashboardMetrics?.bronzeEligible?.length === 0 ? (
                   <span className="text-xs text-gray-400">None</span>
                 ) : (

@@ -45,10 +45,14 @@ export default function TournamentsPage() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const formattedTournament = {
+                ...newTournament,
+                startDate: new Date(newTournament.startDate).toISOString()
+            };
             const res = await fetch("/api/tournaments", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newTournament)
+                body: JSON.stringify(formattedTournament)
             });
             if (res.ok) {
                 toast.success("Tournament created!");

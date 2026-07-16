@@ -68,7 +68,7 @@ export async function POST(req: Request) {
             });
             if (students.length > 0) {
                 await prisma.notification.createMany({
-                    data: students.map(student => ({
+                    data: students.map((student: any) => ({
                         userId: student.id,
                         title: "New Tournament",
                         message: `A new tournament "${title}" (${timeControl || '10+0'}) has been scheduled for ${new Date(startDate).toLocaleDateString()}.`

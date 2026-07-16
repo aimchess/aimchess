@@ -23,7 +23,7 @@ export async function GET(req: Request) {
             // Coach/Admin sees all certificates
             certificates = await prisma.certificate.findMany({
                 include: {
-                    student: { select: { id: true, name: true, role: true } }
+                    student: { select: { id: true, name: true, role: true, aimRating: true, highestAimRating: true, aimLevel: true } }
                 },
                 orderBy: { createdAt: "desc" }
             });
@@ -31,6 +31,9 @@ export async function GET(req: Request) {
             // Student sees only theirs
             certificates = await prisma.certificate.findMany({
                 where: { studentId: currentUser.id },
+                include: {
+                    student: { select: { id: true, name: true, role: true, aimRating: true, highestAimRating: true, aimLevel: true } }
+                },
                 orderBy: { createdAt: "desc" }
             });
         }
@@ -116,6 +119,20 @@ export async function PUT(req: Request) {
                 issuedAt: status === "ISSUED" ? new Date() : undefined
             }
         });
+
+        if (status === "ISSUED") {
+            try {
+                await prisma.notification.create({
+                    data: {
+                        userId: updated.studentId,
+                        title: "Certificate Issued!",
+                        message: `🎉 Congratulations! Your AIM Rating Club Certificate is now available for download.`
+                    }
+                });
+            } catch (err) {
+                console.error("Failed to send issuance notification:", err);
+            }
+        }
 
         return NextResponse.json(updated);
     } catch (error) {
