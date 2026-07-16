@@ -14,7 +14,14 @@ export default function TournamentsPage() {
     const [tournaments, setTournaments] = useState<any[]>([]);
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [newTournament, setNewTournament] = useState({ title: "", description: "", startDate: "" });
+    const [newTournament, setNewTournament] = useState({
+        title: "",
+        description: "",
+        startDate: "",
+        timeControl: "10+0",
+        totalRounds: "4",
+        pairingSystem: "Swiss"
+    });
 
     const fetchTournaments = async () => {
         setLoading(true);
@@ -46,7 +53,14 @@ export default function TournamentsPage() {
             if (res.ok) {
                 toast.success("Tournament created!");
                 setIsCreateModalOpen(false);
-                setNewTournament({ title: "", description: "", startDate: "" });
+                setNewTournament({
+                    title: "",
+                    description: "",
+                    startDate: "",
+                    timeControl: "10+0",
+                    totalRounds: "4",
+                    pairingSystem: "Swiss"
+                });
                 fetchTournaments();
             } else {
                 toast.error("Failed to create tournament");
@@ -135,6 +149,23 @@ export default function TournamentsPage() {
                                         {tournament.description && (
                                             <p className="text-gray-500 text-sm mb-4 line-clamp-2">{tournament.description}</p>
                                         )}
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {tournament.timeControl && (
+                                                <span className="bg-purple-50 text-purple-700 border border-purple-100 text-xs px-2.5 py-1 rounded-lg font-bold">
+                                                    ⏱️ {tournament.timeControl}
+                                                </span>
+                                            )}
+                                            {tournament.totalRounds && (
+                                                <span className="bg-amber-50 text-amber-700 border border-amber-100 text-xs px-2.5 py-1 rounded-lg font-bold">
+                                                    ⚔️ {tournament.totalRounds} Rounds
+                                                </span>
+                                            )}
+                                            {tournament.pairingSystem && (
+                                                <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs px-2.5 py-1 rounded-lg font-bold">
+                                                    🧩 {tournament.pairingSystem}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex items-center gap-2 text-sm text-gray-600 font-semibold mt-auto">
                                             <CalendarIcon size={16} className="text-indigo-400" />
                                             {new Date(tournament.startDate).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -200,6 +231,48 @@ export default function TournamentsPage() {
                                     onChange={e => setNewTournament({...newTournament, startDate: e.target.value})}
                                     className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                 />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Time Control</label>
+                                    <select 
+                                        value={newTournament.timeControl}
+                                        onChange={e => setNewTournament({...newTournament, timeControl: e.target.value})}
+                                        className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                    >
+                                        <option value="5+0">5+0</option>
+                                        <option value="10+0">10+0</option>
+                                        <option value="10+5">10+5</option>
+                                        <option value="10+10">10+10</option>
+                                        <option value="15+10">15+10</option>
+                                        <option value="25+10">25+10</option>
+                                        <option value="30+20">30+20</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Total Rounds</label>
+                                    <select 
+                                        value={newTournament.totalRounds}
+                                        onChange={e => setNewTournament({...newTournament, totalRounds: e.target.value})}
+                                        className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                    >
+                                        <option value="3">3 Rounds</option>
+                                        <option value="4">4 Rounds</option>
+                                        <option value="5">5 Rounds</option>
+                                        <option value="6">6 Rounds</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Pairing System</label>
+                                <select 
+                                    value={newTournament.pairingSystem}
+                                    onChange={e => setNewTournament({...newTournament, pairingSystem: e.target.value})}
+                                    className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                >
+                                    <option value="Swiss">Swiss</option>
+                                    <option value="Round Robin">Round Robin</option>
+                                </select>
                             </div>
                             <div className="flex gap-3 pt-4 border-t mt-6">
                                 <button type="button" onClick={() => setIsCreateModalOpen(false)} className="flex-1 py-3 text-gray-600 font-bold bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">Cancel</button>

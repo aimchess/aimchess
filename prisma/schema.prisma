@@ -71,6 +71,21 @@ model User {
   tournamentParticipations TournamentParticipant[]
   performanceReports PerformanceReport[]
   lastActiveAt DateTime?
+
+  // Phase 2: AIM Rating & Clubs
+  aimRating       Int      @default(500)
+  highestAimRating Int     @default(500)
+  wins            Int      @default(0)
+  losses          Int      @default(0)
+  draws           Int      @default(0)
+  aimRatingHistory Json    @default("[]") // Array of { rating: number, date: string }
+  aimClub         String   @default("Beginner")
+  aimLevel        String   @default("Starter Level")
+  aimClubDate     DateTime?
+
+  // Certificates & Notifications
+  certificates    Certificate[]
+  notifications   Notification[]
 }
 
 enum AttendanceStatus {
@@ -306,6 +321,7 @@ model Challenge {
   challenged   User    @relation("Challenged", fields: [challengedId], references: [id], onDelete: Cascade)
   status      ChallengeStatus @default(PENDING)
   timeControl String?   // e.g. "10+0"
+  isRated     Boolean   @default(false)
   gameId      String?   @unique
   game        Game?     @relation(fields: [gameId], references: [id])
   tournamentId String?
@@ -331,6 +347,7 @@ model Game {
   status      GameStatus @default(IN_PROGRESS)
   winnerId    String?
   result      String?  // e.g., "1-0", "0-1", "1/2-1/2"
+  isRated     Boolean  @default(false)
   challenge   Challenge?
   tournamentId String?
   tournament  Tournament? @relation(fields: [tournamentId], references: [id])
@@ -349,6 +366,10 @@ model Tournament {
   startDate   DateTime
   endDate     DateTime?
   status      String   @default("UPCOMING") // UPCOMING, ONGOING, COMPLETED
+  timeControl String?
+  totalRounds Int      @default(4)
+  pairingSystem String   @default("Swiss") // Swiss / Round Robin
+  currentRound  Int      @default(1)
   participants TournamentParticipant[]
   games       Game[]
   challenges  Challenge[]
@@ -386,4 +407,25 @@ model PerformanceReport {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   @@unique([studentId, month, year])
+}
+
+model Certificate {
+  id          String    @id @default(uuid())
+  studentId   String
+  student     User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type        String    // GOLD_STAR, SILVER_STAR, BRONZE_STAR, AIM_CLUB
+  clubName    String?
+  status      String    @default("PENDING") // PENDING, ISSUED
+  issuedAt    DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
 }

@@ -45,8 +45,10 @@ export async function POST(req: Request) {
             });
 
             const totalClasses = attendanceRecords.length;
-            const presentClasses = attendanceRecords.filter(a => a.status === "PRESENT").length;
-            const attendancePoints = totalClasses > 0 ? Math.round((presentClasses / totalClasses) * 40) : 0;
+            // Count PRESENT and LATE both as attended (LATE = came but late)
+            const presentClasses = attendanceRecords.filter(a => a.status === "PRESENT" || a.status === "LATE").length;
+            // 10 pts per class attended, max 40 pts (4 classes)
+            const attendancePoints = Math.min(presentClasses * 10, 40);
 
             // Calculate Homework Points (Max 20)
             // Assuming assignments assigned in this month

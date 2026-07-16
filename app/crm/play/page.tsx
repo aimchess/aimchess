@@ -15,6 +15,11 @@ export default function PlayArea() {
     const [pendingChallenges, setPendingChallenges] = useState<any[]>([]);
     const [stats, setStats] = useState({ played: 0, wins: 0, draws: 0, losses: 0 });
 
+    const [challengeTarget, setChallengeTarget] = useState<string | null>(null);
+    const [challengeTargetName, setChallengeTargetName] = useState("");
+    const [challengeTimeControl, setChallengeTimeControl] = useState("10+0");
+    const [challengeIsRated, setChallengeIsRated] = useState(true);
+
     useEffect(() => {
         const fetchActivePlayers = async () => {
             try {
@@ -55,15 +60,26 @@ export default function PlayArea() {
         return () => clearInterval(interval);
     }, []);
 
-    const handleChallenge = async (userId: string) => {
+    const handleChallengeClick = (userId: string, userName: string) => {
+        setChallengeTarget(userId);
+        setChallengeTargetName(userName);
+    };
+
+    const handleSendChallenge = async () => {
+        if (!challengeTarget) return;
         try {
             const res = await fetch("/api/play/challenge", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ challengedId: userId, timeControl: "10+0" })
+                body: JSON.stringify({ 
+                    challengedId: challengeTarget === "SELECT" ? (document.getElementById("challenged-select") as HTMLSelectElement)?.value : challengeTarget, 
+                    timeControl: challengeTimeControl,
+                    isRated: challengeIsRated
+                })
             });
             if (res.ok) {
                 toast.success("Challenge sent!");
+                setChallengeTarget(null);
             } else {
                 toast.error("Failed to send challenge.");
             }
@@ -147,7 +163,17 @@ export default function PlayArea() {
                         <h2 className="text-3xl font-black text-gray-900 mb-2">Ready to play?</h2>
                         <p className="text-gray-500 text-sm">Challenge a teammate to a live match — pick your color and time control.</p>
                     </div>
-                    <button className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition-all">
+                    <button 
+                        onClick={() => {
+                            if (activePlayers.length > 0) {
+                                setChallengeTarget("SELECT");
+                                setChallengeTargetName("Select Player");
+                            } else {
+                                toast.error("No active players online to challenge.");
+                            }
+                        }}
+                        className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition-all"
+                    >
                         <Swords size={20} /> New Challenge
                     </button>
                 </div>
@@ -202,7 +228,7 @@ export default function PlayArea() {
                                         </div>
                                     </div>
                                     <button 
-                                        onClick={() => handleChallenge(player.id)}
+                                        onClick={() => handleChallengeClick(player.id, player.name)}
                                         className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm"
                                     >
                                         <Swords size={14} /> Challenge
@@ -239,6 +265,75 @@ export default function PlayArea() {
                 </div>
 
             </div>
+
+            {/* Custom Challenge setup modal */}
+            {challengeTarget && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setChallengeTarget(null)}>
+                    <div className="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Send Challenge</h2>
+                        
+                        <div className="space-y-4">
+                            {challengeTarget === "SELECT" ? (
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Select Opponent</label>
+                                    <select 
+                                        id="challenged-select"
+                                        className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                    >
+                                        {activePlayers.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name} ({p.role})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Opponent</label>
+                                    <input 
+                                        disabled
+                                        type="text" 
+                                        value={challengeTargetName}
+                                        className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-100 text-gray-600 font-semibold outline-none"
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Time Control</label>
+                                <select 
+                                    value={challengeTimeControl}
+                                    onChange={e => setChallengeTimeControl(e.target.value)}
+                                    className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                >
+                                    <option value="5+0">5+0</option>
+                                    <option value="10+0">10+0</option>
+                                    <option value="10+5">10+5</option>
+                                    <option value="10+10">10+10</option>
+                                    <option value="15+10">15+10</option>
+                                    <option value="25+10">25+10</option>
+                                    <option value="30+20">30+20</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Challenge Type</label>
+                                <select 
+                                    value={challengeIsRated ? "rated" : "friendly"}
+                                    onChange={e => setChallengeIsRated(e.target.value === "rated")}
+                                    className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                >
+                                    <option value="rated">⭐ Rated (Updates AIM Rating)</option>
+                                    <option value="friendly">🤝 Friendly Match</option>
+                                </select>
+                            </div>
+
+                            <div className="flex gap-3 pt-4 border-t mt-6">
+                                <button type="button" onClick={() => setChallengeTarget(null)} className="flex-1 py-3 text-gray-600 font-bold bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">Cancel</button>
+                                <button onClick={handleSendChallenge} className="flex-1 py-3 text-white font-bold bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-lg shadow-indigo-200">Send Challenge</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </CRMShellLayout>
     );
 }

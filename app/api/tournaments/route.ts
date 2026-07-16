@@ -43,7 +43,7 @@ export async function POST(req: Request) {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        const { title, description, startDate } = await req.json();
+        const { title, description, startDate, timeControl, totalRounds, pairingSystem } = await req.json();
 
         if (!title || !startDate) {
             return new NextResponse("Missing required fields", { status: 400 });
@@ -54,9 +54,30 @@ export async function POST(req: Request) {
                 title,
                 description,
                 startDate: new Date(startDate),
+                timeControl: timeControl || "10+0",
+                totalRounds: totalRounds ? parseInt(totalRounds) : 4,
+                pairingSystem: pairingSystem || "Swiss",
                 status: "UPCOMING"
             }
         });
+
+        // Notify all students
+        try {
+            const students = await prisma.user.findMany({
+                where: { role: "STUDENT" }
+            });
+            if (students.length > 0) {
+                await prisma.notification.createMany({
+                    data: students.map(student => ({
+                        userId: student.id,
+                        title: "New Tournament",
+                        message: `A new tournament "${title}" (${timeControl || '10+0'}) has been scheduled for ${new Date(startDate).toLocaleDateString()}.`
+                    }))
+                });
+            }
+        } catch (err) {
+            console.error("Failed to send tournament notifications:", err);
+        }
 
         return NextResponse.json(tournament);
     } catch (error) {

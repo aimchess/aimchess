@@ -18,7 +18,7 @@ export async function POST(req: Request) {
             return new NextResponse("User not found", { status: 404 });
         }
 
-        const { challengedId, timeControl, tournamentId } = await req.json();
+        const { challengedId, timeControl, tournamentId, isRated } = await req.json();
 
         if (!challengedId) {
             return new NextResponse("Challenged ID is required", { status: 400 });
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
                 challengerId: currentUser.id,
                 challengedId: challengedId,
                 timeControl: timeControl || "10+0",
+                isRated: !!isRated,
                 status: "PENDING",
                 tournamentId: tournamentId || null
             }

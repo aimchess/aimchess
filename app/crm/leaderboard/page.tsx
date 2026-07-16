@@ -10,21 +10,22 @@ interface Student {
   name: string
   photoUrl: string | null
   stage: string
-  solvedCount: number
+  score: number
+  label: string
 }
 
 export default function LeaderboardPage() {
-  const [leaderboard, setLeaderboard] = useState<Student[]>([])
+  const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState<string>('rating')
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
         const res = await fetch('/api/leaderboard', { cache: 'no-store' })
         if (res.ok) {
-          const data = await res.json()
-          setLeaderboard(data)
+          setData(await res.json())
         }
       } catch (e) {
         console.error(e)
@@ -35,10 +36,6 @@ export default function LeaderboardPage() {
     fetchLeaderboard()
   }, [])
 
-  const filteredLeaderboard = leaderboard.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
   if (loading) {
     return (
       <CRMShellLayout>
@@ -48,6 +45,23 @@ export default function LeaderboardPage() {
       </CRMShellLayout>
     )
   }
+
+  const currentLeaderboard: Student[] = data ? data[activeTab] || [] : []
+
+  const filteredLeaderboard = currentLeaderboard.filter(student =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const tabs = [
+    { id: 'rating', name: 'AIM Rating' },
+    { id: 'performance', name: 'Monthly Performance' },
+    { id: 'ratingGain', name: 'Monthly Rating Gain' },
+    { id: 'gamesPlayed', name: 'Most Games Played' },
+    { id: 'winPercentage', name: 'Win %' },
+    { id: 'winningStreak', name: 'Winning Streak' },
+    { id: 'attendance', name: 'Best Attendance' },
+    { id: 'homework', name: 'Homework Leader' }
+  ]
 
   return (
     <CRMShellLayout>
@@ -63,19 +77,35 @@ export default function LeaderboardPage() {
                  <span className="text-yellow-400 font-bold tracking-widest text-xs uppercase">Hall of Fame</span>
               </div>
               <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">Chess Grandmasters <br/><span className="text-sky-400">Leaderboard</span></h1>
-              <p className="text-sky-200/80 text-sm max-w-md">Recognizing our top chess players based on puzzles solved. Keep training, keep winning!</p>
+              <p className="text-sky-200/80 text-sm max-w-md">Recognizing our top chess players across multiple categories. Keep training, keep winning!</p>
             </div>
             <div className="flex flex-col items-center justify-center bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-                <span className="text-sky-300 text-xs font-bold uppercase mb-1">Total Players</span>
-                <span className="text-4xl font-black">{leaderboard.length}</span>
+                <span className="text-sky-300 text-xs font-bold uppercase mb-1">Active Category</span>
+                <span className="text-xl font-black text-center">{tabs.find(t => t.id === activeTab)?.name}</span>
             </div>
           </div>
-          {/* Decorative elements */}
           <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-sky-500/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-[-20%] left-[-5%] w-48 h-48 bg-blue-600/10 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Search and Filter */}
+        {/* Category Tabs */}
+        <div className="flex flex-wrap gap-2 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                activeTab === tab.id
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
             <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -86,11 +116,6 @@ export default function LeaderboardPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-            </div>
-            <div className="flex items-center gap-2">
-                <div className="px-3 py-1.5 bg-sky-50 text-sky-600 rounded-lg text-xs font-bold border border-sky-100">
-                    All Levels
-                </div>
             </div>
         </div>
 
@@ -103,7 +128,7 @@ export default function LeaderboardPage() {
                   <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Rank</th>
                   <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Student</th>
                   <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest">Stage</th>
-                  <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Puzzles Solved</th>
+                  <th className="px-6 py-5 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Metric Value</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -158,8 +183,8 @@ export default function LeaderboardPage() {
                       </td>
                       <td className="px-6 py-5 text-right">
                         <div className="flex flex-col items-end">
-                            <span className="text-xl font-black text-gray-900">{student.solvedCount}</span>
-                            <span className="text-[10px] font-bold text-sky-500 uppercase">Points Earned</span>
+                            <span className="text-xl font-black text-gray-900">{student.score}</span>
+                            <span className="text-[10px] font-bold text-indigo-500 uppercase">{student.label}</span>
                         </div>
                       </td>
                     </motion.tr>
@@ -182,5 +207,3 @@ export default function LeaderboardPage() {
     </CRMShellLayout>
   )
 }
-
-

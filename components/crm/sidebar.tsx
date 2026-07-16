@@ -25,6 +25,7 @@ import {
     Gamepad2,
     BarChart,
     FileUp,
+    Award,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -50,6 +51,7 @@ const navSections: NavSection[] = [
             { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
             { href: "/crm/tournaments", label: "Tournaments", icon: Trophy },
             { href: "/crm/reports", label: "Reports", icon: BarChart },
+            { href: "/crm/certificates", label: "Certificates", icon: Award },
             { href: "/crm/syllabus", label: "Syllabus Upload", icon: FileUp },
         ],
     },
@@ -66,6 +68,7 @@ const navSections: NavSection[] = [
             { href: "/crm/play", label: "Play & Challenges", icon: Gamepad2 },
             { href: "/crm/tournaments", label: "Tournaments", icon: Trophy },
             { href: "/crm/reports", label: "Scorecards", icon: BarChart },
+            { href: "/crm/certificates", label: "Certificates", icon: Award },
         ],
     },
     {
@@ -82,6 +85,7 @@ const navSections: NavSection[] = [
             { href: "/crm/play", label: "Play & Challenges", icon: Gamepad2 },
             { href: "/crm/tournaments", label: "Tournaments", icon: Trophy },
             { href: "/crm/reports", label: "My Scorecard", icon: BarChart },
+            { href: "/crm/certificates", label: "Certificates", icon: Award },
         ],
     },
 ];

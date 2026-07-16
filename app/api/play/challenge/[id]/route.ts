@@ -39,7 +39,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                     whiteId: challenge.challengerId, // Challenger gets white for now, could randomize
                     blackId: challenge.challengedId,
                     status: "IN_PROGRESS",
-                    tournamentId: challenge.tournamentId
+                    tournamentId: challenge.tournamentId,
+                    isRated: challenge.isRated
                 }
             });
 
