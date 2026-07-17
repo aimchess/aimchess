@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { Chess } from "chess.js";
+import { completeGame } from "@/lib/game";
 
 export async function GET(req: Request, { params }: { params: { gameId: string } }) {
     try {
@@ -10,7 +12,7 @@ export async function GET(req: Request, { params }: { params: { gameId: string }
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const game = await prisma.game.findUnique({
+        let game = await prisma.game.findUnique({
             where: { id: params.gameId },
             include: {
                 white: { select: { id: true, name: true, role: true } },
@@ -20,6 +22,72 @@ export async function GET(req: Request, { params }: { params: { gameId: string }
 
         if (!game) {
             return new NextResponse("Game not found", { status: 404 });
+        }
+
+        // Process timeout if game is in progress and has timing information
+        if (game.status === "IN_PROGRESS" && game.lastMoveAt && game.timeControl) {
+            const chess = new Chess();
+            if (game.fen) chess.load(game.fen);
+            const activeColor = chess.turn(); // 'w' or 'b'
+            
+            const now = new Date();
+            const elapsed = now.getTime() - new Date(game.lastMoveAt).getTime();
+
+            if (activeColor === 'w') {
+                const timeLeft = (game.whiteTimeLeft || 0) - elapsed;
+                if (timeLeft <= 0) {
+                    // White timed out, Black wins
+                    await completeGame({
+                        gameId: game.id,
+                        winnerId: game.blackId,
+                        result: "0-1",
+                        status: "COMPLETED",
+                        whiteTimeLeft: 0,
+                        lastMoveAt: now
+                    });
+                    // Re-fetch completed game state
+                    game = await prisma.game.findUnique({
+                        where: { id: params.gameId },
+                        include: {
+                            white: { select: { id: true, name: true, role: true } },
+                            black: { select: { id: true, name: true, role: true } }
+                        }
+                    });
+                } else {
+                    // Return adjusted remaining time dynamically
+                    return NextResponse.json({
+                        ...game,
+                        whiteTimeLeft: timeLeft
+                    });
+                }
+            } else {
+                const timeLeft = (game.blackTimeLeft || 0) - elapsed;
+                if (timeLeft <= 0) {
+                    // Black timed out, White wins
+                    await completeGame({
+                        gameId: game.id,
+                        winnerId: game.whiteId,
+                        result: "1-0",
+                        status: "COMPLETED",
+                        blackTimeLeft: 0,
+                        lastMoveAt: now
+                    });
+                    // Re-fetch completed game state
+                    game = await prisma.game.findUnique({
+                        where: { id: params.gameId },
+                        include: {
+                            white: { select: { id: true, name: true, role: true } },
+                            black: { select: { id: true, name: true, role: true } }
+                        }
+                    });
+                } else {
+                    // Return adjusted remaining time dynamically
+                    return NextResponse.json({
+                        ...game,
+                        blackTimeLeft: timeLeft
+                    });
+                }
+            }
         }
 
         return NextResponse.json(game);

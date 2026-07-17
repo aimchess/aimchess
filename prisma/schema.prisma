@@ -348,6 +348,10 @@ model Game {
   winnerId    String?
   result      String?  // e.g., "1-0", "0-1", "1/2-1/2"
   isRated     Boolean  @default(false)
+  timeControl String?
+  whiteTimeLeft Int?
+  blackTimeLeft Int?
+  lastMoveAt  DateTime?
   challenge   Challenge?
   tournamentId String?
   tournament  Tournament? @relation(fields: [tournamentId], references: [id])

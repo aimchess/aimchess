@@ -33,6 +33,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         }
 
         if (status === "ACCEPTED") {
+            const tc = challenge.timeControl || "10+0";
+            const parts = tc.split("+");
+            const minutes = parseInt(parts[0]) || 10;
+            const ms = minutes * 60 * 1000;
+
             // Create a Game
             const game = await prisma.game.create({
                 data: {
@@ -40,7 +45,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
                     blackId: challenge.challengedId,
                     status: "IN_PROGRESS",
                     tournamentId: challenge.tournamentId,
-                    isRated: challenge.isRated
+                    isRated: challenge.isRated,
+                    timeControl: tc,
+                    whiteTimeLeft: ms,
+                    blackTimeLeft: ms,
+                    lastMoveAt: new Date()
                 }
             });
 

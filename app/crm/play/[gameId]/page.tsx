@@ -20,6 +20,8 @@ export default function GamePage() {
     const [loading, setLoading] = useState(true);
     const [gameData, setGameData] = useState<any>(null);
     const [playerColor, setPlayerColor] = useState<"white" | "black" | "spectator">("spectator");
+    const [wTime, setWTime] = useState<number | null>(null);
+    const [bTime, setBTime] = useState<number | null>(null);
 
     const fetchGameState = async () => {
         try {
@@ -55,6 +57,54 @@ export default function GamePage() {
         const interval = setInterval(fetchGameState, 3000);
         return () => clearInterval(interval);
     }, [gameId, session]);
+
+    // Sync local clocks with gameData
+    useEffect(() => {
+        if (gameData) {
+            setWTime(gameData.whiteTimeLeft);
+            setBTime(gameData.blackTimeLeft);
+        }
+    }, [gameData]);
+
+    // Client-side real-time ticking (every 100ms for smooth tenths-of-second updates under 10s)
+    useEffect(() => {
+        if (!gameData || gameData.status !== "IN_PROGRESS") return;
+
+        const interval = setInterval(() => {
+            const activeColor = game.turn();
+            if (activeColor === "w") {
+                setWTime((prev) => (prev !== null ? Math.max(0, prev - 100) : null));
+            } else {
+                setBTime((prev) => (prev !== null ? Math.max(0, prev - 100) : null));
+            }
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [gameData, game]);
+
+    const formatTime = (ms: number | null) => {
+        if (ms === null || ms === undefined) return "--:--";
+        if (ms <= 0) return "0:00";
+        
+        const totalSecs = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSecs / 3600);
+        const minutes = Math.floor((totalSecs % 3600) / 60);
+        const seconds = totalSecs % 60;
+
+        if (ms < 10000) {
+            // under 10 seconds: show tenths of a second
+            const tenths = Math.floor((ms % 1000) / 100);
+            return `${seconds}.${tenths}`;
+        }
+
+        const minStr = minutes.toString();
+        const secStr = seconds.toString().padStart(2, "0");
+
+        if (hours > 0) {
+            return `${hours}:${minStr.padStart(2, "0")}:${secStr}`;
+        }
+        return `${minStr}:${secStr}`;
+    };
 
     const onDrop = (sourceSquare: string, targetSquare: string) => {
         if (playerColor === "spectator" || gameData?.status !== "IN_PROGRESS") return false;
@@ -149,20 +199,53 @@ export default function GamePage() {
                         <h3 className="font-bold text-gray-900 mb-4 border-b pb-4">Game Info</h3>
                         
                         <div className="space-y-4 flex-1 overflow-y-auto">
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+                            {gameData.timeControl && (
+                                <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-between text-xs font-bold text-indigo-950">
+                                    <span>Time Control</span>
+                                    <span>{gameData.timeControl}</span>
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 rounded-sm bg-white border border-gray-300"></div>
-                                    <span className="font-semibold text-sm">{gameData.white.name}</span>
+                                    <span className="font-semibold text-sm text-gray-900">{gameData.white.name}</span>
                                 </div>
-                                {game.turn() === "w" && gameData.status === "IN_PROGRESS" && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>}
+                                <div className="flex items-center gap-3">
+                                    {gameData.timeControl && wTime !== null && (
+                                        <div className={`${
+                                            wTime < 30000 && game.turn() === "w" && gameData.status === "IN_PROGRESS"
+                                                ? "bg-red-500 text-white border-red-600 animate-pulse"
+                                                : game.turn() === "w" && gameData.status === "IN_PROGRESS"
+                                                    ? "bg-amber-100 text-amber-900 border-amber-300 font-bold"
+                                                    : "bg-gray-100 text-gray-700 border-gray-200"
+                                        } border px-3 py-1 rounded-lg font-mono text-sm shadow-sm transition-colors duration-200`}>
+                                            {formatTime(wTime)}
+                                        </div>
+                                    )}
+                                    {game.turn() === "w" && gameData.status === "IN_PROGRESS" && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>}
+                                </div>
                             </div>
                             
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-gray-800 text-white">
+                            <div className="flex items-center justify-between p-3 rounded-xl bg-gray-800 text-white border border-gray-900">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded-sm bg-gray-900 border border-gray-600"></div>
+                                    <div className="w-4 h-4 rounded-sm bg-gray-950 border border-gray-700"></div>
                                     <span className="font-semibold text-sm">{gameData.black.name}</span>
                                 </div>
-                                {game.turn() === "b" && gameData.status === "IN_PROGRESS" && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>}
+                                <div className="flex items-center gap-3">
+                                    {gameData.timeControl && bTime !== null && (
+                                        <div className={`${
+                                            bTime < 30000 && game.turn() === "b" && gameData.status === "IN_PROGRESS"
+                                                ? "bg-red-500 text-white border-red-600 animate-pulse"
+                                                : game.turn() === "b" && gameData.status === "IN_PROGRESS"
+                                                    ? "bg-amber-100 text-amber-950 border-amber-300 font-bold"
+                                                    : "bg-gray-700 text-gray-200 border-gray-600"
+                                        } border px-3 py-1 rounded-lg font-mono text-sm shadow-sm transition-colors duration-200`}>
+                                            {formatTime(bTime)}
+                                        </div>
+                                    )}
+                                    {game.turn() === "b" && gameData.status === "IN_PROGRESS" && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>}
+                                </div>
                             </div>
                             
                             {playerColor !== "spectator" && gameData.status === "IN_PROGRESS" && (
