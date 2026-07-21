@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { Chess } from "chess.js";
 import { completeGame } from "@/lib/game";
 
@@ -15,8 +15,8 @@ export async function GET(req: Request, { params }: { params: { gameId: string }
         let game = await prisma.game.findUnique({
             where: { id: params.gameId },
             include: {
-                white: { select: { id: true, name: true, role: true } },
-                black: { select: { id: true, name: true, role: true } }
+                white: { select: { id: true, name: true, email: true, role: true } },
+                black: { select: { id: true, name: true, email: true, role: true } }
             }
         });
 
@@ -30,11 +30,16 @@ export async function GET(req: Request, { params }: { params: { gameId: string }
             if (game.fen) chess.load(game.fen);
             const activeColor = chess.turn(); // 'w' or 'b'
             
+            const parts = (game.timeControl || "10+0").split("+");
+            const initialMs = (parseInt(parts[0]) || 10) * 60 * 1000;
+            const wTimeLeft = game.whiteTimeLeft ?? initialMs;
+            const bTimeLeft = game.blackTimeLeft ?? initialMs;
+
             const now = new Date();
             const elapsed = now.getTime() - new Date(game.lastMoveAt).getTime();
 
             if (activeColor === 'w') {
-                const timeLeft = (game.whiteTimeLeft || 0) - elapsed;
+                const timeLeft = wTimeLeft - elapsed;
                 if (timeLeft <= 0) {
                     // White timed out, Black wins
                     await completeGame({
@@ -49,19 +54,20 @@ export async function GET(req: Request, { params }: { params: { gameId: string }
                     game = await prisma.game.findUnique({
                         where: { id: params.gameId },
                         include: {
-                            white: { select: { id: true, name: true, role: true } },
-                            black: { select: { id: true, name: true, role: true } }
+                            white: { select: { id: true, name: true, email: true, role: true } },
+                            black: { select: { id: true, name: true, email: true, role: true } }
                         }
                     });
                 } else {
                     // Return adjusted remaining time dynamically
                     return NextResponse.json({
                         ...game,
-                        whiteTimeLeft: timeLeft
+                        whiteTimeLeft: timeLeft,
+                        blackTimeLeft: bTimeLeft
                     });
                 }
             } else {
-                const timeLeft = (game.blackTimeLeft || 0) - elapsed;
+                const timeLeft = bTimeLeft - elapsed;
                 if (timeLeft <= 0) {
                     // Black timed out, White wins
                     await completeGame({
@@ -76,14 +82,15 @@ export async function GET(req: Request, { params }: { params: { gameId: string }
                     game = await prisma.game.findUnique({
                         where: { id: params.gameId },
                         include: {
-                            white: { select: { id: true, name: true, role: true } },
-                            black: { select: { id: true, name: true, role: true } }
+                            white: { select: { id: true, name: true, email: true, role: true } },
+                            black: { select: { id: true, name: true, email: true, role: true } }
                         }
                     });
                 } else {
                     // Return adjusted remaining time dynamically
                     return NextResponse.json({
                         ...game,
+                        whiteTimeLeft: wTimeLeft,
                         blackTimeLeft: timeLeft
                     });
                 }

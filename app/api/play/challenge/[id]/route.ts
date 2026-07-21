@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
     try {
@@ -38,11 +38,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             const minutes = parseInt(parts[0]) || 10;
             const ms = minutes * 60 * 1000;
 
+            // Randomize White and Black assignment
+            const isChallengerWhite = Math.random() < 0.5;
+            const whiteId = isChallengerWhite ? challenge.challengerId : challenge.challengedId;
+            const blackId = isChallengerWhite ? challenge.challengedId : challenge.challengerId;
+
             // Create a Game
             const game = await prisma.game.create({
                 data: {
-                    whiteId: challenge.challengerId, // Challenger gets white for now, could randomize
-                    blackId: challenge.challengedId,
+                    whiteId: whiteId,
+                    blackId: blackId,
                     status: "IN_PROGRESS",
                     tournamentId: challenge.tournamentId,
                     isRated: challenge.isRated,

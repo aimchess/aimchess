@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(req: Request) {
     try {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 
             const totalClasses = attendanceRecords.length;
             // Count PRESENT and LATE both as attended (LATE = came but late)
-            const presentClasses = attendanceRecords.filter(a => a.status === "PRESENT" || a.status === "LATE").length;
+            const presentClasses = attendanceRecords.filter((a: any) => a.status === "PRESENT" || a.status === "LATE").length;
             // 10 pts per class attended, max 40 pts (4 classes)
             const attendancePoints = Math.min(presentClasses * 10, 40);
 
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
             });
 
             const totalHomeworks = homeworks.length;
-            const completedHomeworks = homeworks.filter(h => h.isCompleted).length;
+            const completedHomeworks = homeworks.filter((h: any) => h.isCompleted).length;
             const homeworkPoints = totalHomeworks > 0 ? Math.round((completedHomeworks / totalHomeworks) * 20) : 0;
 
             // Calculate Assignment Points (Max 20)

@@ -64,7 +64,7 @@ function rateLimit(ip: string) {
 // ---------------------------------------------------------
 // 3. AUTH OPTIONS
 // ---------------------------------------------------------
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",

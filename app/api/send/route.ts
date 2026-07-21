@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       from: 'Royal Rooks <onboarding@resend.dev>', // See note below about custom domains
       to: ['royalrookschesscoach@gmail.com'],
       subject: `New Contact Inquiry: ${inquiryType}`,
-      reply_to: email,
+      replyTo: email,
       html: `
         <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee;">
           <h2 style="color: #E76F51;">New Message from Royal Rooks</h2>

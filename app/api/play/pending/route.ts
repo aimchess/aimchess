@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
     try {
@@ -17,6 +17,9 @@ export async function GET(req: Request) {
         if (!currentUser) {
             return new NextResponse("User not found", { status: 404 });
         }
+
+        const { searchParams } = new URL(req.url);
+        const tournamentId = searchParams.get("tournamentId");
 
         const pendingChallenges = await prisma.challenge.findMany({
             where: {
@@ -35,11 +38,14 @@ export async function GET(req: Request) {
             }
         });
 
+        // Get latest active game (prioritizing tournamentId if specified)
         const activeGame = await prisma.game.findFirst({
             where: {
                 OR: [{ whiteId: currentUser.id }, { blackId: currentUser.id }],
-                status: "IN_PROGRESS"
+                status: "IN_PROGRESS",
+                ...(tournamentId ? { tournamentId } : {})
             },
+            orderBy: { createdAt: 'desc' },
             select: { id: true }
         });
 

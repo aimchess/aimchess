@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 export async function GET(req: Request) {
@@ -76,14 +76,14 @@ export async function GET(req: Request) {
       }
 
       // Cert eligibility
-      const pendingCerts = s.certificates.filter(c => c.type === "AIM_CLUB");
+      const pendingCerts = s.certificates.filter((c: any) => c.type === "AIM_CLUB");
       if (pendingCerts.length > 0) {
         certEligible.push({ student: s, certs: pendingCerts });
       }
 
       // Attendance check
       const totalMarked = s.attendanceRecords.length;
-      const presentCount = s.attendanceRecords.filter(r => r.status === "PRESENT").length;
+      const presentCount = s.attendanceRecords.filter((r: any) => r.status === "PRESENT").length;
       const attendanceRate = totalMarked > 0 ? (presentCount / totalMarked) : 1;
       if (attendanceRate < 0.75 && totalMarked > 0) {
         lowAttendance.push({ student: s, rate: Math.round(attendanceRate * 100), totalMarked });
@@ -102,7 +102,7 @@ export async function GET(req: Request) {
       let gain = 0;
       const history = Array.isArray(s.aimRatingHistory) ? (s.aimRatingHistory as any[]) : [];
       if (history.length > 0) {
-        const historyThisMonth = history.filter(h => new Date(h.date) >= startOfMonth);
+        const historyThisMonth = history.filter((h: any) => new Date(h.date) >= startOfMonth);
         if (historyThisMonth.length > 0) {
           gain = s.aimRating - historyThisMonth[0].rating;
         }
@@ -117,7 +117,7 @@ export async function GET(req: Request) {
       goldEligible: goldEligible.map(s => ({ id: s.id, name: s.name })),
       silverEligible: silverEligible.map(s => ({ id: s.id, name: s.name })),
       bronzeEligible: bronzeEligible.map(s => ({ id: s.id, name: s.name })),
-      certEligible: certEligible.map(c => ({ id: c.student.id, name: c.student.name, clubs: c.certs.map(x => x.clubName) })),
+      certEligible: certEligible.map(c => ({ id: c.student.id, name: c.student.name, clubs: c.certs.map((x: any) => x.clubName) })),
       lowAttendance: lowAttendance.map(l => ({ name: l.student.name, rate: l.rate })),
       homeworkPending: homeworkPendingList,
       assignmentPending: assignmentPendingList,

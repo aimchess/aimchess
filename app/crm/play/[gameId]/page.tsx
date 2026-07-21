@@ -22,6 +22,12 @@ export default function GamePage() {
     const [playerColor, setPlayerColor] = useState<"white" | "black" | "spectator">("spectator");
     const [wTime, setWTime] = useState<number | null>(null);
     const [bTime, setBTime] = useState<number | null>(null);
+    const [userFlipped, setUserFlipped] = useState(false);
+
+    const defaultOrientation = playerColor === "black" ? "black" : "white";
+    const activeOrientation = userFlipped 
+        ? (defaultOrientation === "black" ? "white" : "black") 
+        : defaultOrientation;
 
     const fetchGameState = async () => {
         try {
@@ -39,8 +45,15 @@ export default function GamePage() {
                 setGame(newGame);
 
                 const currentUserId = (session?.user as any)?.id;
-                if (currentUserId === data.whiteId) setPlayerColor("white");
-                else if (currentUserId === data.blackId) setPlayerColor("black");
+                const currentUserEmail = session?.user?.email;
+
+                if (currentUserId === data.whiteId || (currentUserEmail && data.white?.email && currentUserEmail === data.white?.email)) {
+                    setPlayerColor("white");
+                } else if (currentUserId === data.blackId || (currentUserEmail && data.black?.email && currentUserEmail === data.black?.email)) {
+                    setPlayerColor("black");
+                } else {
+                    setPlayerColor("spectator");
+                }
             }
         } catch (error) {
             console.error("Failed to fetch game state:", error);
@@ -143,6 +156,28 @@ export default function GamePage() {
         return false;
     };
 
+    const [resigning, setResigning] = useState(false);
+
+    const handleResign = async () => {
+        if (!confirm("Are you sure you want to resign this game?")) return;
+        setResigning(true);
+        try {
+            const res = await fetch(`/api/play/game/${gameId}/resign`, {
+                method: "POST",
+            });
+            if (res.ok) {
+                toast.success("You have resigned.");
+                fetchGameState();
+            } else {
+                toast.error("Failed to resign.");
+            }
+        } catch (e) {
+            toast.error("An error occurred.");
+        } finally {
+            setResigning(false);
+        }
+    };
+
     if (loading) {
         return (
             <CRMShellLayout>
@@ -183,12 +218,31 @@ export default function GamePage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-center">
+                    <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center gap-4">
+                        <div className="flex flex-wrap items-center justify-center gap-2">
+                            <div className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 ${
+                                playerColor === "white" ? "bg-amber-100 text-amber-900 border border-amber-300" :
+                                playerColor === "black" ? "bg-slate-900 text-white border border-slate-700" :
+                                "bg-gray-100 text-gray-700 border border-gray-200"
+                            }`}>
+                                {playerColor === "white" && <span>♔ Playing as WHITE</span>}
+                                {playerColor === "black" && <span>♚ Playing as BLACK</span>}
+                                {playerColor === "spectator" && <span>👁️ Spectating Game</span>}
+                            </div>
+
+                            <button
+                                onClick={() => setUserFlipped(!userFlipped)}
+                                className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                            >
+                                🔄 Flip Board ({activeOrientation.toUpperCase()} View)
+                            </button>
+                        </div>
+
                         <div className="w-full max-w-[600px] aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-indigo-50">
                             <Chessboard 
                                 position={game.fen()} 
                                 onPieceDrop={onDrop}
-                                boardOrientation={playerColor === "black" ? "black" : "white"}
+                                boardOrientation={activeOrientation}
                                 customDarkSquareStyle={{ backgroundColor: "#4f46e5" }}
                                 customLightSquareStyle={{ backgroundColor: "#e0e7ff" }}
                             />
@@ -250,8 +304,13 @@ export default function GamePage() {
                             
                             {playerColor !== "spectator" && gameData.status === "IN_PROGRESS" && (
                                 <div className="pt-6 mt-auto">
-                                    <button className="w-full py-3 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 font-bold text-sm flex items-center justify-center gap-2 transition-colors">
-                                        <Flag size={16} /> Resign
+                                    <button 
+                                        onClick={handleResign}
+                                        disabled={resigning}
+                                        className="w-full py-3 rounded-xl bg-red-50 hover:bg-red-100 disabled:opacity-50 text-red-600 font-bold text-sm flex items-center justify-center gap-2 transition-colors active:scale-98"
+                                    >
+                                        {resigning ? <Loader2 size={16} className="animate-spin" /> : <Flag size={16} />}
+                                        {resigning ? "Resigning..." : "Resign"}
                                     </button>
                                 </div>
                             )}

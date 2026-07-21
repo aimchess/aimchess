@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Award, Quote, Target, Trophy, GraduationCap, BookOpen, lightbulb } from "lucide-react";
+import { Award, Quote, Target, Trophy, GraduationCap, BookOpen, Lightbulb } from "lucide-react";
 
 const COACHES = [
   {

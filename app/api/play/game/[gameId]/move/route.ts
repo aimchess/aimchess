@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { Chess } from "chess.js";
 import { completeGame } from "@/lib/game";
 
@@ -51,19 +51,21 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
             return new NextResponse("Invalid move", { status: 400 });
         }
 
-        let whiteTimeLeft = game.whiteTimeLeft;
-        let blackTimeLeft = game.blackTimeLeft;
+        const parts = (game.timeControl || "10+0").split("+");
+        const initialMs = (parseInt(parts[0]) || 10) * 60 * 1000;
+        const incrementMs = (parts[1] ? parseInt(parts[1]) : 0) * 1000;
+
+        let whiteTimeLeft = game.whiteTimeLeft ?? initialMs;
+        let blackTimeLeft = game.blackTimeLeft ?? initialMs;
         let lastMoveAt = game.lastMoveAt ? new Date(game.lastMoveAt) : null;
         const now = new Date();
         let timedOut = false;
 
         if (lastMoveAt && game.timeControl) {
             const elapsed = now.getTime() - lastMoveAt.getTime();
-            const parts = game.timeControl.split("+");
-            const incrementMs = (parts[1] ? parseInt(parts[1]) : 0) * 1000;
 
             if (activeColor === "w") {
-                const timeLeft = (game.whiteTimeLeft || 0) - elapsed;
+                const timeLeft = whiteTimeLeft - elapsed;
                 if (timeLeft <= 0) {
                     timedOut = true;
                     whiteTimeLeft = 0;
@@ -71,7 +73,7 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
                     whiteTimeLeft = timeLeft + incrementMs;
                 }
             } else {
-                const timeLeft = (game.blackTimeLeft || 0) - elapsed;
+                const timeLeft = blackTimeLeft - elapsed;
                 if (timeLeft <= 0) {
                     timedOut = true;
                     blackTimeLeft = 0;

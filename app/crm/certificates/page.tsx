@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import CRMShellLayout from "@/components/crm/crm-shell"
 import { Loader2, Award, Calendar, CheckCircle, Check, RefreshCw, Plus, X, User } from "lucide-react"
 import { toast } from "sonner"
+import { CertificateTemplate } from "@/components/crm/certificate-template"
 
 const CERTIFICATE_TYPES = [
   { value: "AIM_CLUB", label: "Rating Club Certificate" },
@@ -423,19 +424,40 @@ export default function CertificatesPage() {
       {/* Certificate Preview Modal */}
       {selectedCertForPreview && (() => {
         const cert = selectedCertForPreview;
-        const details = getCertificateDetails(cert);
-        const certNo = `AIM-CERT-${cert.id.substring(0, 8).toUpperCase()}`;
-        const studentName = cert.student?.name || "Student Player";
-        const aimRating = cert.student?.aimRating || (cert.type === "AIM_CLUB" ? parseInt(cert.clubName.replace(/\D/g, '')) || 600 : 600);
+        const certNo = `ARC-1000-${new Date(cert.createdAt).getFullYear()}-${cert.id.substring(0, 4).toUpperCase()}`;
+        const studentName = cert.student?.name || "Student Name";
+        const aimRating = cert.student?.aimRating || (cert.type === "AIM_CLUB" ? parseInt(cert.clubName?.replace(/\D/g, '') || "1000") || 1000 : 1000);
         const achievedDate = cert.issuedAt ? new Date(cert.issuedAt) : new Date(cert.createdAt);
         const formattedDate = achievedDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+        const clubName = cert.clubName || "AIM 1000 CLUB";
         
         return (
-          <div className="fixed inset-0 bg-black/75 backdrop-blur-md z-[150] flex flex-col items-center justify-center p-4 overflow-y-auto">
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[150] overflow-y-auto flex flex-col">
             {/* Dynamic CSS for Print */}
             <style dangerouslySetInnerHTML={{__html: `
+              @page {
+                size: A4 landscape;
+                margin: 0mm;
+              }
               @media print {
+                *, *::before, *::after {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                  color-adjust: exact !important;
+                }
+                html, body {
+                  width: 100% !important;
+                  height: 100% !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  background: #faf9f5 !important;
+                  overflow: hidden !important;
+                }
                 body * {
+                  visibility: hidden !important;
+                }
+                .no-print, .no-print * {
+                  display: none !important;
                   visibility: hidden !important;
                 }
                 .printable-cert-container, .printable-cert-container * {
@@ -445,130 +467,69 @@ export default function CertificatesPage() {
                   position: fixed !important;
                   left: 0 !important;
                   top: 0 !important;
-                  width: 100% !important;
-                  height: 100% !important;
-                  max-width: 100% !important;
+                  width: 100vw !important;
+                  height: 100vh !important;
+                  max-width: 100vw !important;
+                  max-height: 100vh !important;
                   z-index: 9999999 !important;
-                  background: white !important;
-                  padding: 0 !important;
+                  background: #faf9f5 !important;
+                  padding: 20px !important;
                   margin: 0 !important;
                   box-shadow: none !important;
-                  border: none !important;
+                  border: 10px solid #071938 !important;
+                  box-sizing: border-box !important;
                   display: flex !important;
-                  align-items: center !important;
-                  justify-content: center !important;
+                  flex-direction: column !important;
+                  justify-content: space-between !important;
                 }
-                .no-print {
-                  display: none !important;
+                .printable-cert-side-tag {
+                  display: flex !important;
                 }
               }
             `}} />
             
-            {/* Controls */}
-            <div className="no-print w-full max-w-4xl flex justify-between items-center mb-4 text-white">
-              <div>
-                <h3 className="font-black text-lg">Preview Certificate</h3>
-                <p className="text-xs text-amber-300">Format optimized for landscape printing / PDF download</p>
+            {/* Sticky Header Controls */}
+            <div className="no-print sticky top-0 z-[160] w-full bg-[#071938] border-b border-amber-500/40 p-4 shadow-2xl flex items-center justify-between gap-4 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-400 font-bold">
+                  📜
+                </div>
+                <div>
+                  <h3 className="font-black text-base md:text-lg tracking-wide text-white">Official Certificate Preview</h3>
+                  <p className="text-xs text-amber-300">Formatted exactly as issued by AIM Chess Academy</p>
+                </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="bg-amber-500 hover:bg-amber-400 text-stone-900 font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-lg"
+                  className="bg-amber-500 hover:bg-amber-400 text-[#071938] font-extrabold px-4 py-2 text-xs transition-all flex items-center gap-1.5 shadow-lg active:scale-95"
                 >
                   🖨️ Download PDF / Print
                 </button>
                 <button
                   onClick={() => setSelectedCertForPreview(null)}
-                  className="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-xs transition-all"
+                  className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 text-xs font-bold transition-all active:scale-95"
                 >
-                  Close
+                  ✕ Close
                 </button>
               </div>
             </div>
 
-            {/* Certificate Container */}
-            <div className="printable-cert-container bg-white text-stone-900 rounded-2xl shadow-2xl p-6 md:p-12 w-full max-w-4xl border-8 border-double border-amber-600 relative overflow-hidden aspect-[1.414/1] flex flex-col justify-between">
-              
-              {/* Background watermark decorations */}
-              <div className="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
-                <Award size={500} />
+            {/* Scrollable Body Container */}
+            <div className="flex-1 w-full p-2 sm:p-4 md:p-8 flex items-center justify-center overflow-x-auto">
+              <div className="w-full max-w-5xl my-auto">
+                <CertificateTemplate
+                  data={{
+                    id: cert.id,
+                    studentName: studentName,
+                    aimRating: aimRating,
+                    clubName: clubName,
+                    type: cert.type,
+                    certificateNo: certNo,
+                    dateAchieved: formattedDate,
+                  }}
+                />
               </div>
-              <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4 border-amber-500/30 m-4 rounded-tl-xl"></div>
-              <div className="absolute top-0 right-0 w-24 h-24 border-t-4 border-r-4 border-amber-500/30 m-4 rounded-tr-xl"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 border-b-4 border-l-4 border-amber-500/30 m-4 rounded-bl-xl"></div>
-              <div className="absolute bottom-0 right-0 w-24 h-24 border-b-4 border-r-4 border-amber-500/30 m-4 rounded-br-xl"></div>
-
-              {/* Certificate Content */}
-              <div className="text-center space-y-4 my-auto relative z-10">
-                {/* Header */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold tracking-widest text-amber-700">👑 AIM CHESS ACADEMY</span>
-                  </div>
-                  <div className="h-0.5 w-32 bg-gradient-to-r from-transparent via-amber-600 to-transparent"></div>
-                </div>
-
-                <div className="space-y-1">
-                  <h1 className="text-3xl md:text-5xl font-serif font-bold text-stone-800 tracking-wide uppercase">
-                    Certificate of Achievement
-                  </h1>
-                  <p className="text-xs md:text-sm font-medium text-stone-500 tracking-wider italic">
-                    This is proudly presented to
-                  </p>
-                </div>
-
-                {/* Student Name */}
-                <div className="py-2">
-                  <h2 className="text-2xl md:text-4xl font-serif font-black text-amber-700 underline decoration-double decoration-amber-500/50 underline-offset-8">
-                    {studentName}
-                  </h2>
-                </div>
-
-                {/* Accomplishment Details */}
-                <div className="max-w-2xl mx-auto space-y-2">
-                  <p className="text-sm md:text-base text-stone-700 leading-relaxed font-semibold">
-                    for successfully achieving the milestone and joining the prestigious
-                  </p>
-                  <div className={`inline-block px-6 py-2.5 rounded-2xl bg-gradient-to-r ${details.color} text-white font-black tracking-wide text-lg md:text-2xl shadow-md border-2 border-white/20`}>
-                    🛡️ {cert.type === "AIM_CLUB" ? cert.clubName : details.title}
-                  </div>
-                  <p className="text-xs md:text-sm text-stone-500 font-medium">
-                    having attained an AIM rating of <span className="font-bold text-amber-700 text-base">{aimRating}</span> at the <span className="font-bold text-stone-700">{details.level}</span>.
-                  </p>
-                </div>
-              </div>
-
-              {/* Footer signatures and seal */}
-              <div className="border-t border-stone-200/80 pt-6 mt-6 flex justify-between items-end relative z-10">
-                {/* Certificate Details */}
-                <div className="text-left text-[10px] md:text-xs text-stone-500 font-bold space-y-0.5">
-                  <p><span className="text-stone-400">Date Issued:</span> {formattedDate}</p>
-                  <p><span className="text-stone-400">Credential ID:</span> <span className="font-mono text-stone-700">{certNo}</span></p>
-                  <p><span className="text-stone-400">Status:</span> <span className="text-emerald-600 font-extrabold uppercase">OFFICIAL</span></p>
-                </div>
-
-                {/* Seal */}
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-amber-400 to-yellow-600 rounded-full flex items-center justify-center shadow-lg border-4 border-white/80 ring-2 ring-amber-600/30 transform rotate-12">
-                  <div className="text-center text-white text-[8px] md:text-[10px] font-black uppercase leading-tight select-none">
-                    <p>AIM</p>
-                    <p className="text-xs">⚔️</p>
-                    <p>SEAL</p>
-                  </div>
-                </div>
-
-                {/* Signature */}
-                <div className="text-center relative">
-                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-12 flex items-center justify-center select-none pointer-events-none">
-                    <span className="font-serif italic text-2xl text-indigo-900 tracking-wider opacity-90 filter drop-shadow-sm font-bold rotate-[-4deg]">
-                      Soumen Banerjee
-                    </span>
-                  </div>
-                  <div className="w-36 border-t-2 border-stone-400/80 mt-1"></div>
-                  <p className="text-[10px] md:text-xs font-black text-stone-600 mt-1 uppercase tracking-wider">Head Coach Signature</p>
-                  <p className="text-[8px] text-stone-400">Aim Chess Academy</p>
-                </div>
-              </div>
-
             </div>
           </div>
         );
