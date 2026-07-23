@@ -59,8 +59,14 @@ export async function POST(req: Request) {
                 }
             });
 
-            const totalHomeworks = homeworks.length;
-            const completedHomeworks = homeworks.filter((h: any) => h.isCompleted).length;
+            // Only consider assignments that are either completed, or whose due date is in the past (overdue).
+            // This prevents penalizing students for new/pending homeworks that aren't past their due dates.
+            const relevantHomeworks = homeworks.filter((h: any) => 
+                h.isCompleted || (h.dueDate && new Date() > new Date(h.dueDate))
+            );
+
+            const totalHomeworks = relevantHomeworks.length;
+            const completedHomeworks = relevantHomeworks.filter((h: any) => h.isCompleted).length;
             const homeworkPoints = totalHomeworks > 0 ? Math.round((completedHomeworks / totalHomeworks) * 20) : 0;
 
             // Calculate Assignment Points (Max 20)

@@ -28,6 +28,22 @@ export async function POST(req: Request) {
       },
     });
 
+    // Mark assignment completed if solved (only if due date hasn't passed)
+    if (isCorrect) {
+      const assignments = await prisma.assignment.findMany({
+        where: { studentId, mcqId, isCompleted: false }
+      });
+
+      for (const assignment of assignments) {
+        if (!assignment.dueDate || new Date() <= new Date(assignment.dueDate)) {
+          await prisma.assignment.update({
+            where: { id: assignment.id },
+            data: { isCompleted: true }
+          });
+        }
+      }
+    }
+
     return NextResponse.json(progress);
   } catch (error) {
     console.error("MCQ Progress Error:", error);
