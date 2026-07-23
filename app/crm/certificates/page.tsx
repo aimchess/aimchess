@@ -425,8 +425,8 @@ export default function CertificatesPage() {
       {selectedCertForPreview && (() => {
         const cert = selectedCertForPreview;
         const certNo = `ARC-1000-${new Date(cert.createdAt).getFullYear()}-${cert.id.substring(0, 4).toUpperCase()}`;
-        const studentName = cert.student?.name || "Student Name";
-        const aimRating = cert.student?.aimRating || (cert.type === "AIM_CLUB" ? parseInt(cert.clubName?.replace(/\D/g, '') || "1000") || 1000 : 1000);
+        const studentName = cert.student?.name || (session?.user as any)?.name || "Student Name";
+        const aimRating = cert.student?.aimRating || (session?.user as any)?.aimRating || (cert.type === "AIM_CLUB" ? parseInt(cert.clubName?.replace(/\D/g, '') || "1000") || 1000 : 1000);
         const achievedDate = cert.issuedAt ? new Date(cert.issuedAt) : new Date(cert.createdAt);
         const formattedDate = achievedDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
         const clubName = cert.clubName || "AIM 1000 CLUB";
