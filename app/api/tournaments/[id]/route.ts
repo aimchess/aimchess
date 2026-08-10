@@ -29,61 +29,115 @@ async function pairTournamentParticipants(tournamentId: string, timeControl: str
         });
 
         const busyUserIds = new Set<string>();
-        activeGames.forEach(g => {
+        activeGames.forEach((g: any) => {
             if (g.whiteId) busyUserIds.add(g.whiteId);
             if (g.blackId) busyUserIds.add(g.blackId);
         });
 
-        // Filter available participants
-        const availableParticipants = tournament.participants.filter(p => !busyUserIds.has(p.userId));
+        // Filter available participants and sort by score descending for Swiss-style pairing
+        const availableParticipants = tournament.participants
+            .filter((p: any) => !busyUserIds.has(p.userId))
+            .sort((a: any, b: any) => b.score - a.score);
+            
         if (availableParticipants.length < 2) return 0;
 
+        // Fetch all games (completed or in progress) in this tournament to avoid pairing players who already played
+        const allTournamentGames = await prisma.game.findMany({
+            where: { tournamentId: tournamentId },
+            select: { whiteId: true, blackId: true }
+        });
+
+        // Map containing set of opponent IDs for each player
+        const playHistory = new Map<string, Set<string>>();
+        allTournamentGames.forEach((g: any) => {
+            if (g.whiteId && g.blackId) {
+                if (!playHistory.has(g.whiteId)) playHistory.set(g.whiteId, new Set());
+                if (!playHistory.has(g.blackId)) playHistory.set(g.blackId, new Set());
+                playHistory.get(g.whiteId)!.add(g.blackId);
+                playHistory.get(g.blackId)!.add(g.whiteId);
+            }
+        });
+
         let createdCount = 0;
-        // Shuffle or pair by rank
-        for (let i = 0; i < availableParticipants.length - 1; i += 2) {
+        const pairedUserIds = new Set<string>();
+
+        // Try to pair players
+        for (let i = 0; i < availableParticipants.length; i++) {
             const p1 = availableParticipants[i];
-            const p2 = availableParticipants[i + 1];
+            if (pairedUserIds.has(p1.userId)) continue;
 
-            const isP1White = Math.random() < 0.5;
-            const whiteId = isP1White ? p1.userId : p2.userId;
-            const blackId = isP1White ? p2.userId : p1.userId;
+            // Find the best opponent for p1 (someone they haven't played yet)
+            let bestOpponentIndex = -1;
+            const p1History = playHistory.get(p1.userId) || new Set<string>();
 
-            const tc = timeControl || "10+0";
-            const minutes = parseInt(tc.split("+")[0]) || 10;
-            const initialMs = minutes * 60 * 1000;
+            for (let j = i + 1; j < availableParticipants.length; j++) {
+                const p2 = availableParticipants[j];
+                if (pairedUserIds.has(p2.userId)) continue;
 
-            const game = await prisma.game.create({
-                data: {
-                    whiteId: whiteId,
-                    blackId: blackId,
-                    timeControl: tc,
-                    tournamentId: tournamentId,
-                    status: "IN_PROGRESS",
-                    whiteTimeLeft: initialMs,
-                    blackTimeLeft: initialMs,
-                    lastMoveAt: new Date(),
-                    fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                    pgn: ""
+                // Candidate found. If they haven't played, choose them immediately
+                if (!p1History.has(p2.userId)) {
+                    bestOpponentIndex = j;
+                    break;
                 }
-            });
+            }
 
-            createdCount++;
-
-            // Create notifications for both players
-            await prisma.notification.createMany({
-                data: [
-                    {
-                        userId: p1.userId,
-                        title: "Tournament Match Started! ⚔️",
-                        message: `Your round match against ${p2.user.name} is starting now!`
-                    },
-                    {
-                        userId: p2.userId,
-                        title: "Tournament Match Started! ⚔️",
-                        message: `Your round match against ${p1.user.name} is starting now!`
+            // Fallback: If everyone available has already played p1, pair with the first unpaired available participant
+            if (bestOpponentIndex === -1) {
+                for (let j = i + 1; j < availableParticipants.length; j++) {
+                    const p2 = availableParticipants[j];
+                    if (!pairedUserIds.has(p2.userId)) {
+                        bestOpponentIndex = j;
+                        break;
                     }
-                ]
-            });
+                }
+            }
+
+            if (bestOpponentIndex !== -1) {
+                const p2 = availableParticipants[bestOpponentIndex];
+                pairedUserIds.add(p1.userId);
+                pairedUserIds.add(p2.userId);
+
+                const isP1White = Math.random() < 0.5;
+                const whiteId = isP1White ? p1.userId : p2.userId;
+                const blackId = isP1White ? p2.userId : p1.userId;
+
+                const tc = timeControl || "10+0";
+                const minutes = parseInt(tc.split("+")[0]) || 10;
+                const initialMs = minutes * 60 * 1000;
+
+                await prisma.game.create({
+                    data: {
+                        whiteId: whiteId,
+                        blackId: blackId,
+                        timeControl: tc,
+                        tournamentId: tournamentId,
+                        status: "IN_PROGRESS",
+                        whiteTimeLeft: initialMs,
+                        blackTimeLeft: initialMs,
+                        lastMoveAt: new Date(),
+                        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                        pgn: ""
+                    }
+                });
+
+                createdCount++;
+
+                // Create notifications for both players
+                await prisma.notification.createMany({
+                    data: [
+                        {
+                            userId: p1.userId,
+                            title: "Tournament Match Started! ⚔️",
+                            message: `Your round match against ${p2.user.name} is starting now!`
+                        },
+                        {
+                            userId: p2.userId,
+                            title: "Tournament Match Started! ⚔️",
+                            message: `Your round match against ${p1.user.name} is starting now!`
+                        }
+                    ]
+                });
+            }
         }
 
         return createdCount;

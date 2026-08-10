@@ -75,6 +75,149 @@ export async function completeGame({
                 data: { score: { increment: 0.5 } }
             });
         }
+
+        // Check if all games of the current round are finished, and only then auto-pair the next round
+        try {
+            const tournament = await prisma.tournament.findUnique({
+                where: { id: game.tournamentId },
+                include: {
+                    participants: {
+                        include: {
+                            user: { select: { id: true, name: true } }
+                        }
+                    }
+                }
+            });
+
+            if (tournament && tournament.status === "ONGOING" && tournament.participants.length >= 2) {
+                // Check if there are any active games left in this tournament
+                const activeGames = await prisma.game.findMany({
+                    where: {
+                        tournamentId: tournament.id,
+                        status: "IN_PROGRESS"
+                    },
+                    select: { id: true }
+                });
+
+                // If activeGames.length is > 0, it means some players are still playing their games for the current round
+                if (activeGames.length === 0) {
+                    // All games are completed for this round!
+                    // Increment the round count
+                    const updatedRound = tournament.currentRound + 1;
+                    
+                    if (updatedRound > tournament.totalRounds) {
+                        // Tournament completed!
+                        await prisma.tournament.update({
+                            where: { id: tournament.id },
+                            data: { status: "COMPLETED" }
+                        });
+                        console.log(`[TOURNAMENT] Completed tournament ${tournament.id} after all rounds finished.`);
+                    } else {
+                        // Advance to the next round
+                        await prisma.tournament.update({
+                            where: { id: tournament.id },
+                            data: { currentRound: updatedRound }
+                        });
+
+                        // Filter participants and sort by score descending for Swiss system pairing
+                        const availableParticipants = [...tournament.participants].sort((a: any, b: any) => b.score - a.score);
+
+                        if (availableParticipants.length >= 2) {
+                            const allTournamentGames = await prisma.game.findMany({
+                                where: { tournamentId: tournament.id },
+                                select: { whiteId: true, blackId: true }
+                            });
+
+                            const playHistory = new Map<string, Set<string>>();
+                            allTournamentGames.forEach((g: any) => {
+                                if (g.whiteId && g.blackId) {
+                                    if (!playHistory.has(g.whiteId)) playHistory.set(g.whiteId, new Set());
+                                    if (!playHistory.has(g.blackId)) playHistory.set(g.blackId, new Set());
+                                    playHistory.get(g.whiteId)!.add(g.blackId);
+                                    playHistory.get(g.blackId)!.add(g.whiteId);
+                                }
+                            });
+
+                            const pairedUserIds = new Set<string>();
+                            for (let i = 0; i < availableParticipants.length; i++) {
+                                const p1 = availableParticipants[i];
+                                if (pairedUserIds.has(p1.userId)) continue;
+
+                                let bestOpponentIndex = -1;
+                                const p1History = playHistory.get(p1.userId) || new Set<string>();
+
+                                for (let j = i + 1; j < availableParticipants.length; j++) {
+                                    const p2 = availableParticipants[j];
+                                    if (pairedUserIds.has(p2.userId)) continue;
+
+                                    if (!p1History.has(p2.userId)) {
+                                        bestOpponentIndex = j;
+                                        break;
+                                    }
+                                }
+
+                                if (bestOpponentIndex === -1) {
+                                    for (let j = i + 1; j < availableParticipants.length; j++) {
+                                        const p2 = availableParticipants[j];
+                                        if (!pairedUserIds.has(p2.userId)) {
+                                            bestOpponentIndex = j;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (bestOpponentIndex !== -1) {
+                                    const p2 = availableParticipants[bestOpponentIndex];
+                                    pairedUserIds.add(p1.userId);
+                                    pairedUserIds.add(p2.userId);
+
+                                    const isP1White = Math.random() < 0.5;
+                                    const whiteId = isP1White ? p1.userId : p2.userId;
+                                    const blackId = isP1White ? p2.userId : p1.userId;
+
+                                    const tc = tournament.timeControl || "10+0";
+                                    const minutes = parseInt(tc.split("+")[0]) || 10;
+                                    const initialMs = minutes * 60 * 1000;
+
+                                    await prisma.game.create({
+                                        data: {
+                                            whiteId,
+                                            blackId,
+                                            timeControl: tc,
+                                            tournamentId: tournament.id,
+                                            status: "IN_PROGRESS",
+                                            whiteTimeLeft: initialMs,
+                                            blackTimeLeft: initialMs,
+                                            lastMoveAt: new Date(),
+                                            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                                            pgn: ""
+                                        }
+                                    });
+
+                                    // Create notifications for both players
+                                    await prisma.notification.createMany({
+                                        data: [
+                                            {
+                                                userId: p1.userId,
+                                                title: "Tournament Match Started! ⚔️",
+                                                message: `Your round match against ${p2.user.name} is starting now!`
+                                            },
+                                            {
+                                                userId: p2.userId,
+                                                title: "Tournament Match Started! ⚔️",
+                                                message: `Your round match against ${p1.user.name} is starting now!`
+                                            }
+                                        ]
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (pairErr) {
+            console.error("[AUTO_PAIR_AFTER_GAME_COMPLETE_ERROR]", pairErr);
+        }
     }
 
     // 4. AIM Rating System

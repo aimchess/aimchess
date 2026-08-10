@@ -19,14 +19,135 @@ export interface CertificateData {
 export function CertificateTemplate({ data, forceDesktop = false }: { data: CertificateData; forceDesktop?: boolean }) {
   const studentName = data?.studentName || "Student Name"
   const aimRating = data?.aimRating || 1158
-  const clubName = data?.clubName || "AIM 1000 CLUB"
-  const level = data?.level || (clubName.includes("1000") ? "GOLD LEVEL" : clubName.includes("800") ? "SILVER LEVEL" : clubName.includes("600") ? "BRONZE LEVEL" : clubName.includes("1200") ? "PLATINUM LEVEL" : "GOLD LEVEL")
+  const certType = data?.type || "AIM_CLUB"
   
-  // Calculate next target rating and club name
+  // Custom certificate properties mapping based on type
+  const isClub = certType === "AIM_CLUB"
+  
+  let mainTitle = "CERTIFICATE"
+  let mainSubtitle = "OF ACHIEVEMENT"
+  let badgeTitle = "OFFICIAL MEMBER"
+  let badgeContent = data?.clubName || "AIM 1000 CLUB"
+  let badgeIcon = "👑"
+  let levelLabel = "GOLD LEVEL"
+  let paragraphOne = "for successfully achieving the required rating and becoming an official member of the"
+  let paragraphTwo = "Your dedication, consistent practice, and commitment to improving your chess skills have earned you this important milestone."
+  let paragraphThree = "We congratulate you on this achievement and encourage you to continue your journey towards the next AIM Rating Club."
+  
   const currentRatingNum = typeof aimRating === 'number' ? aimRating : parseInt(String(aimRating)) || 1158
   const nextTargetNum = data?.nextTargetRating || (currentRatingNum < 600 ? 600 : currentRatingNum < 800 ? 800 : currentRatingNum < 1000 ? 1000 : currentRatingNum < 1200 ? 1200 : currentRatingNum < 1400 ? 1400 : currentRatingNum + 200)
   const nextTargetClubName = data?.nextTargetClub || `AIM ${nextTargetNum} CLUB`
   
+  let leftTagTitle = "CURRENT"
+  let leftTagSubtitle = "AIM RATING"
+  let leftTagValue = String(aimRating)
+  let leftTagIcon = "♔"
+  
+  let rightTagTitle = "NEXT TARGET"
+  let rightTagSubtitle = nextTargetClubName
+  let rightTagValue = String(nextTargetNum)
+  let rightTagIcon = "🎯"
+
+  if (isClub) {
+    const clubName = data?.clubName || "AIM 1000 CLUB"
+    levelLabel = clubName.includes("1000") ? "GOLD LEVEL" : clubName.includes("800") ? "SILVER LEVEL" : clubName.includes("600") ? "BRONZE LEVEL" : clubName.includes("1200") ? "PLATINUM LEVEL" : clubName.includes("1400") ? "ELITE LEVEL" : clubName.includes("1600") ? "CHAMPION LEVEL" : clubName.includes("1800") ? "MASTER LEVEL" : clubName.includes("2000") ? "GRANDMASTER LEVEL" : "GOLD LEVEL"
+  } else {
+    // Hide or customize target tags for non-rating club certificates
+    leftTagTitle = "AWARDED TO"
+    leftTagSubtitle = "STUDENT"
+    leftTagValue = studentName.split(" ")[0] || "STUDENT"
+    leftTagIcon = "🏅"
+    
+    rightTagTitle = "CATEGORY"
+    rightTagIcon = "⭐"
+    
+    if (certType === "STAR_GOLD") {
+      mainTitle = "GOLD STAR"
+      mainSubtitle = "PLAYER AWARD"
+      badgeTitle = "EXCELLENCE"
+      badgeContent = "GOLD STAR PLAYER"
+      badgeIcon = "⭐"
+      levelLabel = "GOLD STAR CATEGORY"
+      rightTagSubtitle = "GOLD LEVEL"
+      rightTagValue = "GOLD"
+      paragraphOne = "for demonstrating exceptional skill, performance, and sportsmanship as a"
+      paragraphTwo = "Your dedication, consistency, and outstanding achievements on the board have earned you this Gold Star recognition."
+      paragraphThree = "We celebrate your brilliant play and look forward to your continued success in the academy."
+    } else if (certType === "STAR_SILVER") {
+      mainTitle = "SILVER STAR"
+      mainSubtitle = "PLAYER AWARD"
+      badgeTitle = "EXCELLENCE"
+      badgeContent = "SILVER STAR PLAYER"
+      badgeIcon = "⭐"
+      levelLabel = "SILVER STAR CATEGORY"
+      rightTagSubtitle = "SILVER LEVEL"
+      rightTagValue = "SILVER"
+      paragraphOne = "for demonstrating high skill, dedication, and sportsmanship as a"
+      paragraphTwo = "Your steady progress, commitment, and strong performance on the board have earned you this Silver Star recognition."
+      paragraphThree = "We congratulate you on this milestone and encourage you to keep aiming higher."
+    } else if (certType === "STAR_BRONZE") {
+      mainTitle = "BRONZE STAR"
+      mainSubtitle = "PLAYER AWARD"
+      badgeTitle = "EXCELLENCE"
+      badgeContent = "BRONZE STAR PLAYER"
+      badgeIcon = "⭐"
+      levelLabel = "BRONZE STAR CATEGORY"
+      rightTagSubtitle = "BRONZE LEVEL"
+      rightTagValue = "BRONZE"
+      paragraphOne = "for demonstrating consistent effort, growth, and sportsmanship as a"
+      paragraphTwo = "Your perseverance, active practice, and love for the game have earned you this Bronze Star recognition."
+      paragraphThree = "We congratulate you on this achievement and look forward to supporting your progress."
+    } else if (certType === "PARTICIPATION") {
+      mainTitle = "PARTICIPATION"
+      mainSubtitle = "CERTIFICATE"
+      badgeTitle = "AIM ACADEMY"
+      badgeContent = "PARTICIPANT"
+      badgeIcon = "🤝"
+      levelLabel = "PARTICIPATION"
+      rightTagSubtitle = "COMPLETED"
+      rightTagValue = "ACTIVE"
+      paragraphOne = "for actively participating and showing outstanding dedication in the training programs of"
+      paragraphTwo = "Your enthusiasm, curiosity, and disciplined training are key parts of your learning journey."
+      paragraphThree = "We wish you the very best as you continue to learn, improve, and enjoy the game of chess."
+    } else if (certType === "TOURNAMENT_WINNER") {
+      mainTitle = "TOURNAMENT CHAMPION"
+      mainSubtitle = "FIRST PLACE"
+      badgeTitle = "CHAMPION"
+      badgeContent = "1ST PLACE"
+      badgeIcon = "🏆"
+      levelLabel = "WINNER"
+      rightTagSubtitle = "TOURNAMENT"
+      rightTagValue = "CHAMPION"
+      paragraphOne = "for achieving first place with outstanding play and strategic mastery in the"
+      paragraphTwo = "Your focus, critical thinking under pressure, and tactical precision have led you to the top of the leaderboard."
+      paragraphThree = "We salute your championship spirit and congratulate you on this well-deserved victory!"
+    } else if (certType === "TOURNAMENT_RUNNER_UP") {
+      mainTitle = "TOURNAMENT RUNNER-UP"
+      mainSubtitle = "SECOND PLACE"
+      badgeTitle = "RUNNER UP"
+      badgeContent = "2ND PLACE"
+      badgeIcon = "🥈"
+      levelLabel = "RUNNER-UP"
+      rightTagSubtitle = "TOURNAMENT"
+      rightTagValue = "2ND PLACE"
+      paragraphOne = "for achieving second place with remarkable performance and strategic gameplay in the"
+      paragraphTwo = "Your resilience, analytical execution, and competitive drive have earned you this high position."
+      paragraphThree = "We congratulate you on this excellent achievement and wish you success in future matches!"
+    } else if (certType === "BEST_IMPROVEMENT") {
+      mainTitle = "MOST IMPROVED"
+      mainSubtitle = "PLAYER AWARD"
+      badgeTitle = "GROWTH"
+      badgeContent = "BEST IMPROVEMENT"
+      badgeIcon = "📈"
+      levelLabel = "MOST IMPROVED"
+      rightTagSubtitle = "IMPROVEMENT"
+      rightTagValue = "EXCELLENT"
+      paragraphOne = "for showing remarkable progress, diligence, and learning agility in the training programs of"
+      paragraphTwo = "Your dedication to learning from mistakes and practicing regularly has resulted in a outstanding boost to your gameplay."
+      paragraphThree = "We congratulate you on your rapid growth and encourage you to maintain this momentum!"
+    }
+  }
+
   const certNo = data?.certificateNo || (data?.id ? `ARC-1000-2026-${data.id.substring(0, 4).toUpperCase()}` : "ARC-1000-2026-0001")
   const dateAchieved = data?.dateAchieved || "16 July 2026"
 
@@ -125,12 +246,12 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
           {/* CERTIFICATE OF ACHIEVEMENT */}
           <div className="mt-0.5 sm:mt-1">
             <h2 className={forceDesktop ? "text-4xl font-serif font-black text-[#b8860b] tracking-[0.15em] uppercase drop-shadow-sm" : "text-base sm:text-2xl md:text-4xl font-serif font-black text-[#b8860b] tracking-[0.1em] sm:tracking-[0.15em] uppercase drop-shadow-sm"}>
-              CERTIFICATE
+              {mainTitle}
             </h2>
             <div className="flex items-center justify-center gap-1 sm:gap-2 mt-0.5">
               <div className={forceDesktop ? "h-[1.5px] w-28 bg-[#c59b27]" : "h-[1px] sm:h-[1.5px] w-8 sm:w-16 md:w-28 bg-[#c59b27]"}></div>
               <span className={forceDesktop ? "text-sm font-black text-[#071938] tracking-[0.2em] uppercase" : "text-[9px] sm:text-xs md:text-sm font-black text-[#071938] tracking-[0.15em] sm:tracking-[0.2em] uppercase"}>
-                OF ACHIEVEMENT
+                {mainSubtitle}
               </span>
               <div className={forceDesktop ? "h-[1.5px] w-28 bg-[#c59b27]" : "h-[1px] sm:h-[1.5px] w-8 sm:w-16 md:w-28 bg-[#c59b27]"}></div>
             </div>
@@ -150,7 +271,7 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
           <div className={forceDesktop ? "bg-[#071938] text-white border-2 border-[#c59b27] rounded-none p-2 text-center w-full shadow-md relative overflow-hidden" : "bg-[#071938] text-white border sm:border-2 border-[#c59b27] rounded-none p-1 sm:p-2 text-center w-full shadow-md relative overflow-hidden"} style={{ backgroundColor: '#071938' }}>
             {/* Gold Header */}
             <p className={forceDesktop ? "text-[10px] font-bold tracking-wider uppercase text-amber-200" : "text-[7px] sm:text-[9px] md:text-[10px] font-bold tracking-wider uppercase text-amber-200"}>
-              OFFICIAL MEMBER
+              {badgeTitle}
             </p>
 
             {/* Stars */}
@@ -160,12 +281,12 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
 
             {/* Club Name */}
             <p className={forceDesktop ? "text-sm font-black text-white tracking-wide uppercase leading-tight" : "text-[9px] sm:text-xs md:text-sm font-black text-white tracking-wide uppercase leading-tight"}>
-              {clubName}
+              {badgeContent}
             </p>
 
             {/* Crown Icon */}
             <div className={forceDesktop ? "text-amber-400 text-base mt-0.5" : "text-amber-400 text-xs sm:text-sm md:text-base mt-0.5"}>
-              👑
+              {badgeIcon}
             </div>
           </div>
         </div>
@@ -179,20 +300,20 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
         <div className={`printable-cert-side-tag absolute left-4 flex flex-col items-center w-24 bg-[#071938] text-white border-2 border-[#c59b27] rounded-none py-1.5 px-1 text-center shadow-lg ${
           forceDesktop ? "top-[280px] flex" : "top-1/2 -translate-y-1/2 hidden md:flex"
         }`} style={{ backgroundColor: '#071938' }}>
-          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider">CURRENT</p>
-          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider">AIM RATING</p>
-          <p className="text-base md:text-xl font-black text-white my-0.5">{aimRating}</p>
-          <div className="text-amber-400 text-sm md:text-lg">♔</div>
+          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider">{leftTagTitle}</p>
+          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider">{leftTagSubtitle}</p>
+          <p className="text-base md:text-xl font-black text-white my-0.5">{leftTagValue}</p>
+          <div className="text-amber-400 text-sm md:text-lg">{leftTagIcon}</div>
         </div>
 
         {/* Right Side Tag (Next Target) - Sharp Rectangular Edge */}
         <div className={`printable-cert-side-tag absolute right-4 flex flex-col items-center w-24 bg-[#071938] text-white border-2 border-[#c59b27] rounded-none py-1.5 px-1 text-center shadow-lg ${
           forceDesktop ? "top-[280px] flex" : "top-1/2 -translate-y-1/2 hidden md:flex"
         }`} style={{ backgroundColor: '#071938' }}>
-          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider">NEXT TARGET</p>
-          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider">{nextTargetClubName}</p>
-          <p className="text-base md:text-xl font-black text-white my-0.5">{nextTargetNum}</p>
-          <div className="text-amber-400 text-sm md:text-lg">🎯</div>
+          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider">{rightTagTitle}</p>
+          <p className="text-[7px] md:text-[8px] font-bold uppercase text-amber-200 tracking-wider truncate w-full px-1">{rightTagSubtitle}</p>
+          <p className="text-base md:text-xl font-black text-white my-0.5">{rightTagValue}</p>
+          <div className="text-amber-400 text-sm md:text-lg">{rightTagIcon}</div>
         </div>
 
         {/* Mobile-Only Rating Bar */}
@@ -200,12 +321,12 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
           forceDesktop ? "hidden" : "flex md:hidden"
         }`}>
           <div className="bg-[#071938] text-white border border-[#c59b27] px-3 py-1 flex items-center gap-2 text-[10px]" style={{ backgroundColor: '#071938' }}>
-            <span className="text-amber-300 font-bold">RATING:</span>
-            <span className="font-black text-white">{aimRating}</span>
+            <span className="text-amber-300 font-bold">{leftTagTitle}:</span>
+            <span className="font-black text-white">{leftTagValue}</span>
           </div>
           <div className="bg-[#071938] text-white border border-[#c59b27] px-3 py-1 flex items-center gap-2 text-[10px]" style={{ backgroundColor: '#071938' }}>
-            <span className="text-amber-300 font-bold">NEXT TARGET:</span>
-            <span className="font-black text-white">{nextTargetNum}</span>
+            <span className="text-amber-300 font-bold">{rightTagTitle}:</span>
+            <span className="font-black text-white">{rightTagValue}</span>
           </div>
         </div>
 
@@ -224,7 +345,7 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
         {/* Achievement Paragraph */}
         <div className="max-w-2xl mx-auto mt-1 sm:mt-2 space-y-1 sm:space-y-1.5">
           <p className={forceDesktop ? "text-xs text-[#071938] font-medium leading-tight" : "text-[10px] sm:text-[11px] md:text-xs text-[#071938] font-medium leading-tight"}>
-            for successfully achieving the required rating and becoming an official member of the
+            {paragraphOne}
           </p>
 
           {/* AIM 1000 CLUB + Gold Ribbon Banner */}
@@ -233,7 +354,7 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
               <span className="text-amber-500 text-sm sm:text-base md:text-xl">🏆</span>
               <span className="text-amber-500 text-[10px] sm:text-xs">★ ★</span>
               <span className={forceDesktop ? "text-xl font-black text-[#071938] tracking-wider uppercase" : "text-sm sm:text-base md:text-xl font-black text-[#071938] tracking-wider uppercase"}>
-                {clubName}
+                {badgeContent}
               </span>
               <span className="text-amber-500 text-[10px] sm:text-xs">★ ★</span>
               <span className="text-amber-500 text-sm sm:text-base md:text-xl">👑</span>
@@ -241,17 +362,17 @@ export function CertificateTemplate({ data, forceDesktop = false }: { data: Cert
 
             {/* GOLD LEVEL Ribbon Pill - Sharp Rectangular Edge */}
             <div className={forceDesktop ? "bg-gradient-to-r from-[#c59b27] via-[#e8c468] to-[#c59b27] text-[#071938] font-black text-xs px-6 py-0.5 rounded-none uppercase tracking-widest shadow-sm border border-amber-600/30" : "bg-gradient-to-r from-[#c59b27] via-[#e8c468] to-[#c59b27] text-[#071938] font-black text-[9px] sm:text-[10px] md:text-xs px-4 sm:px-6 py-0.5 rounded-none uppercase tracking-widest shadow-sm border border-amber-600/30"} style={{ backgroundColor: '#d4af37', backgroundImage: 'none' }}>
-              {level}
+              {levelLabel}
             </div>
           </div>
 
           <p className={forceDesktop ? "text-[11px] text-gray-700 font-normal leading-snug max-w-xl mx-auto" : "text-[9px] sm:text-[10px] md:text-[11px] text-gray-700 font-normal leading-snug max-w-xl mx-auto"}>
-            Your dedication, consistent practice, and commitment to improving your chess skills have earned you this important milestone.
+            {paragraphTwo}
           </p>
           <p className={`text-gray-700 font-normal leading-snug max-w-xl mx-auto ${
             forceDesktop ? "block text-[11px]" : "hidden sm:block text-[9px] sm:text-[10px] md:text-[11px]"
           }`}>
-            We congratulate you on this achievement and encourage you to continue your journey towards the next AIM Rating Club.
+            {paragraphThree}
           </p>
         </div>
 
