@@ -157,6 +157,35 @@ export default function GamePage() {
     };
 
     const [resigning, setResigning] = useState(false);
+    const [drawLoading, setDrawLoading] = useState(false);
+    const currentUserId = (session?.user as any)?.id;
+
+    const handleDrawAction = async (action: "OFFER" | "ACCEPT" | "DECLINE") => {
+        setDrawLoading(true);
+        try {
+            const res = await fetch(`/api/play/game/${gameId}/draw`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action })
+            });
+            if (res.ok) {
+                if (action === "OFFER") {
+                    toast.success("Draw offered.");
+                } else if (action === "ACCEPT") {
+                    toast.success("Draw accepted. Game over.");
+                } else if (action === "DECLINE") {
+                    toast.success("Draw offer declined.");
+                }
+                fetchGameState();
+            } else {
+                toast.error("Failed to execute draw action.");
+            }
+        } catch (e) {
+            toast.error("An error occurred.");
+        } finally {
+            setDrawLoading(false);
+        }
+    };
 
     const handleResign = async () => {
         if (!confirm("Are you sure you want to resign this game?")) return;
@@ -303,7 +332,46 @@ export default function GamePage() {
                             </div>
                             
                             {playerColor !== "spectator" && gameData.status === "IN_PROGRESS" && (
-                                <div className="pt-6 mt-auto">
+                                <div className="pt-6 mt-auto space-y-3">
+                                    {/* Draw Offering UI */}
+                                    {!gameData.drawOfferedBy && (
+                                        <button 
+                                            onClick={() => handleDrawAction("OFFER")}
+                                            disabled={drawLoading}
+                                            className="w-full py-3 rounded-xl bg-amber-50 hover:bg-amber-100 disabled:opacity-50 text-amber-700 border border-amber-200 font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-98 animate-in fade-in"
+                                        >
+                                            🤝 Offer Draw
+                                        </button>
+                                    )}
+
+                                    {gameData.drawOfferedBy && gameData.drawOfferedBy === currentUserId && (
+                                        <div className="w-full py-3 rounded-xl bg-amber-50/50 text-amber-600 font-bold text-sm text-center border border-dashed border-amber-200 animate-pulse">
+                                            ⌛ Draw Offered (Pending...)
+                                        </div>
+                                    )}
+
+                                    {gameData.drawOfferedBy && gameData.drawOfferedBy !== currentUserId && (
+                                        <div className="space-y-2 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 animate-in slide-in-from-bottom-2">
+                                            <span className="text-[11px] font-bold text-indigo-900 block mb-1 text-center">Opponent offered a Draw!</span>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={() => handleDrawAction("ACCEPT")}
+                                                    disabled={drawLoading}
+                                                    className="flex-1 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors active:scale-95"
+                                                >
+                                                    Accept
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDrawAction("DECLINE")}
+                                                    disabled={drawLoading}
+                                                    className="flex-1 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-xs transition-colors active:scale-95"
+                                                >
+                                                    Decline
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <button 
                                         onClick={handleResign}
                                         disabled={resigning}

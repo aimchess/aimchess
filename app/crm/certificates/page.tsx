@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import CRMShellLayout from "@/components/crm/crm-shell"
-import { Loader2, Award, Calendar, CheckCircle, Check, RefreshCw, Plus, X, User } from "lucide-react"
+import { Loader2, Award, Calendar, CheckCircle, Check, RefreshCw, Plus, X, User, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { CertificateTemplate } from "@/components/crm/certificate-template"
 
@@ -121,6 +121,23 @@ export default function CertificatesPage() {
         fetchCertificates()
       } else {
         toast.error("Failed to update status")
+      }
+    } catch (e) {
+      toast.error("An error occurred")
+    }
+  }
+
+  const handleDeleteCertificate = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this certificate?")) return
+    try {
+      const res = await fetch(`/api/certificates?id=${id}`, {
+        method: "DELETE"
+      })
+      if (res.ok) {
+        toast.success("Certificate deleted successfully!")
+        fetchCertificates()
+      } else {
+        toast.error("Failed to delete certificate")
       }
     } catch (e) {
       toast.error("An error occurred")
@@ -303,6 +320,15 @@ export default function CertificatesPage() {
                           <Check size={14} /> Issue
                         </button>
                       </>
+                    )}
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleDeleteCertificate(cert.id)}
+                        className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors border border-red-100 shrink-0"
+                        title="Delete Certificate"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     )}
                   </div>
                 </div>

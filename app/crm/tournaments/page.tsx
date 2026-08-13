@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import CRMShellLayout from "@/components/crm/crm-shell";
-import { Loader2, Trophy, Plus, Calendar as CalendarIcon, Users } from "lucide-react";
+import { Loader2, Trophy, Plus, Calendar as CalendarIcon, Users, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -20,7 +20,8 @@ export default function TournamentsPage() {
         startDate: "",
         timeControl: "10+0",
         totalRounds: "4",
-        pairingSystem: "Swiss"
+        pairingSystem: "Swiss",
+        guidelines: ""
     });
 
     const fetchTournaments = async () => {
@@ -63,7 +64,8 @@ export default function TournamentsPage() {
                     startDate: "",
                     timeControl: "10+0",
                     totalRounds: "4",
-                    pairingSystem: "Swiss"
+                    pairingSystem: "Swiss",
+                    guidelines: ""
                 });
                 fetchTournaments();
             } else {
@@ -85,6 +87,23 @@ export default function TournamentsPage() {
             } else {
                 const data = await res.json();
                 toast.error(data.message || "Failed to join");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
+
+    const handleDeleteTournament = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this tournament? This will delete all matches associated with it.")) return;
+        try {
+            const res = await fetch(`/api/tournaments/${id}`, {
+                method: "DELETE"
+            });
+            if (res.ok) {
+                toast.success("Tournament deleted successfully");
+                fetchTournaments();
+            } else {
+                toast.error("Failed to delete tournament");
             }
         } catch (error) {
             toast.error("An error occurred");
@@ -179,6 +198,15 @@ export default function TournamentsPage() {
                                         <Link href={`/crm/tournaments/${tournament.id}`} className="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 py-2 rounded-xl text-sm font-bold text-center transition-colors">
                                             Details
                                         </Link>
+                                        {isAdmin && (
+                                            <button 
+                                                onClick={() => handleDeleteTournament(tournament.id)}
+                                                className="p-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl transition-colors shrink-0"
+                                                title="Delete Tournament"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
                                         {!isAdmin && tournament.status === 'UPCOMING' && !isJoined && (
                                             <button 
                                                 onClick={() => handleJoin(tournament.id)}
@@ -203,8 +231,17 @@ export default function TournamentsPage() {
             {/* Create Tournament Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setIsCreateModalOpen(false)}>
-                    <div className="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl relative" onClick={e => e.stopPropagation()}>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Tournament</h2>
+                    <div className="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">Create Tournament</h2>
+                            <button 
+                                type="button" 
+                                onClick={() => setIsCreateModalOpen(false)} 
+                                className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-xl hover:bg-gray-100"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
                         <form onSubmit={handleCreate} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Title</label>
@@ -224,6 +261,15 @@ export default function TournamentsPage() {
                                     onChange={e => setNewTournament({...newTournament, description: e.target.value})}
                                     className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none h-24"
                                     placeholder="Format, rules, prizes..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Guidelines</label>
+                                <textarea 
+                                    value={newTournament.guidelines}
+                                    onChange={e => setNewTournament({...newTournament, guidelines: e.target.value})}
+                                    className="w-full border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none h-24"
+                                    placeholder="Match guidelines, player instructions..."
                                 />
                             </div>
                             <div>

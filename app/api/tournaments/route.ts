@@ -43,7 +43,7 @@ export async function POST(req: Request) {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        const { title, description, startDate, timeControl, totalRounds, pairingSystem } = await req.json();
+        const { title, description, guidelines, startDate, timeControl, totalRounds, pairingSystem } = await req.json();
 
         if (!title || !startDate) {
             return new NextResponse("Missing required fields", { status: 400 });
@@ -53,6 +53,7 @@ export async function POST(req: Request) {
             data: {
                 title,
                 description,
+                guidelines,
                 startDate: new Date(startDate),
                 timeControl: timeControl || "10+0",
                 totalRounds: totalRounds ? parseInt(totalRounds) : 4,

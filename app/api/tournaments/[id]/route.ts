@@ -260,3 +260,39 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
+
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (currentUser?.role !== "ADMIN") {
+            return new NextResponse("Forbidden", { status: 403 });
+        }
+
+        // Clean up associated games and challenges first
+        await prisma.game.deleteMany({
+            where: { tournamentId: params.id }
+        });
+
+        await prisma.challenge.deleteMany({
+            where: { tournamentId: params.id }
+        });
+
+        // Delete tournament (will cascade delete participants)
+        await prisma.tournament.delete({
+            where: { id: params.id }
+        });
+
+        return NextResponse.json({ message: "Tournament deleted successfully." });
+    } catch (error) {
+        console.error("Failed to delete tournament:", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}

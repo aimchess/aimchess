@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import CRMShellLayout from "@/components/crm/crm-shell";
-import { Loader2, Trophy, Swords, Calendar as CalendarIcon, Hash, Play, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Loader2, Trophy, Swords, Calendar as CalendarIcon, Hash, Play, RefreshCw, CheckCircle2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -108,6 +108,23 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
         }
     };
 
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this tournament? This will delete all matches associated with it.")) return;
+        try {
+            const res = await fetch(`/api/tournaments/${params.id}`, {
+                method: "DELETE"
+            });
+            if (res.ok) {
+                toast.success("Tournament deleted successfully");
+                router.push("/crm/tournaments");
+            } else {
+                toast.error("Failed to delete tournament");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
+
     if (loading) {
         return (
             <CRMShellLayout>
@@ -192,6 +209,13 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
                                     </button>
                                 </>
                             )}
+                            <button
+                                onClick={handleDelete}
+                                className="bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg transition-all"
+                            >
+                                <Trash2 size={14} />
+                                Delete Tournament
+                            </button>
                         </div>
                     )}
                 </div>
@@ -309,6 +333,14 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
                                 <span className="text-gray-500 font-semibold">Participants:</span>
                                 <span className="font-bold text-indigo-600">{tournament.participants.length} Joined</span>
                             </div>
+                            {tournament.guidelines && (
+                                <div className="pt-3 border-t border-gray-100">
+                                    <span className="text-gray-500 font-bold block mb-1 text-xs uppercase tracking-wider">Tournament Guidelines</span>
+                                    <div className="bg-purple-50 text-purple-950 border border-purple-100 p-3 rounded-xl text-xs font-semibold whitespace-pre-wrap leading-relaxed shadow-sm">
+                                        {tournament.guidelines}
+                                    </div>
+                                </div>
+                            )}
                             {tournament.status === "COMPLETED" && (
                                 <div className="pt-2">
                                     <span className="text-gray-500 font-semibold block mb-2">Final Standings:</span>

@@ -138,7 +138,8 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
                 status: "IN_PROGRESS",
                 whiteTimeLeft,
                 blackTimeLeft,
-                lastMoveAt: now
+                lastMoveAt: now,
+                drawOfferedBy: null
             }
         });
 

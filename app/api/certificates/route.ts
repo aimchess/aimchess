@@ -140,3 +140,36 @@ export async function PUT(req: Request) {
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
+
+export async function DELETE(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== "ADMIN") {
+            return new NextResponse("Forbidden", { status: 403 });
+        }
+
+        const url = new URL(req.url);
+        const certificateId = url.searchParams.get("id");
+
+        if (!certificateId) {
+            return new NextResponse("Missing id", { status: 400 });
+        }
+
+        await prisma.certificate.delete({
+            where: { id: certificateId }
+        });
+
+        return NextResponse.json({ message: "Certificate deleted successfully" });
+    } catch (error) {
+        console.error("[CERTIFICATE_DELETE]", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}
