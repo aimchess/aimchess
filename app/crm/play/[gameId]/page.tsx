@@ -24,6 +24,27 @@ export default function GamePage() {
     const [bTime, setBTime] = useState<number | null>(null);
     const [userFlipped, setUserFlipped] = useState(false);
 
+    const [tournamentId, setTournamentId] = useState<string | null>(null);
+    const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+    const [optionSquares, setOptionSquares] = useState<any>({});
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const search = new URLSearchParams(window.location.search);
+            setTournamentId(search.get("tournamentId") || gameData?.tournamentId || null);
+        }
+    }, [gameData]);
+
+    useEffect(() => {
+        if (gameData && gameData.status !== "IN_PROGRESS" && (tournamentId || gameData.tournamentId)) {
+            const tid = tournamentId || gameData.tournamentId;
+            const timer = setTimeout(() => {
+                router.push(`/crm/tournaments/${tid}`);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [gameData?.status, tournamentId]);
+
     const defaultOrientation = playerColor === "black" ? "black" : "white";
     const activeOrientation = userFlipped 
         ? (defaultOrientation === "black" ? "white" : "black") 
@@ -119,6 +140,62 @@ export default function GamePage() {
         return `${minStr}:${secStr}`;
     };
 
+    const getMoveOptions = (square: string) => {
+        const moves = game.moves({
+            square: square as any,
+            verbose: true
+        }) as any[];
+        
+        if (moves.length === 0) {
+            setOptionSquares({});
+            return false;
+        }
+
+        const newSquares: any = {};
+        moves.forEach((move) => {
+            newSquares[move.to] = {
+                background: move.captured
+                    ? "radial-gradient(circle, rgba(239, 68, 68, 0.4) 37%, transparent 40%)"
+                    : "radial-gradient(circle, rgba(79, 70, 229, 0.2) 20%, transparent 20%)",
+                borderRadius: "50%"
+            };
+        });
+        
+        newSquares[square] = {
+            backgroundColor: "rgba(255, 255, 0, 0.4)"
+        };
+        
+        setOptionSquares(newSquares);
+        return true;
+    };
+
+    const onSquareClick = (square: string) => {
+        if (playerColor === "spectator" || gameData?.status !== "IN_PROGRESS") return;
+        const turn = game.turn() === "w" ? "white" : "black";
+        if (turn !== playerColor) return;
+
+        if (selectedSquare) {
+            const moves = game.moves({ square: selectedSquare as any, verbose: true }) as any[];
+            const isLegal = moves.some((m) => m.to === square);
+            
+            if (isLegal) {
+                onDrop(selectedSquare, square);
+                setSelectedSquare(null);
+                setOptionSquares({});
+                return;
+            }
+        }
+
+        const piece = game.get(square as any);
+        if (piece && ((piece.color === "w" && playerColor === "white") || (piece.color === "b" && playerColor === "black"))) {
+            setSelectedSquare(square);
+            getMoveOptions(square);
+        } else {
+            setSelectedSquare(null);
+            setOptionSquares({});
+        }
+    };
+
     const onDrop = (sourceSquare: string, targetSquare: string) => {
         if (playerColor === "spectator" || gameData?.status !== "IN_PROGRESS") return false;
         
@@ -140,6 +217,8 @@ export default function GamePage() {
 
             if (result) {
                 setGame(newGame);
+                setSelectedSquare(null);
+                setOptionSquares({});
                 
                 // Send move to server
                 fetch(`/api/play/game/${gameId}/move`, {
@@ -230,8 +309,8 @@ export default function GamePage() {
             <div className="max-w-5xl mx-auto space-y-6">
                 
                 <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-                    <Link href="/crm/play" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-semibold text-sm">
-                        <ArrowLeft size={16} /> Back to Play Area
+                    <Link href={tournamentId || gameData?.tournamentId ? `/crm/tournaments/${tournamentId || gameData?.tournamentId}` : "/crm/play"} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors font-semibold text-sm">
+                        <ArrowLeft size={16} /> {tournamentId || gameData?.tournamentId ? "Back to Tournament" : "Back to Play Area"}
                     </Link>
                     <div className="flex items-center gap-4 text-sm font-bold">
                         <span className="flex items-center gap-1 text-gray-700">
@@ -248,29 +327,55 @@ export default function GamePage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center gap-4">
-                        <div className="flex flex-wrap items-center justify-center gap-2">
-                            <div className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 ${
-                                playerColor === "white" ? "bg-amber-100 text-amber-900 border border-amber-300" :
-                                playerColor === "black" ? "bg-slate-900 text-white border border-slate-700" :
-                                "bg-gray-100 text-gray-700 border border-gray-200"
-                            }`}>
-                                {playerColor === "white" && <span>♔ Playing as WHITE</span>}
-                                {playerColor === "black" && <span>♚ Playing as BLACK</span>}
-                                {playerColor === "spectator" && <span>👁️ Spectating Game</span>}
+                        <div className="flex flex-wrap items-center justify-center gap-2 w-full justify-between">
+                            <div className="flex gap-2">
+                                <div className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-2 ${
+                                    playerColor === "white" ? "bg-amber-100 text-amber-900 border border-amber-300" :
+                                    playerColor === "black" ? "bg-slate-900 text-white border border-slate-700" :
+                                    "bg-gray-100 text-gray-700 border border-gray-200"
+                                }`}>
+                                    {playerColor === "white" && <span>♔ Playing as WHITE</span>}
+                                    {playerColor === "black" && <span>♚ Playing as BLACK</span>}
+                                    {playerColor === "spectator" && <span>👁️ Spectating Game</span>}
+                                </div>
+
+                                <button
+                                    onClick={() => setUserFlipped(!userFlipped)}
+                                    className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                                >
+                                    🔄 Flip Board ({activeOrientation.toUpperCase()} View)
+                                </button>
                             </div>
 
-                            <button
-                                onClick={() => setUserFlipped(!userFlipped)}
-                                className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
-                            >
-                                🔄 Flip Board ({activeOrientation.toUpperCase()} View)
-                            </button>
+                            {/* Live Turn & Check State Indicators */}
+                            <div className="flex items-center gap-2">
+                                {gameData.status === "IN_PROGRESS" && (
+                                    <>
+                                        {game.inCheck() && (
+                                            <span className="px-3 py-1.5 bg-red-500 text-white text-xs font-black rounded-full animate-bounce">
+                                                🚨 CHECK!
+                                            </span>
+                                        )}
+                                        {game.turn() === (playerColor === "white" ? "w" : "b") ? (
+                                            <span className="px-3 py-1.5 bg-emerald-500 text-white text-xs font-black rounded-full flex items-center gap-1.5 shadow-sm shadow-emerald-100">
+                                                🟢 Your Turn
+                                            </span>
+                                        ) : (
+                                            <span className="px-3 py-1.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-full">
+                                                ⌛ Opponent's Turn
+                                            </span>
+                                        )}
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         <div className="w-full max-w-[600px] aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-indigo-50">
                             <Chessboard 
                                 position={game.fen()} 
                                 onPieceDrop={onDrop}
+                                onSquareClick={onSquareClick}
+                                customSquareStyles={optionSquares}
                                 boardOrientation={activeOrientation}
                                 customDarkSquareStyle={{ backgroundColor: "#4f46e5" }}
                                 customLightSquareStyle={{ backgroundColor: "#e0e7ff" }}
@@ -383,7 +488,17 @@ export default function GamePage() {
                                 </div>
                             )}
 
-                            {gameData.status === "COMPLETED" && (
+                            {gameData.status !== "IN_PROGRESS" && (tournamentId || gameData.tournamentId) && (
+                                <div className="mt-8 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-center animate-in slide-in-from-bottom-2">
+                                    <h4 className="font-black text-emerald-800 text-base mb-1">Game Over</h4>
+                                    <p className="text-emerald-600 font-bold text-xs mb-3">Result: {gameData.result}</p>
+                                    <div className="py-2.5 px-4 bg-emerald-600 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-200 animate-pulse">
+                                        ⌛ Redirecting back to tournament in 5s...
+                                    </div>
+                                </div>
+                            )}
+
+                            {gameData.status === "COMPLETED" && !(tournamentId || gameData.tournamentId) && (
                                 <div className="mt-8 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-center animate-in slide-in-from-bottom-2">
                                     <h4 className="font-black text-emerald-800 text-lg mb-1">Game Over</h4>
                                     <p className="text-emerald-600 font-semibold text-sm">Result: {gameData.result}</p>

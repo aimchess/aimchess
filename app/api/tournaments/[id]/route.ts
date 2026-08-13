@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 
 // Helper to auto-pair participants in a tournament into live games
-async function pairTournamentParticipants(tournamentId: string, timeControl: string) {
+async function pairTournamentParticipants(tournamentId: string, timeControl: string, roundNum: number) {
     try {
         const tournament = await prisma.tournament.findUnique({
             where: { id: tournamentId },
@@ -39,7 +39,29 @@ async function pairTournamentParticipants(tournamentId: string, timeControl: str
             .filter((p: any) => !busyUserIds.has(p.userId))
             .sort((a: any, b: any) => b.score - a.score);
             
-        if (availableParticipants.length < 2) return 0;
+        if (availableParticipants.length < 2) {
+            // If there's 1 leftovers, they get a BYE
+            if (availableParticipants.length === 1) {
+                const leftover = availableParticipants[0];
+                await prisma.tournamentParticipant.update({
+                    where: {
+                        tournamentId_userId: {
+                            tournamentId: tournamentId,
+                            userId: leftover.userId
+                        }
+                    },
+                    data: { score: { increment: 1.0 } }
+                });
+                await prisma.notification.create({
+                    data: {
+                        userId: leftover.userId,
+                        title: "Tournament Round BYE ⌛",
+                        message: `You received a BYE for Round ${roundNum}. You automatically receive 1.0 point for this round.`
+                    }
+                });
+            }
+            return 0;
+        }
 
         // Fetch all games (completed or in progress) in this tournament to avoid pairing players who already played
         const allTournamentGames = await prisma.game.findMany({
@@ -116,7 +138,8 @@ async function pairTournamentParticipants(tournamentId: string, timeControl: str
                         blackTimeLeft: initialMs,
                         lastMoveAt: new Date(),
                         fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                        pgn: ""
+                        pgn: "",
+                        round: roundNum
                     }
                 });
 
@@ -136,6 +159,32 @@ async function pairTournamentParticipants(tournamentId: string, timeControl: str
                             message: `Your round match against ${p1.user.name} is starting now!`
                         }
                     ]
+                });
+            }
+        }
+
+        // Award BYE to unpaired available participants
+        for (let i = 0; i < availableParticipants.length; i++) {
+            const p = availableParticipants[i];
+            if (!pairedUserIds.has(p.userId)) {
+                await prisma.tournamentParticipant.update({
+                    where: {
+                        tournamentId_userId: {
+                            tournamentId: tournamentId,
+                            userId: p.userId
+                        }
+                    },
+                    data: {
+                        score: { increment: 1.0 }
+                    }
+                });
+
+                await prisma.notification.create({
+                    data: {
+                        userId: p.userId,
+                        title: "Tournament Round BYE ⌛",
+                        message: `You received a BYE for Round ${roundNum}. You automatically receive 1.0 point for this round.`
+                    }
                 });
             }
         }
@@ -164,6 +213,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                     orderBy: {
                         score: 'desc'
                     }
+                },
+                games: {
+                    include: {
+                        white: { select: { id: true, name: true, email: true, role: true } },
+                        black: { select: { id: true, name: true, email: true, role: true } }
+                    },
+                    orderBy: { createdAt: 'desc' }
                 }
             }
         });
@@ -185,12 +241,19 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                         orderBy: {
                             score: 'desc'
                         }
+                    },
+                    games: {
+                        include: {
+                            white: { select: { id: true, name: true, email: true, role: true } },
+                            black: { select: { id: true, name: true, email: true, role: true } }
+                        },
+                        orderBy: { createdAt: 'desc' }
                     }
                 }
             });
 
             // Automatically pair online participants
-            await pairTournamentParticipants(params.id, tournament.timeControl || "10+0");
+            await pairTournamentParticipants(params.id, tournament.timeControl || "10+0", tournament.currentRound);
         }
 
         return NextResponse.json(tournament);
@@ -236,13 +299,13 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             });
 
             // Create initial pairings
-            const created = await pairTournamentParticipants(params.id, tournament.timeControl || "10+0");
+            const created = await pairTournamentParticipants(params.id, tournament.timeControl || "10+0", tournament.currentRound);
 
             return NextResponse.json({ tournament, message: `Tournament started! Paired ${created} matches.`, createdMatches: created });
         }
 
         if (action === "PAIR_ROUND") {
-            const created = await pairTournamentParticipants(params.id, tournament.timeControl || "10+0");
+            const created = await pairTournamentParticipants(params.id, tournament.timeControl || "10+0", tournament.currentRound);
             return NextResponse.json({ tournament, message: `Paired ${created} matches for current round.`, createdMatches: created });
         }
 

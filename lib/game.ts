@@ -190,7 +190,8 @@ export async function completeGame({
                                             blackTimeLeft: initialMs,
                                             lastMoveAt: new Date(),
                                             fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                                            pgn: ""
+                                            pgn: "",
+                                            round: updatedRound
                                         }
                                     });
 
@@ -208,6 +209,32 @@ export async function completeGame({
                                                 message: `Your round match against ${p1.user.name} is starting now!`
                                             }
                                         ]
+                                    });
+                                }
+                            }
+
+                            // Award BYEs to leftover participants
+                            for (let i = 0; i < availableParticipants.length; i++) {
+                                const p = availableParticipants[i];
+                                if (!pairedUserIds.has(p.userId)) {
+                                    await prisma.tournamentParticipant.update({
+                                        where: {
+                                            tournamentId_userId: {
+                                                tournamentId: tournament.id,
+                                                userId: p.userId
+                                            }
+                                        },
+                                        data: {
+                                            score: { increment: 1.0 }
+                                        }
+                                    });
+
+                                    await prisma.notification.create({
+                                        data: {
+                                            userId: p.userId,
+                                            title: "Tournament Round BYE ⌛",
+                                            message: `You received a BYE for Round ${updatedRound}. You automatically receive 1.0 point for this round.`
+                                        }
                                     });
                                 }
                             }

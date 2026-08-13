@@ -356,6 +356,7 @@ model Game {
   tournamentId String?
   tournament  Tournament? @relation(fields: [tournamentId], references: [id])
   drawOfferedBy String?
+  round       Int      @default(1)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
