@@ -10,7 +10,29 @@ export async function GET(req: Request) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser) {
+            return new NextResponse("User not found", { status: 404 });
+        }
+
+        const whereClause: any = {};
+        if (currentUser.role === "COACH") {
+            whereClause.OR = [
+                { coachId: currentUser.id },
+                { coachId: null }
+            ];
+        } else if (currentUser.role === "STUDENT") {
+            whereClause.OR = [
+                { coachId: currentUser.coachId },
+                { coachId: null }
+            ];
+        }
+
         const tournaments = await prisma.tournament.findMany({
+            where: whereClause,
             include: {
                 participants: {
                     select: { userId: true, score: true }
@@ -39,7 +61,7 @@ export async function POST(req: Request) {
             where: { email: session.user.email }
         });
 
-        if (currentUser?.role !== "ADMIN") {
+        if (currentUser?.role !== "ADMIN" && currentUser?.role !== "COACH") {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
@@ -58,14 +80,18 @@ export async function POST(req: Request) {
                 timeControl: timeControl || "10+0",
                 totalRounds: totalRounds ? parseInt(totalRounds) : 4,
                 pairingSystem: pairingSystem || "Swiss",
-                status: "UPCOMING"
+                status: "UPCOMING",
+                coachId: currentUser.role === "COACH" ? currentUser.id : null
             }
         });
 
-        // Notify all students
+        // Notify students
         try {
             const students = await prisma.user.findMany({
-                where: { role: "STUDENT" }
+                where: { 
+                    role: "STUDENT",
+                    ...(currentUser.role === "COACH" ? { coachId: currentUser.id } : {})
+                }
             });
             if (students.length > 0) {
                 await prisma.notification.createMany({

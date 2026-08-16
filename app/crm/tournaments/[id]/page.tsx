@@ -13,9 +13,11 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
     const router = useRouter();
     const currentUserId = (session?.user as any)?.id;
     const isAdmin = (session?.user as any)?.role === "ADMIN";
+    const isCoach = (session?.user as any)?.role === "COACH";
     
     const [loading, setLoading] = useState(true);
     const [tournament, setTournament] = useState<any>(null);
+    const canManage = isAdmin || (isCoach && tournament?.coachId === currentUserId);
     const [actionLoading, setActionLoading] = useState(false);
     const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
 
@@ -53,7 +55,7 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
 
     // Auto redirect countdown trigger
     useEffect(() => {
-        if (activeRoundGame && !isAdmin) {
+        if (activeRoundGame && !canManage) {
             setRedirectCountdown(3);
             const interval = setInterval(() => {
                 setRedirectCountdown((prev) => {
@@ -69,7 +71,7 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
         } else {
             setRedirectCountdown(null);
         }
-    }, [activeRoundGame?.id, isAdmin, tournament?.id]);
+    }, [activeRoundGame?.id, canManage, tournament?.id]);
 
     const handleJoin = async () => {
         setActionLoading(true);
@@ -189,7 +191,7 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
 
                     {/* Join / Delete actions */}
                     <div className="flex items-center gap-3 relative z-10 w-full md:w-auto">
-                        {!isAdmin && tournament.status === 'UPCOMING' && !isParticipant && (
+                        {!(isAdmin || isCoach) && tournament.status === 'UPCOMING' && !isParticipant && (
                             <button
                                 onClick={handleJoin}
                                 disabled={actionLoading}
@@ -198,7 +200,7 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
                                 <Play size={16} /> Join Tournament
                             </button>
                         )}
-                        {isAdmin && (
+                        {canManage && (
                             <button
                                 onClick={handleDelete}
                                 className="bg-red-600/20 hover:bg-red-600 border border-red-500/30 hover:border-red-600 text-red-200 hover:text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg transition-all"
@@ -468,9 +470,11 @@ export default function TournamentDetailsPage({ params }: { params: { id: string
                     <div className="space-y-6">
 
                         {/* Admin Command Console */}
-                        {isAdmin && (
+                        {canManage && (
                             <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-4">
-                                <h3 className="text-sm font-black tracking-widest text-indigo-400 uppercase border-b border-indigo-950 pb-2.5">Admin Control Panel</h3>
+                                <h3 className="text-sm font-black tracking-widest text-indigo-400 uppercase border-b border-indigo-950 pb-2.5">
+                                    {isAdmin ? "Admin Control Panel" : "Coach Control Panel"}
+                                </h3>
                                 
                                 <div className="space-y-3">
                                     {tournament.status === 'UPCOMING' && (

@@ -10,6 +10,7 @@ import Link from "next/link";
 export default function TournamentsPage() {
     const { data: session } = useSession();
     const isAdmin = (session?.user as any)?.role === "ADMIN";
+    const isCoach = (session?.user as any)?.role === "COACH";
     const [loading, setLoading] = useState(true);
     const [tournaments, setTournaments] = useState<any[]>([]);
 
@@ -127,7 +128,7 @@ export default function TournamentsPage() {
                         </div>
                     </div>
                     
-                    {isAdmin && (
+                    {(isAdmin || isCoach) && (
                         <button 
                             onClick={() => setIsCreateModalOpen(true)}
                             className="bg-white text-indigo-900 hover:bg-indigo-50 px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg relative z-10"
@@ -198,7 +199,7 @@ export default function TournamentsPage() {
                                         <Link href={`/crm/tournaments/${tournament.id}`} className="flex-1 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 py-2 rounded-xl text-sm font-bold text-center transition-colors">
                                             Details
                                         </Link>
-                                        {isAdmin && (
+                                        {(isAdmin || (isCoach && tournament.coachId === currentUserId)) && (
                                             <button 
                                                 onClick={() => handleDeleteTournament(tournament.id)}
                                                 className="p-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl transition-colors shrink-0"

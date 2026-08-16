@@ -30,6 +30,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             return NextResponse.json({ message: "Tournament is not open for joining" }, { status: 400 });
         }
 
+        if (tournament.coachId) {
+            if (currentUser.role !== "STUDENT" || currentUser.coachId !== tournament.coachId) {
+                return NextResponse.json({ message: "Only students of the organizing coach can join this tournament." }, { status: 403 });
+            }
+        } else {
+            if (currentUser.role !== "STUDENT") {
+                return NextResponse.json({ message: "Only students can join tournaments." }, { status: 403 });
+            }
+        }
+
         const existingParticipant = await prisma.tournamentParticipant.findUnique({
             where: {
                 tournamentId_userId: {

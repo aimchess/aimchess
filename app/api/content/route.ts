@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // 1. GET: Fetch Folders and Puzzles
 export async function GET(req: Request) {
@@ -22,6 +24,14 @@ export async function GET(req: Request) {
 
     const folders = await prisma.folder.findMany({
       where: whereClause,
+      include: {
+        _count: {
+          select: {
+            puzzles: true,
+            mcqs: true,
+          },
+        },
+      },
       orderBy: { name: "asc" },
     });
 
@@ -53,6 +63,17 @@ export async function GET(req: Request) {
 // 2. POST: Create Folder or Puzzle
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+    if (currentUser?.role !== "ADMIN" && currentUser?.role !== "COACH") {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
     const body = await req.json();
 
     if (!body.type) {
@@ -119,6 +140,17 @@ export async function POST(req: Request) {
 // 3. PUT: Update Puzzle (Edit Functionality)
 export async function PUT(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+    if (currentUser?.role !== "ADMIN" && currentUser?.role !== "COACH") {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
     const body = await req.json();
     const { id, type, title, fen, solution, data } = body;
 
@@ -159,6 +191,17 @@ export async function PUT(req: Request) {
 // 4. DELETE: Remove Folder or Puzzle or MCQ
 export async function DELETE(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+    if (currentUser?.role !== "ADMIN" && currentUser?.role !== "COACH") {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
     const body = await req.json();
     const { id, type } = body;
 

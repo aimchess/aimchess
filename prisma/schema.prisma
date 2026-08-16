@@ -86,6 +86,7 @@ model User {
   // Certificates & Notifications
   certificates    Certificate[]
   notifications   Notification[]
+  createdTournaments Tournament[] @relation("CoachTournaments")
 }
 
 enum AttendanceStatus {
@@ -380,6 +381,8 @@ model Tournament {
   participants TournamentParticipant[]
   games       Game[]
   challenges  Challenge[]
+  coachId     String?
+  coach       User?      @relation("CoachTournaments", fields: [coachId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

@@ -228,6 +228,25 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             return new NextResponse("Tournament not found", { status: 404 });
         }
 
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser) {
+            return new NextResponse("User not found", { status: 404 });
+        }
+
+        if (tournament.coachId) {
+            const hasAccess = 
+                currentUser.role === "ADMIN" ||
+                (currentUser.role === "COACH" && currentUser.id === tournament.coachId) ||
+                (currentUser.role === "STUDENT" && currentUser.coachId === tournament.coachId);
+            
+            if (!hasAccess) {
+                return new NextResponse("Forbidden", { status: 403 });
+            }
+        }
+
         // Auto transition to ONGOING if start time reached
         if (tournament.status === "UPCOMING" && new Date(tournament.startDate) <= new Date()) {
             tournament = await prisma.tournament.update({
@@ -274,10 +293,6 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
             where: { email: session.user.email }
         });
 
-        if (currentUser?.role !== "ADMIN") {
-            return new NextResponse("Forbidden", { status: 403 });
-        }
-
         const body = await req.json();
         const { action, status, timeControl } = body;
 
@@ -287,6 +302,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
         if (!tournament) {
             return new NextResponse("Tournament not found", { status: 404 });
+        }
+
+        if (currentUser?.role !== "ADMIN" && !(currentUser?.role === "COACH" && tournament.coachId === currentUser.id)) {
+            return new NextResponse("Forbidden", { status: 403 });
         }
 
         if (action === "START" || status === "ONGOING") {
@@ -335,7 +354,15 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
             where: { email: session.user.email }
         });
 
-        if (currentUser?.role !== "ADMIN") {
+        const tournament = await prisma.tournament.findUnique({
+            where: { id: params.id }
+        });
+
+        if (!tournament) {
+            return new NextResponse("Tournament not found", { status: 404 });
+        }
+
+        if (currentUser?.role !== "ADMIN" && !(currentUser?.role === "COACH" && tournament.coachId === currentUser.id)) {
             return new NextResponse("Forbidden", { status: 403 });
         }
 
