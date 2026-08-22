@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
+import { Chess } from "chess.js";
 
 export async function POST(req: Request) {
     try {
@@ -46,10 +47,41 @@ export async function POST(req: Request) {
         const whiteId = userColor === "white" ? currentUser.id : botUser.id;
         const blackId = userColor === "white" ? botUser.id : currentUser.id;
 
+        let initialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let initialPgn = "";
+
+        if (whiteId === botUser.id) {
+            try {
+                const res = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(initialFen)}&depth=5`, {
+                    headers: { 'Accept': 'application/json' },
+                    cache: 'no-store'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.bestmove) {
+                        const parts = data.bestmove.split(" ");
+                        const bestMove = parts[1];
+                        if (bestMove) {
+                            const temp = new Chess();
+                            const from = bestMove.substring(0, 2);
+                            const to = bestMove.substring(2, 4);
+                            temp.move({ from, to });
+                            initialFen = temp.fen();
+                            initialPgn = temp.pgn();
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Bot start move error:", err);
+            }
+        }
+
         const game = await prisma.game.create({
             data: {
                 whiteId,
                 blackId,
+                fen: initialFen,
+                pgn: initialPgn,
                 status: "IN_PROGRESS",
                 isRated: false,
                 isBot: true,

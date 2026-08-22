@@ -115,14 +115,72 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
             result = "1/2-1/2";
         }
 
+        let finalFen = chess.fen();
+        let finalPgn = chess.pgn();
+
+        // Server-side Bot reply
+        if (game.isBot && status === "IN_PROGRESS") {
+            try {
+                const difficulty = game.botDifficulty || "BEGINNER";
+                let depth = 8;
+                if (difficulty === "BEGINNER") depth = 5;
+                else if (difficulty === "INTERMEDIATE") depth = 8;
+                else if (difficulty === "ADVANCED") depth = 12;
+                else if (difficulty === "EXPERT") depth = 15;
+
+                if (depth < 5) depth = 5;
+                if (depth > 15) depth = 15;
+
+                const encodedFen = encodeURIComponent(chess.fen());
+                const sfRes = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodedFen}&depth=${depth}`, {
+                    headers: { 'Accept': 'application/json' },
+                    cache: 'no-store'
+                });
+
+                if (sfRes.ok) {
+                    const sfData = await sfRes.json();
+                    if (sfData.success && sfData.bestmove) {
+                        const parts = sfData.bestmove.split(" ");
+                        const bestMove = parts[1];
+                        if (bestMove) {
+                            const from = bestMove.substring(0, 2);
+                            const to = bestMove.substring(2, 4);
+                            const promotion = bestMove.substring(4, 5) || undefined;
+                            
+                            chess.move({ from, to, promotion });
+                            finalFen = chess.fen();
+                            finalPgn = chess.pgn();
+
+                            // Re-evaluate game status
+                            if (chess.isCheckmate()) {
+                                status = "COMPLETED";
+                                if (chess.turn() === 'w') {
+                                    result = "0-1";
+                                    winnerId = game.blackId; // Bot wins
+                                } else {
+                                    result = "1-0";
+                                    winnerId = game.whiteId; // User wins
+                                }
+                            } else if (chess.isGameOver()) {
+                                status = "COMPLETED";
+                                result = "1/2-1/2";
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Server-side Stockfish error:", err);
+            }
+        }
+
         if (status === "COMPLETED") {
             const updatedGame = await completeGame({
                 gameId: params.gameId,
                 winnerId,
                 result,
                 status,
-                fen: chess.fen(),
-                pgn: chess.pgn(),
+                fen: finalFen,
+                pgn: finalPgn,
                 whiteTimeLeft,
                 blackTimeLeft,
                 lastMoveAt: now
@@ -133,8 +191,8 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
         const updatedGame = await prisma.game.update({
             where: { id: params.gameId },
             data: {
-                fen: chess.fen(),
-                pgn: chess.pgn(),
+                fen: finalFen,
+                pgn: finalPgn,
                 status: "IN_PROGRESS",
                 whiteTimeLeft,
                 blackTimeLeft,

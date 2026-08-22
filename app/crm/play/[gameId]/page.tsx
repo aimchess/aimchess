@@ -30,60 +30,7 @@ export default function GamePage() {
     const [optionSquares, setOptionSquares] = useState<any>({});
     const botMovingRef = useRef(false);
 
-    // Bot move calculation effect
-    useEffect(() => {
-        if (!gameData || !gameData.isBot || gameData.status !== "IN_PROGRESS" || botMovingRef.current) return;
-
-        const isBotTurn = 
-            (game.turn() === "w" && playerColor === "black") || 
-            (game.turn() === "b" && playerColor === "white");
-
-        if (!isBotTurn) return;
-
-        botMovingRef.current = true;
-
-        const timer = setTimeout(async () => {
-            try {
-                const difficulty = gameData.botDifficulty || "BEGINNER";
-                const pgn = game.pgn();
-                
-                const botMoveLan = calculateBotMove(pgn, difficulty);
-                if (botMoveLan) {
-                    const newGame = new Chess(game.fen());
-                    const result = newGame.move(botMoveLan);
-                    if (result) {
-                        setGame(newGame);
-                        setSelectedSquare(null);
-                        setOptionSquares({});
-
-                        const res = await fetch(`/api/play/game/${gameId}/move`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ 
-                                move: botMoveLan, 
-                                fen: newGame.fen(), 
-                                pgn: newGame.pgn() 
-                            })
-                        });
-                        
-                        if (res.ok) {
-                            const finalGame = await res.json();
-                            setGameData(finalGame);
-                            if (finalGame.status === "COMPLETED") {
-                                await fetch("/api/user/streak", { method: "POST" });
-                            }
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error("Bot move calculation error:", err);
-            } finally {
-                botMovingRef.current = false;
-            }
-        }, 800);
-
-        return () => clearTimeout(timer);
-    }, [gameData, game, playerColor, gameId]);
+    // Server-side handles bot moves automatically when a player submits a move.
 
     useEffect(() => {
         if (typeof window !== "undefined") {
