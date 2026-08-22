@@ -4,7 +4,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Chessboard } from "react-chessboard"
+import { Chess } from "chess.js"
 import CRMShellLayout from "@/components/crm/crm-shell"
+
+const isPgn = (text: string) => {
+  if (!text) return false;
+  const trimmed = text.trim();
+  return trimmed.startsWith("[") || trimmed.match(/^\d+\.\s+[a-zA-Z]/) !== null;
+};
 import {
   BookOpen, ChevronRight, Folder, FileText,
   CheckCircle, Lock, BarChart3, Volume2, Star, HelpCircle,
@@ -32,6 +39,80 @@ export default function StudentLibraryPage() {
   const [activeChapterIndex, setActiveChapterIndex] = useState<number>(-1)
   const boardContainerRef = useRef<HTMLDivElement>(null)
   const [boardWidth, setBoardWidth] = useState(400)
+
+  // PGN Player States
+  const [pgnGame, setPgnGame] = useState<Chess | null>(null)
+  const [pgnMoves, setPgnMoves] = useState<string[]>([])
+  const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1)
+  const [isInteractiveMode, setIsInteractiveMode] = useState(false)
+  const [interactivePosition, setInteractivePosition] = useState("")
+
+  // Load and parse PGN when chapter changes
+  useEffect(() => {
+    if (selectedCourse && activeChapterIndex !== -1) {
+      const chapter = selectedCourse.chapters[activeChapterIndex]
+      if (chapter && chapter.content && isPgn(chapter.content)) {
+        try {
+          const chess = new Chess()
+          chess.loadPgn(chapter.content)
+          setPgnGame(chess)
+          setPnMoves(chess.history())
+          setCurrentMoveIndex(-1)
+          setIsInteractiveMode(false)
+        } catch (e) {
+          console.error("Failed to parse PGN:", e)
+          setPgnGame(null)
+          setPgnMoves([])
+        }
+      } else {
+        setPgnGame(null)
+        setPgnMoves([])
+      }
+    }
+  }, [selectedCourse, activeChapterIndex])
+
+  const getPositionAtMove = (moveIndex: number) => {
+    if (!selectedCourse || activeChapterIndex === -1) return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    const chapter = selectedCourse.chapters[activeChapterIndex]
+    
+    if (!pgnGame || moveIndex === -1) {
+      return chapter.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    }
+
+    try {
+      const tempGame = new Chess()
+      tempGame.loadPgn(chapter.content)
+      const moves = tempGame.history()
+      
+      const newTemp = new Chess()
+      for (let i = 0; i <= moveIndex; i++) {
+        newTemp.move(moves[i])
+      }
+      return newTemp.fen()
+    } catch (e) {
+      return chapter.fen || "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    }
+  }
+
+  const handlePieceDrop = (sourceSquare: string, targetSquare: string) => {
+    const activeFen = isInteractiveMode ? interactivePosition : getPositionAtMove(currentMoveIndex)
+    try {
+      const temp = new Chess(activeFen)
+      const result = temp.move({
+        from: sourceSquare,
+        to: targetSquare,
+        promotion: 'q'
+      })
+      if (result) {
+        setIsInteractiveMode(true)
+        setInteractivePosition(temp.fen())
+        return true
+      }
+    } catch (e) {
+      return false
+    }
+    return false
+  }
 
   useEffect(() => {
     if (!boardContainerRef.current) return
@@ -199,9 +280,10 @@ export default function StudentLibraryPage() {
                     <div ref={boardContainerRef} className="bg-[#0b1d3a] p-1.5 rounded-2xl shadow-2xl shadow-sky-900/10 w-full max-w-[550px] mx-auto overflow-hidden">
                       <div className="bg-white rounded-xl overflow-hidden p-1">
                         <Chessboard 
-                          position={selectedCourse.chapters[activeChapterIndex].fen} 
+                          position={isInteractiveMode ? interactivePosition : getPositionAtMove(currentMoveIndex)} 
                           boardWidth={boardWidth - 12}
-                          arePiecesDraggable={false}
+                          arePiecesDraggable={true}
+                          onPieceDrop={handlePieceDrop}
                           customBoardStyle={{
                             borderRadius: '4px',
                             boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.1)'
@@ -209,6 +291,80 @@ export default function StudentLibraryPage() {
                         />
                       </div>
                     </div>
+
+                    {pgnMoves.length > 0 && (
+                      <div className="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm space-y-4">
+                        <div className="flex flex-wrap justify-center gap-2 border-b pb-3 border-sky-50">
+                          <button 
+                            onClick={() => { setCurrentMoveIndex(-1); setIsInteractiveMode(false); }}
+                            disabled={currentMoveIndex === -1 && !isInteractiveMode}
+                            className="px-3 py-1.5 bg-sky-50 text-[#0b1d3a] font-bold rounded-lg text-xs hover:bg-sky-100 disabled:opacity-40 transition-all active:scale-95"
+                          >
+                            ⏮ Start
+                          </button>
+                          <button 
+                            onClick={() => { 
+                              if (isInteractiveMode) {
+                                setIsInteractiveMode(false);
+                              } else {
+                                setCurrentMoveIndex(prev => Math.max(-1, prev - 1));
+                              }
+                            }}
+                            disabled={currentMoveIndex === -1 && !isInteractiveMode}
+                            className="px-3 py-1.5 bg-sky-50 text-[#0b1d3a] font-bold rounded-lg text-xs hover:bg-sky-100 disabled:opacity-40 transition-all active:scale-95"
+                          >
+                            ◀ Prev
+                          </button>
+                          <button 
+                            onClick={() => { 
+                              setIsInteractiveMode(false);
+                              setCurrentMoveIndex(prev => Math.min(pgnMoves.length - 1, prev + 1));
+                            }}
+                            disabled={currentMoveIndex === pgnMoves.length - 1 && !isInteractiveMode}
+                            className="px-3 py-1.5 bg-sky-50 text-[#0b1d3a] font-bold rounded-lg text-xs hover:bg-sky-100 disabled:opacity-40 transition-all active:scale-95"
+                          >
+                            Next ▶
+                          </button>
+                          <button 
+                            onClick={() => { 
+                              setIsInteractiveMode(false);
+                              setCurrentMoveIndex(pgnMoves.length - 1);
+                            }}
+                            disabled={currentMoveIndex === pgnMoves.length - 1 && !isInteractiveMode}
+                            className="px-3 py-1.5 bg-sky-50 text-[#0b1d3a] font-bold rounded-lg text-xs hover:bg-sky-100 disabled:opacity-40 transition-all active:scale-95"
+                          >
+                            End ⏭
+                          </button>
+                          {isInteractiveMode && (
+                            <button 
+                              onClick={() => setIsInteractiveMode(false)}
+                              className="px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-xs hover:bg-yellow-200 transition-all active:scale-95"
+                            >
+                              Reset Line
+                            </button>
+                          )}
+                        </div>
+
+                        <div>
+                          <p className="text-[10px] font-black uppercase text-slate-400 mb-2">PGN Move List</p>
+                          <div className="bg-sky-50/30 p-3 border border-sky-100 rounded-xl max-h-[120px] overflow-y-auto flex flex-wrap gap-2 text-xs">
+                            {pgnMoves.map((m, idx) => {
+                              const moveNumber = Math.floor(idx / 2) + 1;
+                              const isWhiteMove = idx % 2 === 0;
+                              return (
+                                <button 
+                                  key={idx}
+                                  onClick={() => { setCurrentMoveIndex(idx); setIsInteractiveMode(false); }}
+                                  className={`px-2 py-1 rounded transition-all font-bold ${currentMoveIndex === idx && !isInteractiveMode ? 'bg-[#0b1d3a] text-white' : 'hover:bg-sky-100 text-slate-700'}`}
+                                >
+                                  {isWhiteMove ? `${moveNumber}. ` : ""}{m}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="bg-white rounded-3xl p-8 border border-sky-100 shadow-sm relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-2 h-full bg-sky-500" />
@@ -217,7 +373,9 @@ export default function StudentLibraryPage() {
                         <h4 className="text-xl font-black text-[#0b1d3a] tracking-tight">{selectedCourse.chapters[activeChapterIndex].title}</h4>
                       </div>
                       <div className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap font-medium">
-                        {selectedCourse.chapters[activeChapterIndex].content || "This lesson summary is not available."}
+                        {isPgn(selectedCourse.chapters[activeChapterIndex].content) 
+                          ? "This lesson features an interactive PGN chess study. Drag the pieces on the board to explore moves, or use the controls above to navigate the main PGN line." 
+                          : (selectedCourse.chapters[activeChapterIndex].content || "This lesson summary is not available.")}
                       </div>
                     </div>
 

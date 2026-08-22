@@ -639,34 +639,34 @@ export default function PuzzlePage() {
 
   return (
     <CRMShellLayout>
-      <div className="bg-slate-950 border border-slate-800 rounded-3xl p-6 min-h-[600px] flex flex-col text-white font-sans">
+      <div className="bg-white border border-sky-100 rounded-3xl p-6 min-h-[600px] flex flex-col text-slate-800 font-sans shadow-sm">
         {/* Top Student Header Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5 mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-sky-100 pb-5 mb-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5 text-xs font-bold"
+              className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5 text-xs font-bold"
             >
               <ArrowLeft className="h-4 w-4" /> Back to Library
             </button>
             <div>
-              <span className="px-2.5 py-0.5 bg-indigo-950 text-indigo-300 font-extrabold text-[10px] uppercase tracking-wider rounded border border-indigo-500/30">
+              <span className="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 font-extrabold text-[10px] uppercase tracking-wider rounded border border-indigo-200">
                 {puzzle.stage} Stage
               </span>
-              <h1 className="text-lg font-black text-white mt-1">{puzzle.title}</h1>
+              <h1 className="text-lg font-black text-slate-900 mt-1">{puzzle.title}</h1>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             {!loadingList && allPuzzles.length > 0 && (
-              <span className="px-3.5 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs font-extrabold text-slate-300 flex items-center gap-1.5">
-                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+              <span className="px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5 text-amber-500" />
                 {allPuzzles.filter(p => solvedIds.includes(p.id)).length} / {allPuzzles.length} Solved
               </span>
             )}
             <button
               onClick={handleSkip}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
+              className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
             >
               Skip Puzzle <SkipForward className="h-3.5 h-3.5" />
             </button>
@@ -677,16 +677,16 @@ export default function PuzzlePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Interactive Chessboard Display */}
-          <div className="lg:col-span-7 bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-5 shadow-2xl">
+          <div className="lg:col-span-7 bg-sky-50/20 p-5 rounded-3xl border border-sky-100 space-y-5 shadow-sm">
 
 
             {/* Turn Prompt Header */}
-            <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 p-4 rounded-2xl border border-indigo-500/20 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-indigo-50/50 via-sky-50/30 to-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex items-center justify-between">
               <div>
-                <span className="px-2 py-0.5 bg-emerald-950/60 text-emerald-400 font-extrabold text-[10px] uppercase tracking-wider rounded border border-emerald-500/30">
+                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-extrabold text-[10px] uppercase tracking-wider rounded border border-emerald-200">
                   {orientation === "white" ? "White" : "Black"} to Move
                 </span>
-                <h3 className="text-sm font-bold text-white mt-1.5">
+                <h3 className="text-sm font-bold text-slate-850 mt-1.5">
                   {stars.length > 0
                     ? `Collect all remaining stars on the board!`
                     : `Find the correct sequence of moves to solve the tactical position.`}
@@ -695,9 +695,9 @@ export default function PuzzlePage() {
             </div>
 
             {/* Chessboard container wrapper */}
-            <div className="relative max-w-md mx-auto p-4 rounded-3xl bg-slate-950 border border-slate-850 shadow-2xl">
+            <div className="relative max-w-md mx-auto p-4 rounded-3xl bg-white border border-sky-100 shadow-sm">
               <div ref={boardContainerRef} className="w-full flex justify-center">
-                <div className="rounded-xl overflow-hidden border-2 border-slate-800 shadow-inner">
+                <div className="rounded-xl overflow-hidden border-2 border-sky-100 shadow-inner">
                   <Chessboard
                     position={currentFen}
                     onPieceDrop={onDrop}
@@ -717,14 +717,14 @@ export default function PuzzlePage() {
               <div
                 className={`p-4 rounded-2xl text-xs font-extrabold text-center flex items-center justify-center gap-2 border animate-in fade-in duration-205 ${
                   moveFeedback.includes("EXCELLENT") || moveFeedback.includes("Correct")
-                    ? "bg-emerald-950 text-emerald-300 border-emerald-500/20"
-                    : "bg-rose-950 text-rose-300 border-rose-500/20"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-rose-50 text-rose-700 border-rose-200"
                 }`}
               >
                 {moveFeedback.includes("EXCELLENT") || moveFeedback.includes("Correct") ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                 ) : (
-                  <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                  <AlertCircle className="w-5 h-5 text-rose-650 shrink-0" />
                 )}
                 <span>{moveFeedback}</span>
               </div>
@@ -734,15 +734,15 @@ export default function PuzzlePage() {
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
               <button
                 onClick={handleHint}
-                className="px-4 py-2.5 bg-amber-950 text-amber-300 font-bold text-xs rounded-xl border border-amber-500/30 hover:bg-amber-900/60 transition-colors flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-amber-50 text-amber-700 font-bold text-xs rounded-xl border border-amber-200 hover:bg-amber-100/50 transition-colors flex items-center gap-1.5"
               >
-                <Lightbulb className="w-4 h-4 text-amber-400" /> Coach Hint
+                <Lightbulb className="w-4 h-4 text-amber-600" /> Coach Hint
               </button>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={resetPuzzle}
-                  className="px-4 py-2.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-700 transition-colors flex items-center gap-1.5 border border-slate-700"
+                  className="px-4 py-2.5 bg-slate-50 text-slate-755 font-bold text-xs rounded-xl hover:bg-slate-100 transition-colors flex items-center gap-1.5 border border-slate-200"
                 >
                   <RotateCcw className="w-4 h-4" /> Reset Board
                 </button>
@@ -758,7 +758,7 @@ export default function PuzzlePage() {
             </div>
 
             {puzzle.description && (
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-850 text-xs text-slate-400 leading-relaxed font-medium">
+              <div className="p-4 bg-sky-50/30 rounded-2xl border border-sky-50 text-xs text-slate-500 leading-relaxed font-medium">
                 💡 <strong>Puzzle Notes:</strong> {puzzle.description}
               </div>
             )}
@@ -768,36 +768,36 @@ export default function PuzzlePage() {
           <div className="lg:col-span-5 space-y-6">
             
             {/* Played moves list */}
-            <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
-              <h3 className="font-extrabold text-white text-xs tracking-wider uppercase">📜 Played Move Sequence</h3>
+            <div className="bg-sky-50/20 p-5 rounded-3xl border border-sky-100 space-y-3 shadow-sm">
+              <h3 className="font-extrabold text-slate-800 text-xs tracking-wider uppercase">📜 Played Move Sequence</h3>
               {playedMoves.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5 font-mono text-xs text-amber-300 animate-in fade-in duration-200">
+                <div className="flex flex-wrap gap-1.5 font-mono text-xs text-indigo-700 animate-in fade-in duration-200">
                   {playedMoves.map((mv, i) => (
-                    <span key={i} className="px-2.5 py-1 bg-slate-950 rounded-xl border border-slate-850">
+                    <span key={i} className="px-2.5 py-1 bg-white rounded-xl border border-sky-100">
                       {i + 1}. {mv}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">Make your first chess move to begin tracing steps.</p>
+                <p className="text-xs text-slate-400">Make your first chess move to begin tracing steps.</p>
               )}
             </div>
 
             {/* Folder / Stage Puzzle Selection Roster */}
-            <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 className="font-extrabold text-white text-xs tracking-wider uppercase">📂 Practice Roster</h3>
-                <span className="text-[10px] text-indigo-400 font-mono font-bold bg-indigo-950 px-2 py-0.5 rounded border border-indigo-500/20 uppercase">
+            <div className="bg-sky-50/20 p-5 rounded-3xl border border-sky-100 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-sky-100 pb-3">
+                <h3 className="font-extrabold text-slate-800 text-xs tracking-wider uppercase">📂 Practice Roster</h3>
+                <span className="text-[10px] text-indigo-700 font-mono font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 uppercase">
                   {context === "todo" ? "Assignments" : "Curriculum"}
                 </span>
               </div>
 
               {loadingList ? (
-                <div className="text-center py-6 text-slate-500 text-xs font-bold">
+                <div className="text-center py-6 text-slate-400 text-xs font-bold">
                   Loading available practices...
                 </div>
               ) : allPuzzles.length === 0 ? (
-                <div className="text-center py-6 text-slate-500 text-xs font-bold">
+                <div className="text-center py-6 text-slate-400 text-xs font-bold">
                   No other puzzles found in this section.
                 </div>
               ) : (
@@ -811,29 +811,29 @@ export default function PuzzlePage() {
                         onClick={() => selectPuzzle(p.id)}
                         className={`w-full p-3 rounded-xl text-left border transition-all flex items-center justify-between gap-3 ${
                           isActive
-                            ? "bg-indigo-950/60 border-indigo-500 text-white font-bold shadow-lg"
-                            : "bg-slate-950 border-slate-850 text-slate-400 hover:text-white hover:border-slate-700"
+                            ? "bg-indigo-50 border-indigo-300 text-[#0b1d3a] font-bold shadow-sm"
+                            : "bg-white border-sky-100 text-slate-500 hover:text-slate-900 hover:border-indigo-200"
                         }`}
                       >
                         <div className="space-y-0.5 truncate flex-1">
-                          <span className="text-[9px] font-extrabold uppercase text-amber-400 block">
+                          <span className="text-[9px] font-extrabold uppercase text-amber-600 block">
                             Puzzle #{idx + 1}
                           </span>
-                          <span className="text-xs font-bold text-white block truncate">
+                          <span className="text-xs font-bold text-slate-800 block truncate">
                             {p.title}
                           </span>
                         </div>
 
                         {isSolved ? (
-                          <span className="text-[10px] font-extrabold text-emerald-400 shrink-0 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                          <span className="text-[10px] font-extrabold text-emerald-700 shrink-0 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                             ✓ Solved
                           </span>
                         ) : isActive ? (
-                          <span className="text-[10px] font-extrabold text-indigo-400 shrink-0 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-500/30">
+                          <span className="text-[10px] font-extrabold text-indigo-700 shrink-0 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                             Active
                           </span>
                         ) : (
-                          <span className="text-[10px] font-bold text-slate-500 shrink-0 bg-slate-900/60 px-2 py-0.5 rounded border border-slate-800">
+                          <span className="text-[10px] font-bold text-slate-500 shrink-0 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
                             Solve
                           </span>
                         )}
@@ -845,11 +845,11 @@ export default function PuzzlePage() {
             </div>
 
             {/* Piece identification guide */}
-            <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-3 shadow-xl">
-              <h3 className="font-extrabold text-white text-xs tracking-wider uppercase flex items-center gap-1.5">
+            <div className="bg-sky-50/20 p-5 rounded-3xl border border-sky-100 space-y-3 shadow-sm">
+              <h3 className="font-extrabold text-slate-800 text-xs tracking-wider uppercase flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-indigo-400" /> Board Setup Guide
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed font-medium">
+              <p className="text-xs text-slate-500 leading-relaxed font-medium">
                 Verify that you are playing the matching pieces matching your orientation. When playing White, you start from the bottom ranks and move upwards.
               </p>
             </div>

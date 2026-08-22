@@ -14,6 +14,11 @@ export default function AttendancePage() {
     const [saving, setSaving] = useState(false);
     const [existingRecords, setExistingRecords] = useState<any[]>([]);
 
+    // Session details state
+    const [topicCovered, setTopicCovered] = useState("");
+    const [homeworkGiven, setHomeworkGiven] = useState("");
+    const [zoomRecordingLink, setZoomRecordingLink] = useState("");
+
     useEffect(() => {
         const fetchClasses = async () => {
             try {
@@ -50,6 +55,14 @@ export default function AttendancePage() {
                         const existing: Record<string, string> = {};
                         data.forEach((r: any) => { existing[r.studentId] = r.status; });
                         setAttendance(prev => ({ ...prev, ...existing }));
+
+                        setTopicCovered(data[0].topicCovered || "");
+                        setHomeworkGiven(data[0].homeworkGiven || "");
+                        setZoomRecordingLink(data[0].zoomRecordingLink || "");
+                    } else {
+                        setTopicCovered("");
+                        setHomeworkGiven("");
+                        setZoomRecordingLink("");
                     }
                 }
             } catch (e) { console.error(e); }
@@ -58,16 +71,27 @@ export default function AttendancePage() {
     }, [selectedClass, selectedDate, classes]);
 
     const handleSave = async () => {
+        if (!topicCovered.trim()) {
+            alert("Topic Covered is mandatory!");
+            return;
+        }
         setSaving(true);
         try {
             const records = Object.entries(attendance).map(([studentId, status]) => ({
-                studentId, classTimingId: selectedClass, date: selectedDate, status,
+                studentId, status,
             }));
 
             const res = await fetch("/api/attendance", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ records }),
+                body: JSON.stringify({ 
+                    classTimingId: selectedClass, 
+                    date: selectedDate, 
+                    topicCovered, 
+                    homeworkGiven, 
+                    zoomRecordingLink, 
+                    records 
+                }),
             });
 
             if (res.ok) alert("Attendance saved successfully!");
@@ -124,7 +148,43 @@ export default function AttendancePage() {
                         <p className="text-xs mt-1">Enroll students from the Batches page first</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                    <div className="space-y-6">
+                        {/* Session details form */}
+                        <div className="bg-sky-50/20 border border-sky-100/50 rounded-2xl p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Topic Covered <span className="text-red-500">*</span></label>
+                                <input 
+                                    type="text"
+                                    value={topicCovered}
+                                    onChange={(e) => setTopicCovered(e.target.value)}
+                                    placeholder="e.g. Sicilian Defense Basics"
+                                    className="w-full p-3 border border-sky-200 rounded-xl text-xs outline-none bg-white focus:ring-2 ring-sky-100 font-medium text-slate-700"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Homework Given</label>
+                                <input 
+                                    type="text"
+                                    value={homeworkGiven}
+                                    onChange={(e) => setHomeworkGiven(e.target.value)}
+                                    placeholder="e.g. Solve 5 endgame puzzles"
+                                    className="w-full p-3 border border-sky-200 rounded-xl text-xs outline-none bg-white focus:ring-2 ring-sky-100 font-medium text-slate-700"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Zoom Recording Link</label>
+                                <input 
+                                    type="url"
+                                    value={zoomRecordingLink}
+                                    onChange={(e) => setZoomRecordingLink(e.target.value)}
+                                    placeholder="https://zoom.us/rec/share/..."
+                                    className="w-full p-3 border border-sky-200 rounded-xl text-xs outline-none bg-white focus:ring-2 ring-sky-100 font-medium text-slate-700"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
                         <div className="divide-y divide-gray-50">
                             {students.map((s: any) => {
                                 const status = attendance[s.id] || "PRESENT";
@@ -158,11 +218,12 @@ export default function AttendancePage() {
                             })}
                         </div>
                         <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
-                            <button onClick={handleSave} disabled={saving}
+                            <button onClick={handleSave} disabled={saving || !topicCovered.trim()}
                                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 text-white font-bold text-sm shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50">
                                 {saving ? "Saving..." : "Save Attendance"}
                             </button>
                         </div>
+                    </div>
                     </div>
                 )}
             </div>

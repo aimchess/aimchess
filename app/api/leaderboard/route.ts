@@ -153,6 +153,18 @@ export async function GET() {
       })
       .sort((a, b) => b.score - a.score);
 
+    // 9. Lichess Rating Leaderboard
+    const lichessRatingLeaderboard = [...students]
+      .sort((a, b) => (b.lichessRapid || 1500) - (a.lichessRapid || 1500))
+      .map(s => ({
+        id: s.id,
+        name: s.name,
+        photoUrl: s.photoUrl,
+        stage: s.stage,
+        score: s.lichessRapid || 1500,
+        label: "Lichess Rapid"
+      }));
+
     return NextResponse.json({
       rating: ratingLeaderboard,
       performance: performanceLeaderboard,
@@ -161,7 +173,8 @@ export async function GET() {
       winPercentage: winPercentageLeaderboard,
       winningStreak: winningStreakLeaderboard,
       attendance: attendanceLeaderboard,
-      homework: homeworkLeaderboard
+      homework: homeworkLeaderboard,
+      lichessRating: lichessRatingLeaderboard
     });
   } catch (error) {
     console.error("[LEADERBOARD_GET]", error);

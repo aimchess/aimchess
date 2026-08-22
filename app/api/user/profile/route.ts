@@ -13,6 +13,9 @@ export async function GET(req: Request) {
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
             include: {
+                coach: {
+                    select: { id: true, name: true, email: true }
+                },
                 certificates: {
                     orderBy: { createdAt: "desc" }
                 },
@@ -22,6 +25,12 @@ export async function GET(req: Request) {
                 },
                 performanceReports: {
                     orderBy: { year: "desc" }
+                },
+                badges: true,
+                missionProgress: {
+                    include: {
+                        challenge: true
+                    }
                 }
             }
         });

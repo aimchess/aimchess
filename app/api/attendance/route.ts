@@ -3,15 +3,27 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// GET: Fetch attendance for a specific class and date
+// GET: Fetch attendance for a specific class/date or for a specific student
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
         const classTimingId = searchParams.get("classTimingId");
         const dateStr = searchParams.get("date"); // YYYY-MM-DD
+        const studentId = searchParams.get("studentId");
+
+        if (studentId) {
+            const attendance = await prisma.attendance.findMany({
+                where: { studentId },
+                include: {
+                    classTiming: { select: { name: true, startTime: true } }
+                },
+                orderBy: { date: "desc" }
+            });
+            return NextResponse.json(attendance);
+        }
 
         if (!classTimingId || !dateStr) {
-            return NextResponse.json({ error: "classTimingId and date are required" }, { status: 400 });
+            return NextResponse.json({ error: "classTimingId and date (or studentId) are required" }, { status: 400 });
         }
 
         const date = new Date(dateStr);
@@ -44,7 +56,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { classTimingId, date: dateStr, records } = await req.json();
+        const { classTimingId, date: dateStr, topicCovered, homeworkGiven, zoomRecordingLink, records } = await req.json();
 
         if (!classTimingId || !dateStr || !Array.isArray(records)) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -66,14 +78,20 @@ export async function POST(req: Request) {
                     },
                     update: {
                         status: record.status,
-                        remarks: record.remarks
+                        remarks: record.remarks,
+                        topicCovered: topicCovered || null,
+                        homeworkGiven: homeworkGiven || null,
+                        zoomRecordingLink: zoomRecordingLink || null
                     },
                     create: {
                         studentId: record.studentId,
                         classTimingId,
                         date,
                         status: record.status,
-                        remarks: record.remarks
+                        remarks: record.remarks,
+                        topicCovered: topicCovered || null,
+                        homeworkGiven: homeworkGiven || null,
+                        zoomRecordingLink: zoomRecordingLink || null
                     }
                 })
             )

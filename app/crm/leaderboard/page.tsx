@@ -54,6 +54,7 @@ export default function LeaderboardPage() {
 
   const tabs = [
     { id: 'rating', name: 'AIM Rating' },
+    { id: 'lichessRating', name: 'Lichess Rating' },
     { id: 'performance', name: 'Monthly Performance' },
     { id: 'ratingGain', name: 'Monthly Rating Gain' },
     { id: 'gamesPlayed', name: 'Most Games Played' },

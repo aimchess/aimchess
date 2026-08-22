@@ -19,6 +19,11 @@ export default function CoachAttendancePage() {
   const [saving, setSaving] = useState(false)
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, { status: string, remarks: string }>>({})
 
+  // Session details state
+  const [topicCovered, setTopicCovered] = useState('')
+  const [homeworkGiven, setHomeworkGiven] = useState('')
+  const [zoomRecordingLink, setZoomRecordingLink] = useState('')
+
   // Fetch classes for this coach
   useEffect(() => {
     if (!coachId) return
@@ -55,8 +60,29 @@ export default function CoachAttendancePage() {
             records[r.studentId] = { status: r.status, remarks: r.remarks || '' }
           })
           setAttendanceRecords(records)
-        } else { setAttendanceRecords({}) }
-      } catch (e) { setAttendanceRecords({}) }
+
+          // Populate session fields from first record if exists
+          if (attData.length > 0) {
+            setTopicCovered(attData[0].topicCovered || '')
+            setHomeworkGiven(attData[0].homeworkGiven || '')
+            setZoomRecordingLink(attData[0].zoomRecordingLink || '')
+          } else {
+            setTopicCovered('')
+            setHomeworkGiven('')
+            setZoomRecordingLink('')
+          }
+        } else {
+          setAttendanceRecords({})
+          setTopicCovered('')
+          setHomeworkGiven('')
+          setZoomRecordingLink('')
+        }
+      } catch (e) {
+        setAttendanceRecords({})
+        setTopicCovered('')
+        setHomeworkGiven('')
+        setZoomRecordingLink('')
+      }
       finally { setLoading(false) }
     }
     fetchData()
@@ -70,6 +96,10 @@ export default function CoachAttendancePage() {
   }
 
   const handleSave = async () => {
+    if (!topicCovered.trim()) {
+      alert("Topic Covered is mandatory!")
+      return
+    }
     setSaving(true)
     try {
       const records = Object.entries(attendanceRecords).map(([studentId, data]) => ({
@@ -78,7 +108,14 @@ export default function CoachAttendancePage() {
       const res = await fetch('/api/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ classTimingId: selectedClassId, date, records })
+        body: JSON.stringify({
+          classTimingId: selectedClassId,
+          date,
+          topicCovered,
+          homeworkGiven,
+          zoomRecordingLink,
+          records
+        })
       })
       if (res.ok) alert("Attendance saved successfully!")
       else alert("Failed to save attendance")
@@ -127,6 +164,41 @@ export default function CoachAttendancePage() {
           <div className="flex justify-center py-20"><Loader2 className="animate-spin text-sky-500 w-10 h-10" /></div>
         ) : (
           <div className="space-y-6">
+            {/* Session details form */}
+            <div className="bg-sky-50/30 border border-sky-100 rounded-2xl p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Topic Covered <span className="text-red-500">*</span></label>
+                <input 
+                  type="text"
+                  value={topicCovered}
+                  onChange={(e) => setTopicCovered(e.target.value)}
+                  placeholder="e.g. Sicilian Defense Basics"
+                  className="w-full p-3 border border-sky-200 rounded-xl text-xs outline-none bg-white focus:ring-2 ring-sky-100 font-medium text-slate-700"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Homework Given</label>
+                <input 
+                  type="text"
+                  value={homeworkGiven}
+                  onChange={(e) => setHomeworkGiven(e.target.value)}
+                  placeholder="e.g. Solve 5 endgame puzzles"
+                  className="w-full p-3 border border-sky-200 rounded-xl text-xs outline-none bg-white focus:ring-2 ring-sky-100 font-medium text-slate-700"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Zoom Recording Link</label>
+                <input 
+                  type="url"
+                  value={zoomRecordingLink}
+                  onChange={(e) => setZoomRecordingLink(e.target.value)}
+                  placeholder="https://zoom.us/rec/share/..."
+                  className="w-full p-3 border border-sky-200 rounded-xl text-xs outline-none bg-white focus:ring-2 ring-sky-100 font-medium text-slate-700"
+                />
+              </div>
+            </div>
+
             <div className="border border-sky-100 rounded-2xl overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead className="bg-sky-50/50 border-b border-sky-100">
@@ -184,7 +256,7 @@ export default function CoachAttendancePage() {
             <div className="flex justify-end pt-4">
               <button
                 onClick={handleSave}
-                disabled={students.length === 0 || saving}
+                disabled={students.length === 0 || saving || !topicCovered.trim()}
                 className="w-full sm:w-auto bg-sky-500 hover:bg-sky-600 text-white px-10 py-4 rounded-2xl font-bold text-sm shadow-lg shadow-sky-100 transition-all active:scale-95 disabled:opacity-30 flex items-center justify-center gap-2"
               >
                 {saving ? <Loader2 className="animate-spin w-5 h-5" /> : <CheckCircle size={18} />}

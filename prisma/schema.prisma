@@ -87,6 +87,26 @@ model User {
   certificates    Certificate[]
   notifications   Notification[]
   createdTournaments Tournament[] @relation("CoachTournaments")
+
+  // Phase 3: Lichess ratings & profiles
+  lichessUsername     String?
+  lichessRapid        Int      @default(1500)
+  lichessBlitz        Int      @default(1500)
+  lichessBullet       Int      @default(1500)
+  lichessPuzzle       Int      @default(1500)
+  highestLichessRapid  Int      @default(1500)
+  highestLichessBlitz  Int      @default(1500)
+  highestLichessBullet Int      @default(1500)
+  highestLichessPuzzle Int      @default(1500)
+
+  // Daily chess streak
+  currentStreak       Int      @default(0)
+  bestStreak          Int      @default(0)
+  lastActiveDate      DateTime?
+
+  // Phase 3 Relations
+  badges              EarnedBadge[]
+  missionProgress     UserMissionProgress[]
 }
 
 enum AttendanceStatus {
@@ -119,6 +139,9 @@ model Attendance {
   date          DateTime         // The date of the session
   status        AttendanceStatus
   remarks       String?          @db.Text
+  topicCovered  String?          @db.Text
+  homeworkGiven String?          @db.Text
+  zoomRecordingLink String?      @db.Text
   
   studentId     String
   student       User             @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -358,6 +381,8 @@ model Game {
   tournament  Tournament? @relation(fields: [tournamentId], references: [id])
   drawOfferedBy String?
   round       Int      @default(1)
+  isBot       Boolean  @default(false)
+  botDifficulty String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -414,6 +439,12 @@ model PerformanceReport {
   tournamentPoints Float @default(0) // max 20
   totalPoints      Float @default(0) // max 100
   award            String? // Gold Star, Silver Star, Bronze Star, etc.
+  studentProgress String?        @db.Text
+  strengths       String?        @db.Text
+  weaknesses      String?        @db.Text
+  behavior        String?        @db.Text
+  nextMonthFocus  String?        @db.Text
+  recommendation  String?        @db.Text
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   @@unique([studentId, month, year])
@@ -438,4 +469,52 @@ model Notification {
   message     String
   isRead      Boolean   @default(false)
   createdAt   DateTime  @default(now())
+}
+
+model Friendship {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  status      String   // "PENDING", "ACCEPTED", "DECLINED"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+}
+
+model EarnedBadge {
+  id        String   @id @default(uuid())
+  userId    String
+  badgeType String   // "HOMEWORK_HERO", "PUZZLE_MASTER", "TOURNAMENT_WARRIOR", "ATTENDANCE_100", "GOLD_STAR", "CLUB_MEMBER", "WINNING_STREAK", "ASSIGNMENT_CHAMPION"
+  earnedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeType])
+}
+
+model WeeklyChallenge {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  type        String   // "SOLVE_PUZZLES", "PLAY_GAMES", "COMPLETE_ASSIGNMENT", "STUDY_LESSONS"
+  targetCount Int
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime @default(now())
+  
+  progress    UserMissionProgress[]
+}
+
+model UserMissionProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  challengeId String
+  currentCount Int     @default(0)
+  isCompleted Boolean  @default(false)
+  completedAt DateTime?
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   WeeklyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeId])
 }

@@ -248,7 +248,7 @@ export async function completeGame({
     }
 
     // 4. AIM Rating System
-    const isRatedGame = game.isRated || !!game.tournamentId;
+    const isRatedGame = (game.isRated || !!game.tournamentId) && !game.isBot;
     if (isRatedGame) {
         const white = await prisma.user.findUnique({ where: { id: game.whiteId } });
         const black = await prisma.user.findUnique({ where: { id: game.blackId } });
@@ -261,17 +261,17 @@ export async function completeGame({
 
             if (winnerId === game.whiteId) {
                 whiteChange = 15;
-                blackChange = -8;
+                blackChange = -10;
                 whiteOutcome = 'win';
                 blackOutcome = 'loss';
             } else if (winnerId === game.blackId) {
-                whiteChange = -8;
+                whiteChange = -10;
                 blackChange = 15;
                 whiteOutcome = 'loss';
                 blackOutcome = 'win';
             } else {
-                whiteChange = 5;
-                blackChange = 5;
+                whiteChange = 4;
+                blackChange = 4;
                 whiteOutcome = 'draw';
                 blackOutcome = 'draw';
             }

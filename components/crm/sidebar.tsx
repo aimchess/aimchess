@@ -68,7 +68,7 @@ const navSections: NavSection[] = [
             { href: "/crm/leaderboard", label: "Leaderboard", icon: Trophy },
             { href: "/crm/play", label: "Play & Challenges", icon: Gamepad2 },
             { href: "/crm/tournaments", label: "Tournaments", icon: Trophy },
-            { href: "/crm/reports", label: "Scorecards", icon: BarChart },
+            { href: "/crm/coach-reports", label: "Monthly Reports", icon: BarChart },
             { href: "/crm/certificates", label: "Certificates", icon: Award },
         ],
     },

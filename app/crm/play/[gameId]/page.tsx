@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import CRMShellLayout from "@/components/crm/crm-shell";
 import { Chess } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import { Loader2, ArrowLeft, Flag, Check, Users } from "lucide-react";
+import { calculateBotMove } from "@/lib/minimax";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -27,6 +28,62 @@ export default function GamePage() {
     const [tournamentId, setTournamentId] = useState<string | null>(null);
     const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
     const [optionSquares, setOptionSquares] = useState<any>({});
+    const botMovingRef = useRef(false);
+
+    // Bot move calculation effect
+    useEffect(() => {
+        if (!gameData || !gameData.isBot || gameData.status !== "IN_PROGRESS" || botMovingRef.current) return;
+
+        const isBotTurn = 
+            (game.turn() === "w" && playerColor === "black") || 
+            (game.turn() === "b" && playerColor === "white");
+
+        if (!isBotTurn) return;
+
+        botMovingRef.current = true;
+
+        const timer = setTimeout(async () => {
+            try {
+                const difficulty = gameData.botDifficulty || "BEGINNER";
+                const pgn = game.pgn();
+                
+                const botMoveLan = calculateBotMove(pgn, difficulty);
+                if (botMoveLan) {
+                    const newGame = new Chess(game.fen());
+                    const result = newGame.move(botMoveLan);
+                    if (result) {
+                        setGame(newGame);
+                        setSelectedSquare(null);
+                        setOptionSquares({});
+
+                        const res = await fetch(`/api/play/game/${gameId}/move`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                                move: botMoveLan, 
+                                fen: newGame.fen(), 
+                                pgn: newGame.pgn() 
+                            })
+                        });
+                        
+                        if (res.ok) {
+                            const finalGame = await res.json();
+                            setGameData(finalGame);
+                            if (finalGame.status === "COMPLETED") {
+                                await fetch("/api/user/streak", { method: "POST" });
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Bot move calculation error:", err);
+            } finally {
+                botMovingRef.current = false;
+            }
+        }, 800);
+
+        return () => clearTimeout(timer);
+    }, [gameData, game, playerColor, gameId]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -197,7 +254,7 @@ export default function GamePage() {
     };
 
     const onDrop = (sourceSquare: string, targetSquare: string) => {
-        if (playerColor === "spectator" || gameData?.status !== "IN_PROGRESS") return false;
+        if (playerColor === "spectator" || gameData?.status !== "IN_PROGRESS" || botMovingRef.current) return false;
         
         const turn = game.turn() === "w" ? "white" : "black";
         if (turn !== playerColor) {
@@ -225,6 +282,14 @@ export default function GamePage() {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ move, fen: newGame.fen(), pgn: newGame.pgn() })
+                }).then(async (res) => {
+                    if (res.ok) {
+                        const updated = await res.json();
+                        setGameData(updated);
+                        if (updated.status === "COMPLETED") {
+                            await fetch("/api/user/streak", { method: "POST" });
+                        }
+                    }
                 });
                 
                 return true;
@@ -315,7 +380,9 @@ export default function GamePage() {
                     <div className="flex items-center gap-4 text-sm font-bold">
                         <span className="flex items-center gap-1 text-gray-700">
                             <Users size={16} /> 
-                            {gameData.white.name} <span className="text-gray-400 font-normal">vs</span> {gameData.black.name}
+                            {gameData.white?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")} 
+                            <span className="text-gray-400 font-normal">vs</span> 
+                            {gameData.black?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")}
                         </span>
                         <span className={`px-3 py-1 rounded-full text-xs uppercase tracking-widest ${
                             gameData.status === "IN_PROGRESS" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-700"
@@ -397,7 +464,7 @@ export default function GamePage() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 rounded-sm bg-white border border-gray-300"></div>
-                                    <span className="font-semibold text-sm text-gray-900">{gameData.white.name}</span>
+                                    <span className="font-semibold text-sm text-gray-900">{gameData.white?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     {gameData.timeControl && wTime !== null && (
@@ -418,7 +485,7 @@ export default function GamePage() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-gray-800 text-white border border-gray-900">
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 rounded-sm bg-gray-950 border border-gray-700"></div>
-                                    <span className="font-semibold text-sm">{gameData.black.name}</span>
+                                    <span className="font-semibold text-sm">{gameData.black?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     {gameData.timeControl && bTime !== null && (
