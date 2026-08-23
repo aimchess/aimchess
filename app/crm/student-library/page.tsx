@@ -56,7 +56,7 @@ export default function StudentLibraryPage() {
           const chess = new Chess()
           chess.loadPgn(chapter.content)
           setPgnGame(chess)
-          setPnMoves(chess.history())
+          setPgnMoves(chess.history())
           setCurrentMoveIndex(-1)
           setIsInteractiveMode(false)
         } catch (e) {

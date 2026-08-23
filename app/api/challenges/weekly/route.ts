@@ -66,7 +66,7 @@ export async function GET(req: Request) {
         }
 
         // 3. Sync User Progress dynamically for these challenges
-        const syncPromises = challenges.map(async (challenge) => {
+        const syncPromises = challenges.map(async (challenge: any) => {
             // Find existing progress
             let progress = await prisma.userMissionProgress.findUnique({
                 where: {
@@ -119,7 +119,7 @@ export async function GET(req: Request) {
                     where: { studentId: user.id }
                 });
                 // Count number of completed chapters across all courses
-                currentCount = progressList.reduce((sum, cp) => sum + (cp.completedChapters?.length || 0), 0);
+                currentCount = progressList.reduce((sum: number, cp: any) => sum + (cp.completedChapters?.length || 0), 0);
             }
 
             const isCompleted = currentCount >= challenge.targetCount;
