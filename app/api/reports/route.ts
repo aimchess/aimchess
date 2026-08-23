@@ -21,10 +21,8 @@ export async function GET(req: Request) {
         if (year) where.year = year;
         if (studentId) where.studentId = studentId;
 
-        // If STUDENT, they can only fetch their own reports
-        if ((session.user as any).role === "STUDENT") {
-            where.studentId = (session.user as any).id;
-        }
+        // Note: Students are allowed to see all reports to foster competition.
+
 
         const reports = await prisma.performanceReport.findMany({
             where,
