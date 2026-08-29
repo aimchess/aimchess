@@ -122,48 +122,83 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
         if (game.isBot && status === "IN_PROGRESS") {
             try {
                 const difficulty = game.botDifficulty || "BEGINNER";
-                let depth = 8;
-                if (difficulty === "BEGINNER") depth = 5;
-                else if (difficulty === "INTERMEDIATE") depth = 8;
-                else if (difficulty === "ADVANCED") depth = 12;
-                else if (difficulty === "EXPERT") depth = 15;
+                
+                let madeRandomMove = false;
+                if (difficulty === "BEGINNER" && Math.random() < 0.45) {
+                    const moves = chess.moves({ verbose: true });
+                    if (moves.length > 0) {
+                        const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                        chess.move(randomMove);
+                        madeRandomMove = true;
+                    }
+                } else if (difficulty === "INTERMEDIATE" && Math.random() < 0.15) {
+                    const moves = chess.moves({ verbose: true });
+                    if (moves.length > 0) {
+                        const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                        chess.move(randomMove);
+                        madeRandomMove = true;
+                    }
+                }
 
-                if (depth < 5) depth = 5;
-                if (depth > 15) depth = 15;
+                if (madeRandomMove) {
+                    finalFen = chess.fen();
+                    finalPgn = chess.pgn();
 
-                const encodedFen = encodeURIComponent(chess.fen());
-                const sfRes = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodedFen}&depth=${depth}`, {
-                    headers: { 'Accept': 'application/json' },
-                    cache: 'no-store'
-                });
+                    // Re-evaluate game status
+                    if (chess.isCheckmate()) {
+                        status = "COMPLETED";
+                        if (chess.turn() === 'w') {
+                            result = "0-1";
+                            winnerId = game.blackId; // Bot wins
+                        } else {
+                            result = "1-0";
+                            winnerId = game.whiteId; // User wins
+                        }
+                    } else if (chess.isGameOver()) {
+                        status = "COMPLETED";
+                        result = "1/2-1/2";
+                    }
+                } else {
+                    let depth = 8;
+                    if (difficulty === "BEGINNER") depth = 2;
+                    else if (difficulty === "INTERMEDIATE") depth = 5;
+                    else if (difficulty === "ADVANCED") depth = 8;
+                    else if (difficulty === "EXPERT") depth = 12;
 
-                if (sfRes.ok) {
-                    const sfData = await sfRes.json();
-                    if (sfData.success && sfData.bestmove) {
-                        const parts = sfData.bestmove.split(" ");
-                        const bestMove = parts[1];
-                        if (bestMove) {
-                            const from = bestMove.substring(0, 2);
-                            const to = bestMove.substring(2, 4);
-                            const promotion = bestMove.substring(4, 5) || undefined;
-                            
-                            chess.move({ from, to, promotion });
-                            finalFen = chess.fen();
-                            finalPgn = chess.pgn();
+                    const encodedFen = encodeURIComponent(chess.fen());
+                    const sfRes = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodedFen}&depth=${depth}`, {
+                        headers: { 'Accept': 'application/json' },
+                        cache: 'no-store'
+                    });
 
-                            // Re-evaluate game status
-                            if (chess.isCheckmate()) {
-                                status = "COMPLETED";
-                                if (chess.turn() === 'w') {
-                                    result = "0-1";
-                                    winnerId = game.blackId; // Bot wins
-                                } else {
-                                    result = "1-0";
-                                    winnerId = game.whiteId; // User wins
+                    if (sfRes.ok) {
+                        const sfData = await sfRes.json();
+                        if (sfData.success && sfData.bestmove) {
+                            const parts = sfData.bestmove.split(" ");
+                            const bestMove = parts[1];
+                            if (bestMove) {
+                                const from = bestMove.substring(0, 2);
+                                const to = bestMove.substring(2, 4);
+                                const promotion = bestMove.substring(4, 5) || undefined;
+                                
+                                chess.move({ from, to, promotion });
+                                finalFen = chess.fen();
+                                finalPgn = chess.pgn();
+
+                                // Re-evaluate game status
+                                if (chess.isCheckmate()) {
+                                    status = "COMPLETED";
+                                    if (chess.turn() === 'w') {
+                                        result = "0-1";
+                                        winnerId = game.blackId; // Bot wins
+                                    } else {
+                                        result = "1-0";
+                                        winnerId = game.whiteId; // User wins
+                                    }
+                                } else if (chess.isGameOver()) {
+                                    status = "COMPLETED";
+                                    result = "1/2-1/2";
                                 }
-                            } else if (chess.isGameOver()) {
-                                status = "COMPLETED";
-                                result = "1/2-1/2";
                             }
                         }
                     }

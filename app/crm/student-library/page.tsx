@@ -46,6 +46,9 @@ export default function StudentLibraryPage() {
   const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1)
   const [isInteractiveMode, setIsInteractiveMode] = useState(false)
   const [interactivePosition, setInteractivePosition] = useState("")
+  const [guessMode, setGuessMode] = useState(true)
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null)
+  const [optionSquares, setOptionSquares] = useState<any>({})
 
   // Load and parse PGN when chapter changes
   useEffect(() => {
@@ -94,8 +97,129 @@ export default function StudentLibraryPage() {
     }
   }
 
+  const getMoveOptions = (square: string, fen: string) => {
+    try {
+      const tempGame = new Chess(fen);
+      const moves = tempGame.moves({
+        square: square as any,
+        verbose: true
+      }) as any[];
+      
+      if (moves.length === 0) {
+        setOptionSquares({});
+        return false;
+      }
+
+      const newSquares: any = {};
+      moves.forEach((move) => {
+        newSquares[move.to] = {
+          background: move.captured
+            ? "radial-gradient(circle, rgba(239, 68, 68, 0.4) 37%, transparent 40%)"
+            : "radial-gradient(circle, rgba(79, 70, 229, 0.2) 20%, transparent 20%)",
+          borderRadius: "50%"
+        };
+      });
+      
+      newSquares[square] = {
+        backgroundColor: "rgba(255, 255, 0, 0.4)"
+      };
+      
+      setOptionSquares(newSquares);
+      return true;
+    } catch (e) {
+      setOptionSquares({});
+      return false;
+    }
+  };
+
+  const onSquareClick = (square: string) => {
+    if (!selectedCourse || activeChapterIndex === -1) return;
+    const activeFen = isInteractiveMode ? interactivePosition : getPositionAtMove(currentMoveIndex);
+
+    if (selectedSquare) {
+      const tempGame = new Chess(activeFen);
+      try {
+        const result = tempGame.move({
+          from: selectedSquare,
+          to: square,
+          promotion: 'q'
+        });
+        if (result) {
+          handlePieceDrop(selectedSquare, square);
+          setSelectedSquare(null);
+          setOptionSquares({});
+          return;
+        }
+      } catch (e) {
+        // invalid move
+      }
+    }
+
+    try {
+      const tempGame = new Chess(activeFen);
+      const piece = tempGame.get(square as any);
+      if (piece) {
+        setSelectedSquare(square);
+        getMoveOptions(square, activeFen);
+      } else {
+        setSelectedSquare(null);
+        setOptionSquares({});
+      }
+    } catch (e) {
+      setSelectedSquare(null);
+      setOptionSquares({});
+    }
+  };
+
   const handlePieceDrop = (sourceSquare: string, targetSquare: string) => {
     const activeFen = isInteractiveMode ? interactivePosition : getPositionAtMove(currentMoveIndex)
+    
+    // 1. Validate against PGN move if guessMode is active
+    if (guessMode && pgnMoves.length > 0 && !isInteractiveMode) {
+      try {
+        const nextMoveIdx = currentMoveIndex + 1;
+        if (nextMoveIdx >= pgnMoves.length) {
+          toast.info("You've completed this lesson study! 🎉");
+          return false;
+        }
+
+        const tempGame = new Chess(activeFen);
+        const result = tempGame.move({
+          from: sourceSquare,
+          to: targetSquare,
+          promotion: 'q'
+        });
+
+        if (result) {
+          const expectedNextFen = getPositionAtMove(nextMoveIdx);
+          const expectedNextChess = new Chess(expectedNextFen);
+          
+          if (tempGame.fen().split(' ')[0] === expectedNextChess.fen().split(' ')[0]) {
+            toast.success("Correct move! 🎉");
+            setCurrentMoveIndex(nextMoveIdx);
+            
+            // Auto play opponent reply if it exists
+            const replyMoveIdx = nextMoveIdx + 1;
+            if (replyMoveIdx < pgnMoves.length) {
+              setTimeout(() => {
+                setCurrentMoveIndex(replyMoveIdx);
+                toast.info(`Opponent played ${pgnMoves[replyMoveIdx]}`);
+              }, 800);
+            }
+            return true;
+          } else {
+            toast.error("Oops! That's not the correct move. Try again!");
+            return false;
+          }
+        }
+      } catch (e) {
+        toast.error("Invalid move. Try again!");
+        return false;
+      }
+      return false;
+    }
+
+    // 2. Default fallback free play
     try {
       const temp = new Chess(activeFen)
       const result = temp.move({
@@ -284,6 +408,8 @@ export default function StudentLibraryPage() {
                           boardWidth={boardWidth - 12}
                           arePiecesDraggable={true}
                           onPieceDrop={handlePieceDrop}
+                          onSquareClick={onSquareClick}
+                          customSquareStyles={optionSquares}
                           customBoardStyle={{
                             borderRadius: '4px',
                             boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.1)'
@@ -294,6 +420,22 @@ export default function StudentLibraryPage() {
 
                     {pgnMoves.length > 0 && (
                       <div className="bg-white rounded-2xl border border-sky-100 p-5 shadow-sm space-y-4">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 border-b pb-2 mb-2">
+                          <input 
+                            type="checkbox" 
+                            id="guess-mode-toggle"
+                            checked={guessMode} 
+                            onChange={e => {
+                              setGuessMode(e.target.checked);
+                              setIsInteractiveMode(false);
+                            }}
+                            className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 border-gray-300 cursor-pointer"
+                          />
+                          <label htmlFor="guess-mode-toggle" className="cursor-pointer select-none">
+                            Interactive Practice (Guess the moves!)
+                          </label>
+                        </div>
+
                         <div className="flex flex-wrap justify-center gap-2 border-b pb-3 border-sky-50">
                           <button 
                             onClick={() => { setCurrentMoveIndex(-1); setIsInteractiveMode(false); }}
@@ -335,6 +477,23 @@ export default function StudentLibraryPage() {
                           >
                             End ⏭
                           </button>
+                          {guessMode && pgnMoves.length > 0 && currentMoveIndex + 1 < pgnMoves.length && (
+                            <button 
+                              onClick={() => {
+                                const nextMoveIdx = currentMoveIndex + 1;
+                                setCurrentMoveIndex(nextMoveIdx);
+                                const replyMoveIdx = nextMoveIdx + 1;
+                                if (replyMoveIdx < pgnMoves.length) {
+                                  setTimeout(() => {
+                                    setCurrentMoveIndex(replyMoveIdx);
+                                  }, 800);
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-xs transition-all active:scale-95 shadow-sm"
+                            >
+                              💡 Reveal Answer
+                            </button>
+                          )}
                           {isInteractiveMode && (
                             <button 
                               onClick={() => setIsInteractiveMode(false)}

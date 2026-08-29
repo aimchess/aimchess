@@ -471,7 +471,7 @@ export default function PlayArea() {
                                         { level: "BEGINNER", title: "Beginner Bot", desc: "Great for start levels. Simple material calculation.", rating: 600, color: "bg-emerald-500" },
                                         { level: "INTERMEDIATE", title: "Intermediate Bot", desc: "Bronze rating test. Thinks 2 moves ahead.", rating: 1000, color: "bg-sky-500" },
                                         { level: "ADVANCED", title: "Advanced Bot", desc: "Gold level challenge. Deep positional plays.", rating: 1400, color: "bg-amber-500" },
-                                        { level: "EXPERT", title: "Expert Bot", desc: "Master level sparring partner. Searches 4 depths.", rating: 1800, color: "bg-red-500" }
+                                        { level: "EXPERT", title: "Strong Bot", desc: "Master level sparring partner. Searches 4 depths.", rating: 1800, color: "bg-red-500" }
                                     ].map(bot => (
                                         <div key={bot.level} className="p-4 rounded-xl border border-gray-100 bg-white flex justify-between items-center shadow-sm hover:border-indigo-100 hover:shadow-md transition-all">
                                             <div>

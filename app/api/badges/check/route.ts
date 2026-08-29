@@ -93,6 +93,38 @@ export async function POST(req: Request) {
             earnedBadgeTypes.add("WINNING_STREAK");
         }
 
+        // 8. 30-Day Chess Streak
+        if (user.bestStreak >= 30 || user.currentStreak >= 30) {
+            earnedBadgeTypes.add("STREAK_30");
+        }
+
+        // 9. Mission Master
+        const completedMissions = await prisma.userMissionProgress.count({
+            where: { userId: user.id, isCompleted: true }
+        });
+        if (completedMissions >= 5) {
+            earnedBadgeTypes.add("MISSION_MASTER");
+        }
+
+        // 10. Challenge Champion
+        const wonGamesCount = await prisma.game.count({
+            where: { winnerId: user.id, status: "COMPLETED" }
+        });
+        if (wonGamesCount >= 5) {
+            earnedBadgeTypes.add("CHALLENGE_CHAMPION");
+        }
+
+        // 11. Monthly Star Player
+        const hasStarAward = user.performanceReports.some((r: any) => r.award && r.award.toLowerCase().includes("star"));
+        if (hasStarAward) {
+            earnedBadgeTypes.add("MONTHLY_STAR");
+        }
+
+        // 12. Consistency Champion
+        if (user.bestStreak >= 7 || user.currentStreak >= 7 || completedAssignments >= 5) {
+            earnedBadgeTypes.add("CONSISTENCY_CHAMPION");
+        }
+
         // Upsert earned badges in DB
         const badgePromises = Array.from(earnedBadgeTypes).map(badgeType =>
             prisma.earnedBadge.upsert({

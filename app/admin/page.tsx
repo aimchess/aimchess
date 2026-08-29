@@ -1942,7 +1942,7 @@ const BoardSetupPalette = ({ selectedTool, setSelectedTool, onClear, onReset }: 
 
 // --- MAIN DASHBOARD ---
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState<'users' | 'courses' | 'puzzles' | 'analysis' | 'classes' | 'payments'>('users')
+    const [activeTab, setActiveTab] = useState<'users' | 'courses' | 'puzzles' | 'analysis' | 'classes' | 'payments' | 'packages'>('users')
     return (
         <div className="min-h-screen bg-gray-50 text-slate-900 font-sans pb-20">
             {/* 
@@ -1960,6 +1960,7 @@ export default function AdminDashboard() {
                     <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0 -mx-4 px-4 lg:mx-0 lg:px-0">
                         {[
                             { id: 'users', label: 'Users', icon: Users },
+                            { id: 'packages', label: 'Packages', icon: Calendar },
                             { id: 'classes', label: 'Batch/Classes', icon: Clock },
                             { id: 'payments', label: 'Payments', icon: CreditCard },
                             { id: 'courses', label: 'Courses', icon: BookOpen },
@@ -1984,12 +1985,161 @@ export default function AdminDashboard() {
 
             <main className="p-4 md:p-6 max-w-7xl mx-auto mt-4 md:mt-8">
                 {activeTab === 'users' && <UserManager />}
+                {activeTab === 'packages' && <ClassPackageManager />}
                 {activeTab === 'classes' && <ClassManager />}
                 {activeTab === 'payments' && <PaymentManager />}
                 {activeTab === 'courses' && <CourseManager />}
                 {activeTab === 'puzzles' && <CurriculumManager />}
                 {activeTab === 'analysis' && <AnalysisBoard />}
             </main>
+        </div>
+    )
+}
+
+// ==========================================
+// 1.8 CLASS PACKAGE TRACKER
+// ==========================================
+function ClassPackageManager() {
+    const [students, setStudents] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [searchQuery, setSearchQuery] = useState('')
+
+    const fetchStudents = async () => {
+        setLoading(true)
+        try {
+            const res = await fetch('/api/admin/users')
+            if (res.ok) {
+                const users = await res.json()
+                setStudents(users.filter((u: any) => u.role === 'STUDENT'))
+            }
+        } catch (e) {
+            console.error("Failed to fetch student package details", e)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchStudents()
+    }, [])
+
+    const filteredStudents = students.filter(student => 
+        student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (student.packageName || '').toLowerCase().includes(searchQuery.toLowerCase())
+    )
+
+    return (
+        <div className="bg-white rounded-xl shadow-sm border p-4 md:p-6 overflow-hidden">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 className="text-xl font-bold flex items-center gap-2 text-slate-800">
+                        <CreditCard className="text-indigo-600" /> Class Package &amp; Renewal Tracker
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-1">Track student package usage, status, and renewal schedules.</p>
+                </div>
+                
+                <div className="w-full sm:w-72 relative">
+                    <input 
+                        type="text" 
+                        placeholder="Search student or package..."
+                        className="w-full border pl-9 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                    <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
+                </div>
+            </div>
+
+            {loading ? (
+                <div className="text-center py-20">
+                    <Loader2 className="animate-spin inline text-indigo-600" size={32} />
+                </div>
+            ) : (
+                <div className="overflow-x-auto -mx-4 md:mx-0 rounded-lg border border-gray-100">
+                    <table className="w-full text-left border-collapse min-w-[900px] text-xs">
+                        <thead className="bg-gray-50 border-b">
+                            <tr>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider">Student</th>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider">Package</th>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider text-center">Total</th>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider text-center">Used</th>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider text-center">Remaining</th>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider">Start Date</th>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider">Expiry / Renewal</th>
+                                <th className="p-4 font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredStudents.map(student => {
+                                const total = student.packageTotalClasses || 12
+                                const start = student.packageStartDate
+                                const used = student.attendanceRecords?.filter((a: any) => 
+                                    (a.status === 'PRESENT' || a.status === 'LATE') &&
+                                    (!start || new Date(a.date) >= new Date(start))
+                                ).length || 0
+                                const remaining = Math.max(0, total - used)
+                                
+                                let statusLabel = "Active"
+                                let statusBg = "bg-green-50 text-green-700 border-green-200"
+                                let rowHighlight = ""
+                                
+                                if (remaining <= 2) {
+                                    statusLabel = "Renewal Required"
+                                    statusBg = "bg-red-50 text-red-700 border-red-200"
+                                    rowHighlight = "bg-red-50/30 hover:bg-red-50/50"
+                                } else if (remaining <= 4) {
+                                    statusLabel = "Renewal Soon"
+                                    statusBg = "bg-yellow-50 text-yellow-700 border-yellow-200"
+                                    rowHighlight = "bg-yellow-50/30 hover:bg-yellow-50/50"
+                                } else {
+                                    rowHighlight = "hover:bg-slate-50/80"
+                                }
+
+                                return (
+                                    <tr key={student.id} className={`transition-colors ${rowHighlight}`}>
+                                        <td className="p-4 font-bold text-slate-800">
+                                            {student.name}
+                                            <div className="text-[10px] text-gray-400 font-normal mt-0.5">{student.email}</div>
+                                        </td>
+                                        <td className="p-4 font-semibold text-slate-600">
+                                            {student.packageName || "Standard Package"}
+                                        </td>
+                                        <td className="p-4 text-center font-bold text-slate-600">{total}</td>
+                                        <td className="p-4 text-center font-bold text-indigo-600">{used}</td>
+                                        <td className="p-4 text-center font-bold text-slate-800">
+                                            <span className={`px-2 py-0.5 rounded font-black text-xs ${
+                                                remaining <= 2 ? "text-red-600 bg-red-50" :
+                                                remaining <= 4 ? "text-yellow-600 bg-yellow-50" :
+                                                "text-green-600 bg-green-50"
+                                            }`}>
+                                                {remaining}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-slate-500 font-medium">
+                                            {start ? new Date(start).toLocaleDateString() : "-"}
+                                        </td>
+                                        <td className="p-4 text-slate-500 font-medium">
+                                            {student.packageExpiryDate ? new Date(student.packageExpiryDate).toLocaleDateString() : "-"}
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wide border ${statusBg}`}>
+                                                {statusLabel}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                )
+                            })}
+                            {filteredStudents.length === 0 && (
+                                <tr>
+                                    <td colSpan={8} className="p-8 text-center text-gray-400 font-medium italic">
+                                        No student package records found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     )
 }
@@ -2005,7 +2155,8 @@ function UserManager() {
     const [formData, setFormData] = useState<any>({
         name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '',
         joiningDate: '', birthDate: '', address: '', parentName: '', parentPhone: '',
-        photoUrl: '', idCardUrl: ''
+        photoUrl: '', idCardUrl: '', country: 'India', packageName: 'Standard Package',
+        packageTotalClasses: 12, packageStartDate: '', packageExpiryDate: ''
     })
     const [editingId, setEditingId] = useState<string | null>(null)
 
@@ -2060,7 +2211,8 @@ function UserManager() {
                 setFormData({
                     name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '',
                     joiningDate: '', birthDate: '', address: '', parentName: '', parentPhone: '',
-                    photoUrl: '', idCardUrl: ''
+                    photoUrl: '', idCardUrl: '', country: 'India', packageName: 'Standard Package',
+                    packageTotalClasses: 12, packageStartDate: '', packageExpiryDate: ''
                 })
             } else {
                 const err = await res.json()
@@ -2091,7 +2243,12 @@ function UserManager() {
             parentName: user.parentName || '',
             parentPhone: user.parentPhone || '',
             photoUrl: user.photoUrl || '',
-            idCardUrl: user.idCardUrl || ''
+            idCardUrl: user.idCardUrl || '',
+            country: user.country || 'India',
+            packageName: user.packageName || 'Standard Package',
+            packageTotalClasses: user.packageTotalClasses || 12,
+            packageStartDate: user.packageStartDate ? new Date(user.packageStartDate).toISOString().split('T')[0] : '',
+            packageExpiryDate: user.packageExpiryDate ? new Date(user.packageExpiryDate).toISOString().split('T')[0] : ''
         })
         setEditingId(user.id)
         setIsModalOpen(true)
@@ -2110,7 +2267,8 @@ function UserManager() {
                         setFormData({
                             name: '', email: '', password: '', role: 'STUDENT', stage: 'BEGINNER', coachId: '',
                             joiningDate: '', birthDate: '', address: '', parentName: '', parentPhone: '',
-                            photoUrl: '', idCardUrl: ''
+                            photoUrl: '', idCardUrl: '', country: 'India', packageName: 'Standard Package',
+                            packageTotalClasses: 12, packageStartDate: '', packageExpiryDate: ''
                         })
                     }} 
                     className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all shadow-md active:scale-95"
@@ -2225,7 +2383,7 @@ function UserManager() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Joining Date</label>
                                     <input type="date" className="w-full border p-2.5 rounded-xl bg-gray-50 outline-none" value={formData.joiningDate} onChange={e => setFormData({ ...formData, joiningDate: e.target.value })} />
@@ -2233,6 +2391,53 @@ function UserManager() {
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Date of Birth</label>
                                     <input type="date" className="w-full border p-2.5 rounded-xl bg-gray-50 outline-none" value={formData.birthDate} onChange={e => setFormData({ ...formData, birthDate: e.target.value })} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Country</label>
+                                <select className="w-full border p-2.5 rounded-xl bg-gray-50 outline-none cursor-pointer" value={formData.country} onChange={e => setFormData({ ...formData, country: e.target.value })}>
+                                    <option value="India">India 🇮🇳</option>
+                                    <option value="UAE">UAE 🇦🇪</option>
+                                    <option value="UK">UK 🇬🇧</option>
+                                    <option value="USA">USA 🇺🇸</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+                                <div>
+                                    <label className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Class Package</label>
+                                    <select className="w-full border p-2.5 rounded-xl mt-1 bg-white outline-none cursor-pointer" value={formData.packageName} onChange={e => {
+                                        const pkg = e.target.value;
+                                        let classes = 12;
+                                        if (pkg === "Starter Package") classes = 4;
+                                        else if (pkg === "Silver Package") classes = 8;
+                                        else if (pkg === "Gold Package") classes = 16;
+                                        else if (pkg === "Diamond Package") classes = 24;
+                                        setFormData({ ...formData, packageName: pkg, packageTotalClasses: classes });
+                                    }}>
+                                        <option value="Standard Package">Standard Package (12 Classes)</option>
+                                        <option value="Starter Package">Starter Package (4 Classes)</option>
+                                        <option value="Silver Package">Silver Package (8 Classes)</option>
+                                        <option value="Gold Package">Gold Package (16 Classes)</option>
+                                        <option value="Diamond Package">Diamond Package (24 Classes)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Total Classes</label>
+                                    <input type="number" className="w-full border p-2.5 rounded-xl mt-1 bg-white outline-none" value={formData.packageTotalClasses} onChange={e => setFormData({ ...formData, packageTotalClasses: parseInt(e.target.value) || 0 })} />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Package Start Date</label>
+                                    <input type="date" className="w-full border p-2.5 rounded-xl bg-gray-50 outline-none" value={formData.packageStartDate} onChange={e => setFormData({ ...formData, packageStartDate: e.target.value })} />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Package Expiry / Renewal Date</label>
+                                    <input type="date" className="w-full border p-2.5 rounded-xl bg-gray-50 outline-none" value={formData.packageExpiryDate} onChange={e => setFormData({ ...formData, packageExpiryDate: e.target.value })} />
                                 </div>
                             </div>
 

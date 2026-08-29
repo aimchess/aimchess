@@ -13,6 +13,9 @@ export async function GET() {
         coach: {
           select: { id: true, name: true },
         },
+        attendanceRecords: {
+          select: { id: true, status: true, date: true }
+        },
         _count: {
           select: { students: true },
         },
@@ -51,6 +54,11 @@ export async function POST(req: Request) {
       parentPhone,
       photoUrl,
       idCardUrl,
+      country,
+      packageName,
+      packageTotalClasses,
+      packageStartDate,
+      packageExpiryDate,
     } = body;
 
     // 1. Validate required fields
@@ -87,6 +95,11 @@ export async function POST(req: Request) {
       data.parentPhone = parentPhone || null;
       data.photoUrl = photoUrl || null;
       data.idCardUrl = idCardUrl || null;
+      data.country = country || "India";
+      data.packageName = packageName || null;
+      data.packageTotalClasses = packageTotalClasses !== undefined && packageTotalClasses !== "" ? parseInt(packageTotalClasses) : 12;
+      if (packageStartDate) data.packageStartDate = new Date(packageStartDate);
+      if (packageExpiryDate) data.packageExpiryDate = new Date(packageExpiryDate);
     } else {
       // ADMIN or COACH
       data.stage = "BEGINNER";
@@ -133,6 +146,11 @@ export async function PUT(req: Request) {
       parentPhone,
       photoUrl,
       idCardUrl,
+      country,
+      packageName,
+      packageTotalClasses,
+      packageStartDate,
+      packageExpiryDate,
       ...rest
     } = body;
 
@@ -158,6 +176,11 @@ export async function PUT(req: Request) {
     if (parentPhone !== undefined) data.parentPhone = parentPhone;
     if (photoUrl !== undefined) data.photoUrl = photoUrl;
     if (idCardUrl !== undefined) data.idCardUrl = idCardUrl;
+    if (country !== undefined) data.country = country;
+    if (packageName !== undefined) data.packageName = packageName;
+    if (packageTotalClasses !== undefined) data.packageTotalClasses = packageTotalClasses !== "" ? parseInt(packageTotalClasses) : 12;
+    if (packageStartDate !== undefined) data.packageStartDate = packageStartDate ? new Date(packageStartDate) : null;
+    if (packageExpiryDate !== undefined) data.packageExpiryDate = packageExpiryDate ? new Date(packageExpiryDate) : null;
 
     if (role) {
       data.role = role;

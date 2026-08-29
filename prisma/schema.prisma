@@ -51,6 +51,11 @@ model User {
   parentPhone String?
   photoUrl    String? @db.Text
   idCardUrl   String? @db.Text
+  country     String? @default("India")
+  packageName String?
+  packageTotalClasses Int @default(12)
+  packageStartDate DateTime?
+  packageExpiryDate DateTime?
 
   // Attendance Relations
   managedClasses ClassTiming[] @relation("CoachClasses")

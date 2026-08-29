@@ -12,6 +12,33 @@ import {
 import { toast } from 'sonner'
 import { jsPDF } from 'jspdf'
 
+const getCountryDisplay = (country: string | null) => {
+  if (!country) return "India 🇮🇳";
+  const c = country.trim().toUpperCase();
+  if (c === "INDIA") return "India 🇮🇳";
+  if (c === "UAE" || c === "UNITED ARAB EMIRATES") return "UAE 🇦🇪";
+  if (c === "UK" || c === "UNITED KINGDOM" || c === "GB" || c === "GREAT BRITAIN") return "UK 🇬🇧";
+  if (c === "USA" || c === "UNITED STATES" || c === "UNITED STATES OF AMERICA") return "USA 🇺🇸";
+  return country;
+};
+
+const BADGE_MAP: Record<string, { emoji: string, label: string, desc: string }> = {
+  HOMEWORK_HERO: { emoji: "📚", label: "Homework Hero", desc: "Completed all assigned homework missions." },
+  PUZZLE_MASTER: { emoji: "🧩", label: "Puzzle Master", desc: "Solved 10+ chess puzzles or MCQs successfully." },
+  TOURNAMENT_WARRIOR: { emoji: "🏆", label: "Tournament Warrior", desc: "Showed courage by competing in 2+ tournaments." },
+  ATTENDANCE_100: { emoji: "🗓️", label: "Attendance 100%", desc: "Maintained a perfect 100% class attendance record." },
+  GOLD_STAR: { emoji: "⭐", label: "Gold Star", desc: "Earned a Gold Star Player award on your monthly report card." },
+  CLUB_MEMBER: { emoji: "♟️", label: "Club Member", desc: "Earned entry into the AIM Chess Club by reaching 600+ ELO." },
+  WINNING_STREAK: { emoji: "🔥", label: "Winning Streak", desc: "Defeated opponents in 3 consecutive games." },
+  ASSIGNMENT_CHAMPION: { emoji: "🎓", label: "Assignment Champion", desc: "Successfully finished all assignments." },
+  STREAK_30: { emoji: "🔥", label: "30-Day Chess Streak", desc: "Maintained a 30-day chess playing streak." },
+  MISSION_MASTER: { emoji: "🎯", label: "Mission Master", desc: "Completed 5+ weekly training missions." },
+  CHALLENGE_CHAMPION: { emoji: "⚔️", label: "Challenge Champion", desc: "Won 5+ custom challenges or games." },
+  MONTHLY_STAR: { emoji: "🏆", label: "Monthly Star Player", desc: "Earned a Star Player designation on your monthly assessment." },
+  CONSISTENCY_CHAMPION: { emoji: "⭐", label: "Consistency Champion", desc: "Maintained a 7+ day streak or completed 5+ assignments." }
+};
+
+
 export default function StudentDashboardPage() {
   const { data: session, update } = useSession()
   const studentId = (session?.user as any)?.id || ''
@@ -32,6 +59,7 @@ export default function StudentDashboardPage() {
   const [profileData, setProfileData] = useState<any>(null)
   const [attendanceLogs, setAttendanceLogs] = useState<any[]>([])
   const [weeklyChallenges, setWeeklyChallenges] = useState<any[]>([])
+  const [tournaments, setTournaments] = useState<any[]>([])
   const [syncingLichess, setSyncingLichess] = useState(false)
   const [lichessInput, setLichessInput] = useState("")
   const [checkingBadges, setCheckingBadges] = useState(false)
@@ -135,12 +163,13 @@ export default function StudentDashboardPage() {
   const fetchDashboardData = useCallback(async () => {
     if (!studentId) return
     try {
-      const [assignRes, classesRes, profileRes, attRes, challengesRes] = await Promise.all([
+      const [assignRes, classesRes, profileRes, attRes, challengesRes, tournamentRes] = await Promise.all([
         fetch(`/api/assignments?studentId=${studentId}`, { cache: 'no-store' }),
         fetch(`/api/classes?studentId=${studentId}`),
         fetch("/api/user/profile", { cache: 'no-store' }),
         fetch(`/api/attendance?studentId=${studentId}`),
-        fetch("/api/challenges/weekly", { cache: 'no-store' })
+        fetch("/api/challenges/weekly", { cache: 'no-store' }),
+        fetch("/api/tournaments", { cache: 'no-store' })
       ])
 
       if (assignRes.ok) {
@@ -177,6 +206,10 @@ export default function StudentDashboardPage() {
 
       if (challengesRes.ok) {
         setWeeklyChallenges(await challengesRes.json())
+      }
+
+      if (tournamentRes.ok) {
+        setTournaments(await tournamentRes.json())
       }
     } catch (e) {
       console.error("Dashboard fetch error:", e)
@@ -487,10 +520,18 @@ export default function StudentDashboardPage() {
   }
 
   // Calculated package metrics
-  const totalClassesAttended = attendanceLogs.filter(a => a.status === 'PRESENT' || a.status === 'LATE').length
-  const packageTotal = 12
-  const packageProgressPct = Math.round((totalClassesAttended % packageTotal / packageTotal) * 100)
-  const remainingInPackage = packageTotal - (totalClassesAttended % packageTotal)
+  const packageTotal = profileData?.packageTotalClasses || 12
+  const packageName = profileData?.packageName || "Standard Package"
+  const packageStartDate = profileData?.packageStartDate
+
+  const classesAttendedInPackage = attendanceLogs.filter(a => {
+    if (a.status !== 'PRESENT' && a.status !== 'LATE') return false
+    if (!packageStartDate) return true
+    return new Date(a.date) >= new Date(packageStartDate)
+  }).length
+
+  const packageProgressPct = Math.min(100, Math.round((classesAttendedInPackage / packageTotal) * 100))
+  const remainingInPackage = Math.max(0, packageTotal - classesAttendedInPackage)
 
   const badges = profileData?.badges || []
 
@@ -631,8 +672,8 @@ export default function StudentDashboardPage() {
 
                   <div className="space-y-4">
                     <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-                      <span>Current Package (12 Classes)</span>
-                      <span>{totalClassesAttended % 12} / 12 Sessions Used</span>
+                      <span>{packageName} — {packageTotal} Classes</span>
+                      <span>{classesAttendedInPackage} / {packageTotal} Sessions Used</span>
                     </div>
 
                     <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border">
@@ -761,23 +802,22 @@ export default function StudentDashboardPage() {
                   </div>
 
                   <div className="grid grid-cols-4 gap-3">
-                    {badges.map((b: any) => (
-                      <div key={b.id} className="group relative flex flex-col items-center justify-center p-2.5 rounded-xl bg-sky-50/20 border border-sky-100 hover:shadow transition-all text-center">
-                        <span className="text-2xl">
-                          {b.badgeType === "HOMEWORK_HERO" && "📚"}
-                          {b.badgeType === "PUZZLE_MASTER" && "🧩"}
-                          {b.badgeType === "TOURNAMENT_WARRIOR" && "🏆"}
-                          {b.badgeType === "ATTENDANCE_100" && "🗓️"}
-                          {b.badgeType === "GOLD_STAR" && "⭐"}
-                          {b.badgeType === "CLUB_MEMBER" && "♟️"}
-                          {b.badgeType === "WINNING_STREAK" && "🔥"}
-                          {b.badgeType === "ASSIGNMENT_CHAMPION" && "🎓"}
-                        </span>
-                        <span className="text-[8px] font-extrabold text-slate-600 mt-1.5 truncate max-w-full">
-                          {b.badgeType.replace("_", " ")}
-                        </span>
-                      </div>
-                    ))}
+                    {badges.map((b: any) => {
+                      const badgeInfo = BADGE_MAP[b.badgeType] || { emoji: "🏅", label: b.badgeType.replace("_", " "), desc: "Earned achievement badge." }
+                      return (
+                        <div key={b.id} className="group relative flex flex-col items-center justify-center p-2.5 rounded-xl bg-sky-50/20 border border-sky-100 hover:shadow transition-all text-center">
+                          <span className="text-2xl">
+                            {badgeInfo.emoji}
+                          </span>
+                          <span className="text-[8px] font-extrabold text-slate-600 mt-1.5 truncate max-w-full">
+                            {badgeInfo.label}
+                          </span>
+                          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] p-2 rounded-xl shadow-lg z-50 w-44 text-center pointer-events-none">
+                            {badgeInfo.desc}
+                          </div>
+                        </div>
+                      )
+                    })}
                     {badges.length === 0 && (
                       <p className="col-span-full text-xs text-slate-400 italic text-center py-4">No achievement badges unlocked yet.</p>
                     )}
@@ -790,10 +830,104 @@ export default function StudentDashboardPage() {
           </div>
         )}
 
-        {/* -------------------- STUDENT DASHBOARD VIEW -------------------- */}
         {!isParentMode && (
           <div className="space-y-6 animate-in fade-in duration-300">
             
+            {/* "What should I do today?" motivation panel */}
+            <div className="bg-white rounded-2xl border border-sky-100 shadow-sm p-6 space-y-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="text-sm font-bold text-[#0b1d3a] uppercase tracking-wider flex items-center gap-2">
+                  🎯 What should I do today?
+                </h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-indigo-700 bg-indigo-50 border border-indigo-100">Daily Quest</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* 1. Streak protection task */}
+                <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3 hover:border-indigo-100 transition-all">
+                  <div className="text-2xl mt-0.5">🔥</div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-xs text-slate-800">Streak Protector</p>
+                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                      {profileData?.currentStreak > 0 
+                        ? `You have a ${profileData.currentStreak}-day streak active! Solve a puzzle or play a game today to protect it.`
+                        : "Start a new daily chess playing streak today by finishing a puzzle or bot challenge!"}
+                    </p>
+                    <div className="flex gap-2 pt-1.5">
+                      <Link href="/crm/puzzles" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">Solve Puzzles</Link>
+                      <span className="text-slate-300 text-[10px]">•</span>
+                      <Link href="/crm/play" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">Play Bot</Link>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Homework task */}
+                <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3 hover:border-indigo-100 transition-all">
+                  <div className="text-2xl mt-0.5">📚</div>
+                  <div className="space-y-1">
+                    <p className="font-bold text-xs text-slate-800">Pending Homework</p>
+                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                      {pendingCount > 0 
+                        ? `You have ${pendingCount} pending assignments waiting for you to complete.`
+                        : "Amazing! You are fully caught up on all assignments."}
+                    </p>
+                    {pendingCount > 0 && (
+                      <div className="pt-1.5">
+                        <Link href="/crm/student-todo" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">Go to Homework →</Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Upcoming tournament or next badge */}
+                {(() => {
+                  const upcoming = tournaments.find(t => t.status === "UPCOMING" || new Date(t.startDate) > new Date());
+                  
+                  if (upcoming) {
+                    return (
+                      <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3 hover:border-indigo-100 transition-all">
+                        <div className="text-2xl mt-0.5">🏆</div>
+                        <div className="space-y-1">
+                          <p className="font-bold text-xs text-slate-800">Upcoming Tournament</p>
+                          <p className="text-[10px] text-slate-500 font-medium leading-relaxed truncate max-w-[200px]">
+                            {upcoming.title} is starting on {new Date(upcoming.startDate).toLocaleDateString()} at {new Date(upcoming.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.
+                          </p>
+                          <div className="pt-1.5">
+                            <Link href={`/crm/tournaments`} className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">Register/Join →</Link>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // Fallback: Next Badge quest
+                  const unearnedBadges = [
+                    { type: "PUZZLE_MASTER", label: "Puzzle Master", desc: "Solve 10+ puzzles/MCQs" },
+                    { type: "TOURNAMENT_WARRIOR", label: "Tournament Warrior", desc: "Participate in 2+ tournaments" },
+                    { type: "CLUB_MEMBER", label: "Club Member", desc: "Reach 600+ AIM Rating" },
+                    { type: "WINNING_STREAK", label: "Winning Streak", desc: "Win 3 games in a row" }
+                  ].filter(tb => !badges.some((b: any) => b.badgeType === tb.type));
+
+                  const nextBadge = unearnedBadges[0] || { label: "Consistency Champion", desc: "Maintain a streak or assignments" };
+
+                  return (
+                    <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3 hover:border-indigo-100 transition-all">
+                      <div className="text-2xl mt-0.5">🌟</div>
+                      <div className="space-y-1">
+                        <p className="font-bold text-xs text-slate-800">Next Badge Quest</p>
+                        <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                          Unlock the <strong className="text-indigo-600">{nextBadge.label}</strong> badge by completing this task: {nextBadge.desc}.
+                        </p>
+                        <div className="pt-1.5">
+                          <Link href="/crm/student-library" className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">Browse Library →</Link>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+            </div>
+
             {/* Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
@@ -885,7 +1019,7 @@ export default function StudentDashboardPage() {
                     </div>
                     <div>
                       <span className="text-sky-300 block text-[7px] uppercase font-bold">Country</span>
-                      <span>India 🇮🇳</span>
+                      <span>{getCountryDisplay(profileData?.country)}</span>
                     </div>
                     <div>
                       <span className="text-sky-300 block text-[7px] uppercase font-bold">AIM Rating</span>
@@ -932,19 +1066,19 @@ export default function StudentDashboardPage() {
                       </button>
                     </div>
                     <div className="flex flex-wrap gap-2.5">
-                      {badges.map((b: any) => (
-                        <span key={b.id} className="px-3 py-1 bg-white border border-sky-100 rounded-xl text-xs font-bold text-slate-600 flex items-center gap-1.5 shadow-sm">
-                          {b.badgeType === "HOMEWORK_HERO" && "📚"}
-                          {b.badgeType === "PUZZLE_MASTER" && "🧩"}
-                          {b.badgeType === "TOURNAMENT_WARRIOR" && "🏆"}
-                          {b.badgeType === "ATTENDANCE_100" && "🗓️"}
-                          {b.badgeType === "GOLD_STAR" && "⭐"}
-                          {b.badgeType === "CLUB_MEMBER" && "♟️"}
-                          {b.badgeType === "WINNING_STREAK" && "🔥"}
-                          {b.badgeType === "ASSIGNMENT_CHAMPION" && "🎓"}
-                          {b.badgeType.replace("_", " ")}
-                        </span>
-                      ))}
+                      {badges.map((b: any) => {
+                        const badgeInfo = BADGE_MAP[b.badgeType] || { emoji: "🏅", label: b.badgeType.replace("_", " "), desc: "Earned achievement badge." }
+                        return (
+                          <div key={b.id} className="group relative">
+                            <span className="px-3 py-1 bg-white border border-sky-100 rounded-xl text-xs font-bold text-slate-600 flex items-center gap-1.5 shadow-sm cursor-help hover:border-indigo-200 transition-colors">
+                              {badgeInfo.emoji} {badgeInfo.label}
+                            </span>
+                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-900 text-white text-[9px] p-2 rounded-xl shadow-lg z-50 w-44 text-center pointer-events-none">
+                              {badgeInfo.desc}
+                            </div>
+                          </div>
+                        )
+                      })}
                       {badges.length === 0 && (
                         <p className="text-xs text-slate-400 font-medium italic">No credentials loaded in cabinet. Solve assignments and win games to unlock credentials!</p>
                       )}
