@@ -12,6 +12,7 @@ const isPgn = (text: string) => {
   const trimmed = text.trim();
   return trimmed.startsWith("[") || trimmed.match(/^\d+\.\s+[a-zA-Z]/) !== null;
 };
+import { toast } from 'sonner'
 import {
   BookOpen, ChevronRight, Folder, FileText,
   CheckCircle, Lock, BarChart3, Volume2, Star, HelpCircle,

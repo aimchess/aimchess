@@ -12,14 +12,31 @@ import {
 import { toast } from 'sonner'
 import { jsPDF } from 'jspdf'
 
-const getCountryDisplay = (country: string | null) => {
-  if (!country) return "India 🇮🇳";
-  const c = country.trim().toUpperCase();
-  if (c === "INDIA") return "India 🇮🇳";
-  if (c === "UAE" || c === "UNITED ARAB EMIRATES") return "UAE 🇦🇪";
-  if (c === "UK" || c === "UNITED KINGDOM" || c === "GB" || c === "GREAT BRITAIN") return "UK 🇬🇧";
-  if (c === "USA" || c === "UNITED STATES" || c === "UNITED STATES OF AMERICA") return "USA 🇺🇸";
-  return country;
+const renderCountryFlag = (country: string | null) => {
+  const c = (country || "India").trim().toUpperCase();
+  let code = "in";
+  let name = "India";
+  if (c === "UAE" || c === "UNITED ARAB EMIRATES") {
+    code = "ae";
+    name = "UAE";
+  } else if (c === "UK" || c === "UNITED KINGDOM" || c === "GB" || c === "GREAT BRITAIN") {
+    code = "gb";
+    name = "UK";
+  } else if (c === "USA" || c === "UNITED STATES" || c === "UNITED STATES OF AMERICA") {
+    code = "us";
+    name = "USA";
+  }
+  
+  return (
+    <span className="flex items-center gap-1 inline-flex">
+      <span>{name}</span>
+      <img 
+        src={`https://flagcdn.com/w20/${code}.png`} 
+        alt={name} 
+        className="w-3.5 h-2.5 object-cover rounded-sm border border-white/10 shrink-0" 
+      />
+    </span>
+  );
 };
 
 const BADGE_MAP: Record<string, { emoji: string, label: string, desc: string }> = {
@@ -1019,7 +1036,7 @@ export default function StudentDashboardPage() {
                     </div>
                     <div>
                       <span className="text-sky-300 block text-[7px] uppercase font-bold">Country</span>
-                      <span>{getCountryDisplay(profileData?.country)}</span>
+                      <span>{renderCountryFlag(profileData?.country)}</span>
                     </div>
                     <div>
                       <span className="text-sky-300 block text-[7px] uppercase font-bold">AIM Rating</span>
