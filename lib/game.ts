@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { pairTournamentParticipants, syncTournamentScores } from "@/lib/tournament";
 
 export async function completeGame({
     gameId,
@@ -27,6 +28,11 @@ export async function completeGame({
     });
 
     if (!game) return null;
+
+    // Guard: Prevent double-scoring if game is already completed
+    if (game.status === "COMPLETED") {
+        return game;
+    }
 
     // 2. Update the Game status
     const updatedGame = await prisma.game.update({
@@ -103,10 +109,8 @@ export async function completeGame({
                     select: { id: true }
                 });
 
-                // If activeGames.length is > 0, it means some players are still playing their games for the current round
+                // If activeGames.length is 0, all games are completed for this round!
                 if (activeGames.length === 0) {
-                    // All games are completed for this round!
-                    // Increment the round count
                     const updatedRound = tournament.currentRound + 1;
                     
                     if (updatedRound > tournament.totalRounds) {
@@ -123,127 +127,12 @@ export async function completeGame({
                             data: { currentRound: updatedRound }
                         });
 
-                        // Filter participants and sort by score descending for Swiss system pairing
-                        const availableParticipants = [...tournament.participants].sort((a: any, b: any) => b.score - a.score);
-
-                        if (availableParticipants.length >= 2) {
-                            const allTournamentGames = await prisma.game.findMany({
-                                where: { tournamentId: tournament.id },
-                                select: { whiteId: true, blackId: true }
-                            });
-
-                            const playHistory = new Map<string, Set<string>>();
-                            allTournamentGames.forEach((g: any) => {
-                                if (g.whiteId && g.blackId) {
-                                    if (!playHistory.has(g.whiteId)) playHistory.set(g.whiteId, new Set());
-                                    if (!playHistory.has(g.blackId)) playHistory.set(g.blackId, new Set());
-                                    playHistory.get(g.whiteId)!.add(g.blackId);
-                                    playHistory.get(g.blackId)!.add(g.whiteId);
-                                }
-                            });
-
-                            const pairedUserIds = new Set<string>();
-                            for (let i = 0; i < availableParticipants.length; i++) {
-                                const p1 = availableParticipants[i];
-                                if (pairedUserIds.has(p1.userId)) continue;
-
-                                let bestOpponentIndex = -1;
-                                const p1History = playHistory.get(p1.userId) || new Set<string>();
-
-                                for (let j = i + 1; j < availableParticipants.length; j++) {
-                                    const p2 = availableParticipants[j];
-                                    if (pairedUserIds.has(p2.userId)) continue;
-
-                                    if (!p1History.has(p2.userId)) {
-                                        bestOpponentIndex = j;
-                                        break;
-                                    }
-                                }
-
-                                if (bestOpponentIndex === -1) {
-                                    for (let j = i + 1; j < availableParticipants.length; j++) {
-                                        const p2 = availableParticipants[j];
-                                        if (!pairedUserIds.has(p2.userId)) {
-                                            bestOpponentIndex = j;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                if (bestOpponentIndex !== -1) {
-                                    const p2 = availableParticipants[bestOpponentIndex];
-                                    pairedUserIds.add(p1.userId);
-                                    pairedUserIds.add(p2.userId);
-
-                                    const isP1White = Math.random() < 0.5;
-                                    const whiteId = isP1White ? p1.userId : p2.userId;
-                                    const blackId = isP1White ? p2.userId : p1.userId;
-
-                                    const tc = tournament.timeControl || "10+0";
-                                    const minutes = parseInt(tc.split("+")[0]) || 10;
-                                    const initialMs = minutes * 60 * 1000;
-
-                                    await prisma.game.create({
-                                        data: {
-                                            whiteId,
-                                            blackId,
-                                            timeControl: tc,
-                                            tournamentId: tournament.id,
-                                            status: "IN_PROGRESS",
-                                            whiteTimeLeft: initialMs,
-                                            blackTimeLeft: initialMs,
-                                            lastMoveAt: new Date(),
-                                            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-                                            pgn: "",
-                                            round: updatedRound
-                                        }
-                                    });
-
-                                    // Create notifications for both players
-                                    await prisma.notification.createMany({
-                                        data: [
-                                            {
-                                                userId: p1.userId,
-                                                title: "Tournament Match Started! ⚔️",
-                                                message: `Your round match against ${p2.user.name} is starting now!`
-                                            },
-                                            {
-                                                userId: p2.userId,
-                                                title: "Tournament Match Started! ⚔️",
-                                                message: `Your round match against ${p1.user.name} is starting now!`
-                                            }
-                                        ]
-                                    });
-                                }
-                            }
-
-                            // Award BYEs to leftover participants
-                            for (let i = 0; i < availableParticipants.length; i++) {
-                                const p = availableParticipants[i];
-                                if (!pairedUserIds.has(p.userId)) {
-                                    await prisma.tournamentParticipant.update({
-                                        where: {
-                                            tournamentId_userId: {
-                                                tournamentId: tournament.id,
-                                                userId: p.userId
-                                            }
-                                        },
-                                        data: {
-                                            score: { increment: 1.0 }
-                                        }
-                                    });
-
-                                    await prisma.notification.create({
-                                        data: {
-                                            userId: p.userId,
-                                            title: "Tournament Round BYE ⌛",
-                                            message: `You received a BYE for Round ${updatedRound}. You automatically receive 1.0 point for this round.`
-                                        }
-                                    });
-                                }
-                            }
-                        }
+                        // Pair next round using centralized Swiss pairing
+                        await pairTournamentParticipants(tournament.id, tournament.timeControl || "10+0", updatedRound);
                     }
+
+                    // Keep tournament scores synchronized
+                    await syncTournamentScores(tournament.id);
                 }
             }
         } catch (pairErr) {
