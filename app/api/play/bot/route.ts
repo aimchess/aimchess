@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { Chess } from "chess.js";
+import { calculateBotMove } from "@/lib/minimax";
 
 export async function POST(req: Request) {
     try {
@@ -51,11 +52,18 @@ export async function POST(req: Request) {
         let initialPgn = "";
 
         if (whiteId === botUser.id) {
+            let botMoved = false;
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+
                 const res = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(initialFen)}&depth=5`, {
                     headers: { 'Accept': 'application/json' },
-                    cache: 'no-store'
+                    cache: 'no-store',
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && data.bestmove) {
@@ -68,11 +76,22 @@ export async function POST(req: Request) {
                             temp.move({ from, to });
                             initialFen = temp.fen();
                             initialPgn = temp.pgn();
+                            botMoved = true;
                         }
                     }
                 }
             } catch (err) {
                 console.error("Bot start move error:", err);
+            }
+
+            if (!botMoved) {
+                const temp = new Chess();
+                const fallbackMove = calculateBotMove(initialFen, (difficulty || "BEGINNER") as any);
+                if (fallbackMove) {
+                    temp.move(fallbackMove);
+                    initialFen = temp.fen();
+                    initialPgn = temp.pgn();
+                }
             }
         }
 

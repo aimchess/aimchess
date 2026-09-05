@@ -232,7 +232,12 @@ export default function GamePage() {
                 }).then(async (res) => {
                     if (res.ok) {
                         const updated = await res.json();
-                        setGameData(updated);
+                        setGameData((prev: any) => ({
+                            ...prev,
+                            ...updated,
+                            white: updated.white || prev?.white,
+                            black: updated.black || prev?.black
+                        }));
                         if (updated.status === "COMPLETED") {
                             await fetch("/api/user/streak", { method: "POST" });
                         }
@@ -327,9 +332,9 @@ export default function GamePage() {
                     <div className="flex items-center gap-4 text-sm font-bold">
                         <span className="flex items-center gap-1 text-gray-700">
                             <Users size={16} /> 
-                            {gameData.white?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")} 
+                            {gameData.white?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "White Player")} 
                             <span className="text-gray-400 font-normal">vs</span> 
-                            {gameData.black?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")}
+                            {gameData.black?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "Black Player")}
                         </span>
                         <span className={`px-3 py-1 rounded-full text-xs uppercase tracking-widest ${
                             gameData.status === "IN_PROGRESS" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-700"
@@ -375,8 +380,8 @@ export default function GamePage() {
                                                 🟢 Your Turn
                                             </span>
                                         ) : (
-                                            <span className="px-3 py-1.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-full">
-                                                ⌛ Opponent's Turn
+                                            <span className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-full flex items-center gap-1.5 animate-pulse">
+                                                {gameData.isBot ? "🤖 Bot Thinking..." : "⌛ Opponent's Turn"}
                                             </span>
                                         )}
                                     </>
@@ -411,7 +416,7 @@ export default function GamePage() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 rounded-sm bg-white border border-gray-300"></div>
-                                    <span className="font-semibold text-sm text-gray-900">{gameData.white?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")}</span>
+                                    <span className="font-semibold text-sm text-gray-900">{gameData.white?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "White Player")}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     {gameData.timeControl && wTime !== null && (
@@ -432,7 +437,7 @@ export default function GamePage() {
                             <div className="flex items-center justify-between p-3 rounded-xl bg-gray-800 text-white border border-gray-900">
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 rounded-sm bg-gray-950 border border-gray-700"></div>
-                                    <span className="font-semibold text-sm">{gameData.black?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "AIM Bot")}</span>
+                                    <span className="font-semibold text-sm">{gameData.black?.name || (gameData.isBot ? `AIM ${gameData.botDifficulty?.toLowerCase() || ''} Bot` : "Black Player")}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     {gameData.timeControl && bTime !== null && (

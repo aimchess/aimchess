@@ -630,7 +630,7 @@ export default function StudentDashboardPage() {
             )}
             <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 text-center">
               <p className="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Level</p>
-              <p className="text-xl font-black">{(session?.user as any)?.stage || 'BEGINNER'}</p>
+              <p className="text-xl font-black">{profileData?.stage || (session?.user as any)?.stage || 'BEGINNER'}</p>
             </div>
           </div>
         </div>
@@ -988,7 +988,7 @@ export default function StudentDashboardPage() {
                     <BookOpen className="text-white" size={20} />
                   </div>
                 </div>
-                <div className="text-2xl font-black text-gray-900">{(session?.user as any)?.stage || 'BEGINNER'}</div>
+                <div className="text-2xl font-black text-gray-900">{profileData?.stage || (session?.user as any)?.stage || 'BEGINNER'}</div>
                 <p className="text-xs text-gray-500 font-medium mt-1">Current Level</p>
               </div>
             </div>

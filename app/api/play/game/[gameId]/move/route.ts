@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
 import { Chess } from "chess.js";
 import { completeGame } from "@/lib/game";
+import { calculateBotMove } from "@/lib/minimax";
 
 export async function POST(req: Request, { params }: { params: { gameId: string } }) {
     try {
@@ -165,46 +166,70 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
                     else if (difficulty === "ADVANCED") depth = 8;
                     else if (difficulty === "EXPERT") depth = 12;
 
+                    let botMoved = false;
                     const encodedFen = encodeURIComponent(chess.fen());
-                    const sfRes = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodedFen}&depth=${depth}`, {
-                        headers: { 'Accept': 'application/json' },
-                        cache: 'no-store'
-                    });
 
-                    if (sfRes.ok) {
-                        const sfData = await sfRes.json();
-                        if (sfData.success && sfData.bestmove) {
-                            const parts = sfData.bestmove.split(" ");
-                            const bestMove = parts[1];
-                            if (bestMove) {
-                                const from = bestMove.substring(0, 2);
-                                const to = bestMove.substring(2, 4);
-                                const promotion = bestMove.substring(4, 5) || undefined;
-                                
-                                chess.move({ from, to, promotion });
-                                finalFen = chess.fen();
-                                finalPgn = chess.pgn();
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 sec timeout
 
-                                // Re-evaluate game status
-                                if (chess.isCheckmate()) {
-                                    status = "COMPLETED";
-                                    if (chess.turn() === 'w') {
-                                        result = "0-1";
-                                        winnerId = game.blackId; // Bot wins
-                                    } else {
-                                        result = "1-0";
-                                        winnerId = game.whiteId; // User wins
-                                    }
-                                } else if (chess.isGameOver()) {
-                                    status = "COMPLETED";
-                                    result = "1/2-1/2";
+                        const sfRes = await fetch(`https://stockfish.online/api/s/v2.php?fen=${encodedFen}&depth=${depth}`, {
+                            headers: { 'Accept': 'application/json' },
+                            cache: 'no-store',
+                            signal: controller.signal
+                        });
+                        clearTimeout(timeoutId);
+
+                        if (sfRes.ok) {
+                            const sfData = await sfRes.json();
+                            if (sfData.success && sfData.bestmove) {
+                                const parts = sfData.bestmove.split(" ");
+                                const bestMove = parts[1];
+                                if (bestMove) {
+                                    const from = bestMove.substring(0, 2);
+                                    const to = bestMove.substring(2, 4);
+                                    const promotion = bestMove.substring(4, 5) || undefined;
+                                    
+                                    chess.move({ from, to, promotion });
+                                    botMoved = true;
                                 }
                             }
+                        }
+                    } catch (e) {
+                        console.warn("Stockfish online API error/timeout, using local minimax fallback:", e);
+                    }
+
+                    // Fallback to local minimax engine if online engine failed or timed out
+                    if (!botMoved) {
+                        const fallbackMove = calculateBotMove(chess.fen(), difficulty as any);
+                        if (fallbackMove) {
+                            chess.move(fallbackMove);
+                            botMoved = true;
+                        }
+                    }
+
+                    if (botMoved) {
+                        finalFen = chess.fen();
+                        finalPgn = chess.pgn();
+
+                        // Re-evaluate game status
+                        if (chess.isCheckmate()) {
+                            status = "COMPLETED";
+                            if (chess.turn() === 'w') {
+                                result = "0-1";
+                                winnerId = game.blackId; // Bot wins
+                            } else {
+                                result = "1-0";
+                                winnerId = game.whiteId; // User wins
+                            }
+                        } else if (chess.isGameOver()) {
+                            status = "COMPLETED";
+                            result = "1/2-1/2";
                         }
                     }
                 }
             } catch (err) {
-                console.error("Server-side Stockfish error:", err);
+                console.error("Server-side bot calculation error:", err);
             }
         }
 
@@ -233,6 +258,10 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
                 blackTimeLeft,
                 lastMoveAt: now,
                 drawOfferedBy: null
+            },
+            include: {
+                white: { select: { id: true, name: true, email: true, role: true } },
+                black: { select: { id: true, name: true, email: true, role: true } }
             }
         });
 

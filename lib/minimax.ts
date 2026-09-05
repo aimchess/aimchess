@@ -175,10 +175,23 @@ function minimax(
   }
 }
 
-// Public function to calculate the best bot move
-export function calculateBotMove(pgn: string, difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT'): string {
+// Public function to calculate the best bot move (accepts FEN or PGN)
+export function calculateBotMove(
+  fenOrPgn: string, 
+  difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT' = 'INTERMEDIATE'
+): string {
   const chess = new Chess();
-  if (pgn) chess.loadPgn(pgn);
+  if (fenOrPgn) {
+    try {
+      if (fenOrPgn.includes('/')) {
+        chess.load(fenOrPgn);
+      } else {
+        chess.loadPgn(fenOrPgn);
+      }
+    } catch (e) {
+      console.error("Error loading position in calculateBotMove:", e);
+    }
+  }
 
   const moves = chess.moves();
   if (moves.length === 0) return '';

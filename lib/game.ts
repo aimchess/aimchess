@@ -40,6 +40,10 @@ export async function completeGame({
             ...(whiteTimeLeft !== undefined ? { whiteTimeLeft } : {}),
             ...(blackTimeLeft !== undefined ? { blackTimeLeft } : {}),
             ...(lastMoveAt !== undefined ? { lastMoveAt } : {})
+        },
+        include: {
+            white: { select: { id: true, name: true, email: true, role: true } },
+            black: { select: { id: true, name: true, email: true, role: true } }
         }
     });
 

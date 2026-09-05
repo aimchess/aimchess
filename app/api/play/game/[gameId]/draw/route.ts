@@ -67,7 +67,11 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
             // Otherwise, record the draw offer
             const updatedGame = await prisma.game.update({
                 where: { id: game.id },
-                data: { drawOfferedBy: currentUser.id }
+                data: { drawOfferedBy: currentUser.id },
+                include: {
+                    white: { select: { id: true, name: true, email: true, role: true } },
+                    black: { select: { id: true, name: true, email: true, role: true } }
+                }
             });
             return NextResponse.json({
                 message: "Draw offered",
@@ -106,7 +110,11 @@ export async function POST(req: Request, { params }: { params: { gameId: string 
 
             const updatedGame = await prisma.game.update({
                 where: { id: game.id },
-                data: { drawOfferedBy: null }
+                data: { drawOfferedBy: null },
+                include: {
+                    white: { select: { id: true, name: true, email: true, role: true } },
+                    black: { select: { id: true, name: true, email: true, role: true } }
+                }
             });
 
             return NextResponse.json({

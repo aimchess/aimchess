@@ -535,7 +535,7 @@ export default function PlayArea() {
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <p className="font-bold text-sm text-gray-900">
-                                                    vs {opponent?.name || (isBotGame ? `AIM ${game.botDifficulty?.toLowerCase()} Bot` : "AIM Bot")}
+                                                    vs {opponent?.name || (isBotGame ? `AIM ${game.botDifficulty?.toLowerCase() || ''} Bot` : "Opponent")}
                                                 </p>
                                                 {isBotGame && <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-black">AI</span>}
                                             </div>
