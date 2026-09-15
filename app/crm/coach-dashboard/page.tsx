@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import CRMShellLayout from "@/components/crm/crm-shell"
 import Link from 'next/link'
+import CoachSOPCard from "@/components/crm/coach-sop-card"
 import {
   Users, BookOpen, ClipboardCheck, MousePointer2,
   Loader2, Activity, ArrowUpRight, Trophy, AlertTriangle, CheckSquare, Sparkles
@@ -74,6 +75,9 @@ export default function CoachDashboardPage() {
             </div>
           )}
         </div>
+
+        {/* AIM Coach Retention SOP */}
+        <CoachSOPCard />
 
         {/* Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -38,7 +38,13 @@ export async function GET(req: Request) {
                         lichessRapid: true, 
                         aimClub: true, 
                         aimLevel: true,
-                        joiningDate: true
+                        joiningDate: true,
+                        coach: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
                     }
                 }
             },

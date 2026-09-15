@@ -77,6 +77,10 @@ model User {
   performanceReports PerformanceReport[]
   lastActiveAt DateTime?
 
+  // Coach Retention SOP Acknowledgement
+  sopAcknowledged   Boolean   @default(false)
+  sopAcknowledgedAt DateTime?
+
   // Phase 2: AIM Rating & Clubs
   aimRating       Int      @default(500)
   highestAimRating Int     @default(500)

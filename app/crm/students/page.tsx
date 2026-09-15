@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import CRMShellLayout from "@/components/crm/crm-shell";
+import Link from "next/link";
 import {
     Users,
     Plus,
@@ -12,6 +13,7 @@ import {
     Loader2,
     Check,
     Filter,
+    BarChart,
 } from "lucide-react";
 
 export default function StudentsPage() {
@@ -378,7 +380,17 @@ export default function StudentsPage() {
                                                 </span>
                                             </td>
                                             <td className="p-4 text-sm text-gray-600">
-                                                {u.role === "STUDENT" ? u.stage : "—"}
+                                                {u.role === "STUDENT" ? u.stage : u.role === "COACH" ? (
+                                                    u.sopAcknowledged ? (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full" title={u.sopAcknowledgedAt ? `Acknowledged on ${new Date(u.sopAcknowledgedAt).toLocaleDateString()}` : "Acknowledged"}>
+                                                            ✓ SOP Ack
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                                            ⏳ SOP Pending
+                                                        </span>
+                                                    )
+                                                ) : "—"}
                                             </td>
                                             <td className="p-4 text-sm text-sky-600 font-medium">
                                                 {u.coach?.name || "—"}
@@ -403,6 +415,15 @@ export default function StudentsPage() {
                                                             <X size={16} />
                                                         )}
                                                     </button>
+                                                    {u.role === "STUDENT" && (
+                                                        <Link
+                                                            href="/crm/reports"
+                                                            className="p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                                            title="View Monthly Performance Reports"
+                                                        >
+                                                            <BarChart size={16} />
+                                                        </Link>
+                                                    )}
                                                     <button
                                                         onClick={() => openEdit(u)}
                                                         className="p-2 rounded-lg text-gray-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"

@@ -4,12 +4,15 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import CRMShellLayout from "@/components/crm/crm-shell"
 import {
-  FileText, Users, Calendar, Award, CheckCircle, Loader2, Save
+  FileText, Users, Calendar, Award, CheckCircle, Loader2, Save, Download
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { downloadReportPdf } from '@/lib/generate-report-pdf'
 
 export default function CoachReportsPage() {
   const { data: session } = useSession()
+  const userRole = (session?.user as any)?.role || ''
+  const isAdmin = userRole === 'ADMIN'
   const coachId = (session?.user as any)?.id || ''
 
   const [students, setStudents] = useState<any[]>([])
@@ -34,16 +37,16 @@ export default function CoachReportsPage() {
   const [nextMonthFocus, setNextMonthFocus] = useState('')
   const [recommendation, setRecommendation] = useState('')
 
-  // Load students for this coach
+  // Load students for this coach / admin
   useEffect(() => {
-    if (!coachId) return
     const fetchStudents = async () => {
       try {
         const res = await fetch('/api/admin/users')
         if (res.ok) {
           const data = await res.json()
           if (Array.isArray(data)) {
-            const myStudents = data.filter((u: any) => u.role === 'STUDENT' && u.coachId === coachId)
+            const allStudents = data.filter((u: any) => u.role === 'STUDENT')
+            const myStudents = isAdmin ? allStudents : allStudents.filter((u: any) => u.coachId === coachId)
             setStudents(myStudents)
             if (myStudents.length > 0) {
               setSelectedStudentId(myStudents[0].id)
@@ -58,7 +61,7 @@ export default function CoachReportsPage() {
       }
     }
     fetchStudents()
-  }, [coachId])
+  }, [coachId, isAdmin])
 
   // Fetch or Auto-calculate scores for selected student + month + year
   const loadReport = useCallback(async () => {
@@ -373,7 +376,34 @@ export default function CoachReportsPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end pt-4 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
+              <button
+                type="button"
+                onClick={() => {
+                  const selectedStudent = students.find(s => s.id === selectedStudentId);
+                  downloadReportPdf({
+                    month,
+                    year,
+                    attendancePoints,
+                    homeworkPoints,
+                    assignmentPoints,
+                    tournamentPoints,
+                    totalPoints,
+                    award,
+                    studentProgress,
+                    strengths,
+                    weaknesses,
+                    behavior,
+                    nextMonthFocus,
+                    recommendation
+                  }, selectedStudent);
+                }}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-4 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Download size={18} />
+                Preview & Download PDF
+              </button>
+
               <button
                 type="submit"
                 disabled={saving}
