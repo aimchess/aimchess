@@ -30,7 +30,9 @@ interface PackageItem {
   stage: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   totalClasses: number;
   priceINR: number;
+  admissionFeeINR?: number;
   priceUSD: number;
+  admissionFeeUSD?: number;
   description: string;
   features: string[];
 }
@@ -121,10 +123,27 @@ export default function PublicAdmissionPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Helper calculation for tuition fee, admission fee, and total payable
+  const getPackageCalculatedFee = (pkg: PackageItem | null) => {
+    if (!pkg) return { baseFee: 0, admissionFee: 0, totalAmount: 0 };
+    const isIndia = formData.country === "India";
+    const baseFee = isIndia ? pkg.priceINR : pkg.priceUSD;
+    const admissionFee = pkg.type === "GROUP"
+      ? (isIndia ? (pkg.admissionFeeINR ?? 300) : (pkg.admissionFeeUSD ?? 5))
+      : 0;
+    return {
+      baseFee,
+      admissionFee,
+      totalAmount: baseFee + admissionFee,
+    };
+  };
+
   const handleSubmitAdmission = async (paymentDetails?: { orderId?: string; paymentId?: string; signature?: string }) => {
     if (!selectedPackage) return;
     setSubmitting(true);
     setError(null);
+
+    const { baseFee, admissionFee, totalAmount } = getPackageCalculatedFee(selectedPackage);
 
     try {
       const payload = {
@@ -134,7 +153,8 @@ export default function PublicAdmissionPage() {
         packageName: selectedPackage.name,
         packageType: selectedPackage.type,
         totalClasses: selectedPackage.totalClasses,
-        amount: formData.country === "India" ? selectedPackage.priceINR : selectedPackage.priceUSD,
+        amount: totalAmount,
+        admissionFee,
         currency: formData.country === "India" ? "INR" : "USD",
         razorpayOrderId: paymentDetails?.orderId || null,
         razorpayPaymentId: paymentDetails?.paymentId || null,
@@ -162,6 +182,9 @@ export default function PublicAdmissionPage() {
   };
 
   const triggerRazorpayPayment = async () => {
+    if (!selectedPackage) return;
+    const { totalAmount } = getPackageCalculatedFee(selectedPackage);
+
     // Dynamically load Razorpay SDK if not already loaded
     if (typeof window !== "undefined" && !(window as any).Razorpay) {
       await new Promise<void>((resolve) => {
@@ -177,10 +200,10 @@ export default function PublicAdmissionPage() {
       try {
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TdA1PKIjJ6LEWm",
-          amount: (formData.country === "India" ? selectedPackage?.priceINR! : selectedPackage?.priceUSD!) * 100,
+          amount: Math.round(totalAmount * 100),
           currency: formData.country === "India" ? "INR" : "USD",
           name: "AIM Chess Academy",
-          description: `Admission Fee - ${selectedPackage?.name}`,
+          description: `Admission Fee - ${selectedPackage.name}`,
           image: "/aim-logo.jpeg",
           handler: function (response: any) {
             handleSubmitAdmission({
@@ -542,10 +565,15 @@ export default function PublicAdmissionPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
               {filteredPackages.map((pkg) => {
                 const isSelected = selectedPackage?.id === pkg.id;
-                const priceDisplay =
-                  formData.country === "India"
-                    ? `₹${pkg.priceINR.toLocaleString("en-IN")}`
-                    : `$${pkg.priceUSD}`;
+                const isIndia = formData.country === "India";
+                const tuitionPrice = isIndia
+                  ? `₹${pkg.priceINR.toLocaleString("en-IN")}`
+                  : `$${pkg.priceUSD}`;
+                const admissionFeeVal = pkg.type === "GROUP"
+                  ? (isIndia ? (pkg.admissionFeeINR ?? 300) : (pkg.admissionFeeUSD ?? 5))
+                  : 0;
+                const totalCalculated = (isIndia ? pkg.priceINR : pkg.priceUSD) + admissionFeeVal;
+                const totalDisplay = isIndia ? `₹${totalCalculated.toLocaleString("en-IN")}` : `$${totalCalculated}`;
 
                 return (
                   <div
@@ -570,10 +598,20 @@ export default function PublicAdmissionPage() {
                       <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1.5">{pkg.name}</h3>
                       <p className="text-xs text-slate-600 mb-4 line-clamp-2">{pkg.description}</p>
 
-                      <div className="my-3 pt-3 border-t border-slate-200">
-                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-baseline gap-1">
-                          {priceDisplay}
-                          <span className="text-xs font-normal text-slate-500">/ package</span>
+                      <div className="my-3 pt-3 border-t border-slate-200 space-y-1">
+                        <div className="flex justify-between items-baseline text-xs text-slate-500">
+                          <span>Tuition Fee:</span>
+                          <span className="font-semibold text-slate-800">{tuitionPrice}</span>
+                        </div>
+                        <div className="flex justify-between items-baseline text-xs text-slate-500">
+                          <span>Admission Fee:</span>
+                          <span className="font-semibold text-emerald-600">
+                            {admissionFeeVal > 0 ? (isIndia ? `+₹${admissionFeeVal}` : `+$${admissionFeeVal}`) : "₹0 (Exempt)"}
+                          </span>
+                        </div>
+                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-baseline justify-between pt-1 border-t border-slate-200">
+                          <span className="text-xs text-slate-500 font-normal">Total First Payment:</span>
+                          <span className="text-sky-700">{totalDisplay}</span>
                         </div>
                       </div>
 
@@ -666,36 +704,52 @@ export default function PublicAdmissionPage() {
               </div>
 
               {/* Package Card */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-5 space-y-3">
-                <h3 className="text-xs font-bold uppercase text-sky-700 tracking-wider flex items-center gap-2">
-                  <BookOpen className="w-4 h-4" />
-                  Selected Course Fee
-                </h3>
-                <div className="text-xs sm:text-sm space-y-1.5 text-slate-700">
-                  <div className="flex justify-between py-1 border-b border-slate-200">
-                    <span className="text-slate-500">Package Name:</span>
-                    <span className="font-bold text-slate-900 text-right">{selectedPackage.name}</span>
+              {(() => {
+                const { baseFee, admissionFee, totalAmount } = getPackageCalculatedFee(selectedPackage);
+                const isIndia = formData.country === "India";
+                return (
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-5 space-y-3">
+                    <h3 className="text-xs font-bold uppercase text-sky-700 tracking-wider flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" />
+                      Selected Course Fee Breakdown
+                    </h3>
+                    <div className="text-xs sm:text-sm space-y-1.5 text-slate-700">
+                      <div className="flex justify-between py-1 border-b border-slate-200">
+                        <span className="text-slate-500">Package Name:</span>
+                        <span className="font-bold text-slate-900 text-right">{selectedPackage.name}</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200">
+                        <span className="text-slate-500">Mode:</span>
+                        <span className="font-bold text-sky-700 text-right">
+                          {selectedPackage.type === "ONE_ON_ONE" ? "1-on-1 Coaching" : "Group Class"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200">
+                        <span className="text-slate-500">Total Classes:</span>
+                        <span className="font-bold text-slate-900 text-right">{selectedPackage.totalClasses} Sessions</span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200">
+                        <span className="text-slate-500">Course Tuition Fee:</span>
+                        <span className="font-semibold text-slate-900 text-right">
+                          {isIndia ? `₹${baseFee.toLocaleString("en-IN")}` : `$${baseFee}`}
+                        </span>
+                      </div>
+                      <div className="flex justify-between py-1 border-b border-slate-200">
+                        <span className="text-slate-500">Admission Fee (One-time):</span>
+                        <span className="font-semibold text-emerald-600 text-right">
+                          {admissionFee > 0 ? (isIndia ? `₹${admissionFee}` : `$${admissionFee}`) : "₹0 (Exempt)"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between pt-2 text-sm sm:text-base font-extrabold text-slate-900">
+                        <span>Total Payable Now:</span>
+                        <span className="text-sky-700">
+                          {isIndia ? `₹${totalAmount.toLocaleString("en-IN")}` : `$${totalAmount}`}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-slate-200">
-                    <span className="text-slate-500">Mode:</span>
-                    <span className="font-bold text-sky-700 text-right">
-                      {selectedPackage.type === "ONE_ON_ONE" ? "1-on-1 Coaching" : "Group Class"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-200">
-                    <span className="text-slate-500">Total Classes:</span>
-                    <span className="font-bold text-slate-900 text-right">{selectedPackage.totalClasses} Sessions</span>
-                  </div>
-                  <div className="flex justify-between pt-2 text-sm sm:text-base font-extrabold text-slate-900">
-                    <span>Total Admission Fee:</span>
-                    <span className="text-sky-700">
-                      {formData.country === "India"
-                        ? `₹${selectedPackage.priceINR.toLocaleString("en-IN")}`
-                        : `$${selectedPackage.priceUSD}`}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                );
+              })()}
             </div>
 
             {/* Workflow Banner */}

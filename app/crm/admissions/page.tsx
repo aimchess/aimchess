@@ -88,9 +88,11 @@ export default function AdminAdmissionsPage() {
     name: "",
     type: "GROUP",
     stage: "BEGINNER",
-    totalClasses: "12",
-    priceINR: "4999",
-    priceUSD: "79",
+    totalClasses: "4",
+    priceINR: "800",
+    admissionFeeINR: "300",
+    priceUSD: "15",
+    admissionFeeUSD: "5",
     description: "",
   });
 
@@ -125,6 +127,14 @@ export default function AdminAdmissionsPage() {
     setTimeout(() => setCopied(false), 2000);
     toast.success("Shareable Admission Link copied to clipboard!", {
       description: shareableUrl,
+    });
+  };
+
+  const copyPaymentHubLink = () => {
+    const paymentUrl = `${window.location.origin}/payment`;
+    navigator.clipboard.writeText(paymentUrl);
+    toast.success("India Payment Hub Link copied to clipboard!", {
+      description: paymentUrl,
     });
   };
 
@@ -252,6 +262,14 @@ export default function AdminAdmissionsPage() {
             >
               {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-gray-500" />}
               {copied ? "Link Copied!" : "Copy Admission Link"}
+            </button>
+
+            <button
+              onClick={copyPaymentHubLink}
+              className="px-4 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+            >
+              <CreditCard className="w-4 h-4 text-emerald-600" />
+              <span>🇮🇳 India Payment Links</span>
             </button>
 
             <button

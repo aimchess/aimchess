@@ -548,18 +548,20 @@ enum PackageType {
 }
 
 model CoursePackage {
-  id           String      @id @default(uuid())
-  name         String
-  type         PackageType @default(GROUP)
-  stage        Stage       @default(BEGINNER)
-  totalClasses Int         @default(12)
-  priceINR     Float       @default(4999)
-  priceUSD     Float       @default(99)
-  description  String?     @db.Text
-  features     Json        @default("[]") // Array of feature strings
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id              String      @id @default(uuid())
+  name            String
+  type            PackageType @default(GROUP)
+  stage           Stage       @default(BEGINNER)
+  totalClasses    Int         @default(12)
+  priceINR        Float       @default(4999)
+  admissionFeeINR Float       @default(0)
+  priceUSD        Float       @default(99)
+  admissionFeeUSD Float       @default(0)
+  description     String?     @db.Text
+  features        Json        @default("[]") // Array of feature strings
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 }
 
 model AdmissionApplication {
@@ -587,6 +589,7 @@ model AdmissionApplication {
   packageType        PackageType     @default(GROUP)
   totalClasses       Int             @default(12)
   amount             Float
+  admissionFee       Float           @default(0)
   currency           String          @default("INR")
   
   // Payment Details
