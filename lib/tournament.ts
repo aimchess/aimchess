@@ -229,13 +229,13 @@ export async function syncTournamentScores(tournamentId: string) {
         if (!tournament) return;
 
         for (const participant of tournament.participants) {
-            const playerGames = tournament.games.filter(g => 
+            const playerGames = tournament.games.filter((g: any) => 
                 g.status === "COMPLETED" && (g.whiteId === participant.userId || g.blackId === participant.userId)
             );
 
             let calculatedScore = 0;
 
-            playerGames.forEach(g => {
+            playerGames.forEach((g: any) => {
                 if (g.result?.includes("BYE") || (g.whiteId === g.blackId && g.whiteId === participant.userId)) {
                     calculatedScore += 1.0;
                 } else if (g.winnerId === participant.userId) {

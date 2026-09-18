@@ -7,6 +7,7 @@ import { getToken } from "next-auth/jwt";
 // Routes that require ADMIN role
 const ADMIN_ONLY_ROUTES = [
   "/crm/dashboard",
+  "/crm/admissions",
   "/crm/students",
   "/crm/batches",
   "/crm/payments",
@@ -40,6 +41,11 @@ const STUDENT_ROUTES = [
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Middleware only protects CRM paths (/crm/*)
+  if (!pathname.startsWith("/crm")) {
+    return NextResponse.next();
+  }
+
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const userRole = ((token?.role as string) || "").toUpperCase();
 
@@ -49,56 +55,44 @@ export async function middleware(req: NextRequest) {
     return "/crm/dashboard";
   };
 
-  // CRM public pages (login/signup) — redirect authenticated users to their role-specific dashboard
-  if (token && (pathname.startsWith("/crm/login") || pathname.startsWith("/crm/signup"))) {
+  // Allow unauthenticated access to /crm/login and /crm/signup
+  if (!token && (pathname === "/crm/login" || pathname === "/crm/signup")) {
+    return NextResponse.next();
+  }
+
+  // Redirect authenticated users trying to access login/signup to their dashboard
+  if (token && (pathname === "/crm/login" || pathname === "/crm/signup")) {
     return NextResponse.redirect(new URL(getRoleDashboard(userRole), req.url));
   }
 
-  // CRM protected pages — require login
-  if (!token && pathname.startsWith("/crm") && !pathname.startsWith("/crm/login") && !pathname.startsWith("/crm/signup")) {
+  // If user is not logged in and trying to access any protected CRM route -> redirect to login
+  if (!token) {
     return NextResponse.redirect(new URL("/crm/login", req.url));
   }
 
   // Role-Based Access Control for CRM routes
-  if (token && pathname.startsWith("/crm")) {
-    // Check Admin-only routes
-    if (ADMIN_ONLY_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"))) {
-      if (userRole !== "ADMIN") {
-        return NextResponse.redirect(new URL(getRoleDashboard(userRole), req.url));
-      }
-    }
-
-    // Check Coach routes (COACH or ADMIN allowed)
-    if (COACH_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"))) {
-      if (userRole !== "COACH" && userRole !== "ADMIN") {
-        return NextResponse.redirect(new URL(getRoleDashboard(userRole), req.url));
-      }
-    }
-
-    // Check Student routes (STUDENT or ADMIN allowed)
-    if (STUDENT_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"))) {
-      if (userRole !== "STUDENT" && userRole !== "ADMIN") {
-        return NextResponse.redirect(new URL(getRoleDashboard(userRole), req.url));
-      }
-    }
-  }
-
-  // Allow authenticated users to access puzzle and MCQ solver pages
-  if (token && (pathname.startsWith("/puzzle") || pathname.startsWith("/mcq"))) {
-    return NextResponse.next();
-  }
-
-  // Redirect non-CRM routes to role-specific CRM dashboard
-  if (!pathname.startsWith("/crm")) {
-    if (token) {
+  if (ADMIN_ONLY_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"))) {
+    if (userRole !== "ADMIN") {
       return NextResponse.redirect(new URL(getRoleDashboard(userRole), req.url));
     }
-    return NextResponse.redirect(new URL("/crm/login", req.url));
+  }
+
+  if (COACH_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"))) {
+    if (userRole !== "COACH" && userRole !== "ADMIN") {
+      return NextResponse.redirect(new URL(getRoleDashboard(userRole), req.url));
+    }
+  }
+
+  if (STUDENT_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"))) {
+    if (userRole !== "STUDENT" && userRole !== "ADMIN") {
+      return NextResponse.redirect(new URL(getRoleDashboard(userRole), req.url));
+    }
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|aim-logo.jpeg).*)" ],
+  matcher: ["/crm/:path*"],
 };
+

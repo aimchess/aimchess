@@ -41,6 +41,7 @@ const navSections: NavSection[] = [
         roles: ["ADMIN"],
         items: [
             { href: "/crm/dashboard", label: "Dashboard", icon: LayoutDashboard },
+            { href: "/crm/admissions", label: "Online Admissions", icon: GraduationCap },
             { href: "/crm/students", label: "Students", icon: Users },
             { href: "/crm/batches", label: "Batches", icon: GraduationCap },
             { href: "/crm/payments", label: "Payments", icon: CreditCard },

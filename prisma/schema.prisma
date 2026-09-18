@@ -44,6 +44,7 @@ model User {
   status String @default("ACTIVE")
 
   // New Student Fields
+  aimStudentId String? @unique
   joiningDate DateTime?
   birthDate   DateTime?
   address     String?
@@ -56,6 +57,8 @@ model User {
   packageTotalClasses Int @default(12)
   packageStartDate DateTime?
   packageExpiryDate DateTime?
+  admissions  AdmissionApplication[] @relation("UserAdmissions")
+  coachAdmissions AdmissionApplication[] @relation("CoachAdmissions")
 
   // Attendance Relations
   managedClasses ClassTiming[] @relation("CoachClasses")
@@ -527,3 +530,85 @@ model UserMissionProgress {
 
   @@unique([userId, challengeId])
 }
+
+// ==========================================
+// 6. ONLINE ADMISSION & PAYMENT SYSTEM
+// ==========================================
+
+enum AdmissionStatus {
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PENDING_PAYMENT
+}
+
+enum PackageType {
+  ONE_ON_ONE
+  GROUP
+}
+
+model CoursePackage {
+  id           String      @id @default(uuid())
+  name         String
+  type         PackageType @default(GROUP)
+  stage        Stage       @default(BEGINNER)
+  totalClasses Int         @default(12)
+  priceINR     Float       @default(4999)
+  priceUSD     Float       @default(99)
+  description  String?     @db.Text
+  features     Json        @default("[]") // Array of feature strings
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model AdmissionApplication {
+  id                 String          @id @default(uuid())
+  referenceNo        String          @unique
+  aimStudentId       String?         @unique
+  
+  // Student Info
+  studentName        String
+  studentEmail       String
+  studentPhone       String
+  birthDate          DateTime?
+  address            String?         @db.Text
+  country            String          @default("India")
+  
+  // Guardian Info
+  parentName         String
+  parentPhone        String
+  parentEmail        String?
+  
+  // Course/Package Details
+  stage              Stage           @default(BEGINNER)
+  packageId          String?
+  packageName        String
+  packageType        PackageType     @default(GROUP)
+  totalClasses       Int             @default(12)
+  amount             Float
+  currency           String          @default("INR")
+  
+  // Payment Details
+  razorpayOrderId    String?
+  razorpayPaymentId  String?
+  razorpaySignature  String?
+  paymentNotes       String?         @db.Text
+  
+  // Status & Approvals
+  status             AdmissionStatus @default(UNDER_REVIEW)
+  welcomeEmailSent   Boolean         @default(false)
+  adminNotes         String?         @db.Text
+  approvedAt         DateTime?
+  
+  // User Account Relation (when approved)
+  userId             String?
+  user               User?           @relation("UserAdmissions", fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Assigned Coach Relation
+  coachId            String?
+  coach              User?           @relation("CoachAdmissions", fields: [coachId], references: [id], onDelete: SetNull)
+  
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+}
