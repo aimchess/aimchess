@@ -545,6 +545,7 @@ enum AdmissionStatus {
 enum PackageType {
   ONE_ON_ONE
   GROUP
+  BUDDY
 }
 
 model CoursePackage {
@@ -557,6 +558,8 @@ model CoursePackage {
   admissionFeeINR Float       @default(0)
   priceUSD        Float       @default(99)
   admissionFeeUSD Float       @default(0)
+  priceAED        Float       @default(0)
+  admissionFeeAED Float       @default(0)
   description     String?     @db.Text
   features        Json        @default("[]") // Array of feature strings
   isActive        Boolean     @default(true)

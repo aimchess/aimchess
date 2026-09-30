@@ -76,7 +76,7 @@ export async function sendOfficialWelcomeEmail(params: WelcomeEmailParams) {
                 </tr>
                 <tr>
                   <td style="padding: 6px 0; color: #94a3b8;">Session Mode:</td>
-                  <td style="padding: 6px 0; color: #f8fafc; font-weight: 600; text-align: right;">${packageType === 'ONE_ON_ONE' ? '1-on-1 Personal Coaching' : 'Interactive Group Session'}</td>
+                  <td style="padding: 6px 0; color: #f8fafc; font-weight: 600; text-align: right;">${packageType === 'ONE_ON_ONE' ? '1-on-1 Personal Coaching' : packageType === 'BUDDY' ? 'Buddy Coaching (Max 2 Students)' : 'Interactive Group Session'}</td>
                 </tr>
                 <tr>
                   <td style="padding: 6px 0; color: #94a3b8;">Total Classes Enrolled:</td>

@@ -93,6 +93,8 @@ export default function AdminAdmissionsPage() {
     admissionFeeINR: "300",
     priceUSD: "15",
     admissionFeeUSD: "5",
+    priceAED: "99",
+    admissionFeeAED: "0",
     description: "",
   });
 
@@ -464,14 +466,18 @@ export default function AdminAdmissionsPage() {
                       <td className="py-4 px-4">
                         <div className="font-bold text-gray-900">{app.packageName}</div>
                         <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200 mt-1">
-                          {app.packageType === "ONE_ON_ONE" ? "1-on-1 Coaching" : "Group Class"} • {app.totalClasses} Classes
+                          {app.packageType === "ONE_ON_ONE" ? "1-on-1 Coaching" : app.packageType === "BUDDY" ? "Buddy Coaching" : "Group Class"} • {app.totalClasses} Classes
                         </span>
                       </td>
 
                       {/* Fee Amount */}
                       <td className="py-4 px-4">
                         <div className="font-extrabold text-emerald-600 text-sm">
-                          {app.currency === "INR" ? `₹${app.amount.toLocaleString("en-IN")}` : `$${app.amount}`}
+                          {app.currency === "INR"
+                            ? `₹${app.amount.toLocaleString("en-IN")}`
+                            : app.currency === "AED"
+                            ? `AED ${app.amount.toLocaleString()}`
+                            : `$${app.amount}`}
                         </div>
                         <span className="text-[10px] text-gray-400">One-time fee</span>
                       </td>
@@ -712,8 +718,9 @@ export default function AdminAdmissionsPage() {
                       onChange={(e) => setPkgFormData({ ...pkgFormData, type: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:border-sky-500 focus:bg-white"
                     >
-                      <option value="GROUP">Group Class</option>
-                      <option value="ONE_ON_ONE">1-on-1 Coaching</option>
+                      <option value="ONE_ON_ONE">1-on-1 Premium Coaching</option>
+                      <option value="BUDDY">Buddy Coaching (Max 2)</option>
+                      <option value="GROUP">Small Group (Max 4)</option>
                     </select>
                   </div>
                   <div>
@@ -730,7 +737,7 @@ export default function AdminAdmissionsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-gray-700 font-bold mb-1">Classes</label>
                     <input
@@ -739,6 +746,16 @@ export default function AdminAdmissionsPage() {
                       value={pkgFormData.totalClasses}
                       onChange={(e) => setPkgFormData({ ...pkgFormData, totalClasses: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:border-sky-500 focus:bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 font-bold mb-1">Price AED (د.إ)</label>
+                    <input
+                      type="number"
+                      required
+                      value={pkgFormData.priceAED}
+                      onChange={(e) => setPkgFormData({ ...pkgFormData, priceAED: e.target.value })}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:border-sky-500 focus:bg-white font-semibold text-sky-700"
                     />
                   </div>
                   <div>

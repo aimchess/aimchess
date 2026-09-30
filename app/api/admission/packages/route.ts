@@ -4,94 +4,12 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
 // Default initial packages to fallback to if database has no custom packages yet
-// Official AIM Chess Academy India Pricing Packages (Group Classes have ₹300 Admission Fee, 1-on-1 are Exempt)
+// Official AIM Chess Academy Pricing Packages (India, UAE AED, and Global USD)
 const DEFAULT_PACKAGES = [
-  // --- GROUP CLASSES ---
+  // --- 1-TO-1 PREMIUM COACHING (MOST POPULAR) ---
   {
-    id: 'pkg-group-beginner-w1',
-    name: 'Beginner Level - Weekly 1 Class',
-    type: 'GROUP',
-    stage: 'BEGINNER',
-    totalClasses: 4,
-    priceINR: 800,
-    admissionFeeINR: 300,
-    priceUSD: 15,
-    admissionFeeUSD: 5,
-    description: 'Weekly 1 Class – 4 Classes/Month for Beginner Level students.',
-    features: [
-      '4 Interactive Group Classes / Month',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Certificate of Completion'
-    ],
-    isActive: true,
-  },
-  {
-    id: 'pkg-group-beginner-w2',
-    name: 'Beginner Level - Weekly 2 Classes',
-    type: 'GROUP',
-    stage: 'BEGINNER',
-    totalClasses: 8,
-    priceINR: 1500,
-    admissionFeeINR: 300,
-    priceUSD: 25,
-    admissionFeeUSD: 5,
-    description: 'Weekly 2 Classes – 8 Classes/Month for Beginner Level students.',
-    features: [
-      '8 Interactive Group Classes / Month',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Certificate of Completion'
-    ],
-    isActive: true,
-  },
-  {
-    id: 'pkg-group-inter-w1',
-    name: 'Intermediate & Advanced - Weekly 1 Class',
-    type: 'GROUP',
-    stage: 'INTERMEDIATE',
-    totalClasses: 4,
-    priceINR: 900,
-    admissionFeeINR: 300,
-    priceUSD: 18,
-    admissionFeeUSD: 5,
-    description: 'Weekly 1 Class – 4 Classes/Month for Intermediate & Advanced Level students.',
-    features: [
-      '4 Interactive Group Classes / Month',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Advanced Strategy & Analysis'
-    ],
-    isActive: true,
-  },
-  {
-    id: 'pkg-group-inter-w2',
-    name: 'Intermediate & Advanced - Weekly 2 Classes',
-    type: 'GROUP',
-    stage: 'INTERMEDIATE',
-    totalClasses: 8,
-    priceINR: 1700,
-    admissionFeeINR: 300,
-    priceUSD: 30,
-    admissionFeeUSD: 5,
-    description: 'Weekly 2 Classes – 8 Classes/Month for Intermediate & Advanced Level students.',
-    features: [
-      '8 Interactive Group Classes / Month',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Advanced Strategy & Analysis'
-    ],
-    isActive: true,
-  },
-
-  // --- ONE-TO-ONE CLASSES ---
-  {
-    id: 'pkg-oto-starter',
-    name: 'Starter - 1-on-1 Coaching (4 Classes)',
+    id: 'pkg-oto-4',
+    name: '1-to-1 Premium Coaching (4 Classes)',
     type: 'ONE_ON_ONE',
     stage: 'BEGINNER',
     totalClasses: 4,
@@ -99,19 +17,24 @@ const DEFAULT_PACKAGES = [
     admissionFeeINR: 0,
     priceUSD: 50,
     admissionFeeUSD: 0,
-    description: '4 Private 1-on-1 Coaching Sessions (60 minutes each). No admission fee.',
+    priceAED: 149,
+    admissionFeeAED: 0,
+    tag: 'MOST POPULAR',
+    tagline: 'Personalised | 60 Minutes',
+    subtext: '100% Focus on Your Child • Tailored Plan for Faster Progress',
+    description: '4 Personalised 1-on-1 coaching sessions (60 mins each) with dedicated FIDE rated coach.',
     features: [
-      '4 Personal 1-on-1 Coaching Sessions (60 mins)',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Customized Study Plan & Game Analysis'
+      '4 Personalised 1-on-1 Sessions (60 mins)',
+      '100% Focus & Custom Tailored Study Plan',
+      'Live Interactive Zoom Classes & Recordings',
+      'AIM Student Portal Access & Homework',
+      'Weekly Tournaments & Progress Tracking'
     ],
     isActive: true,
   },
   {
-    id: 'pkg-oto-silver',
-    name: 'Silver - 1-on-1 Coaching (8 Classes)',
+    id: 'pkg-oto-8',
+    name: '1-to-1 Premium Coaching (8 Classes)',
     type: 'ONE_ON_ONE',
     stage: 'INTERMEDIATE',
     totalClasses: 8,
@@ -119,19 +42,24 @@ const DEFAULT_PACKAGES = [
     admissionFeeINR: 0,
     priceUSD: 90,
     admissionFeeUSD: 0,
-    description: '8 Private 1-on-1 Coaching Sessions (60 minutes each). No admission fee.',
+    priceAED: 279,
+    admissionFeeAED: 0,
+    tag: 'MOST POPULAR',
+    tagline: 'Personalised | 60 Minutes',
+    subtext: '100% Focus on Your Child • Tailored Plan for Faster Progress',
+    description: '8 Personalised 1-on-1 coaching sessions (60 mins each) for rapid tactical & strategic improvement.',
     features: [
-      '8 Personal 1-on-1 Coaching Sessions (60 mins)',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Deep Game Analysis & Opening Repertoire'
+      '8 Personalised 1-on-1 Sessions (60 mins)',
+      'Deep Game Analysis & Opening Repertoire',
+      'Live Interactive Zoom Classes & Recordings',
+      'AIM Student Portal Access & Homework',
+      'Weekly Tournaments & Progress Tracking'
     ],
     isActive: true,
   },
   {
-    id: 'pkg-oto-gold',
-    name: 'Gold - 1-on-1 Coaching (16 Classes)',
+    id: 'pkg-oto-16',
+    name: '1-to-1 Premium Coaching (16 Classes)',
     type: 'ONE_ON_ONE',
     stage: 'ADVANCED',
     totalClasses: 16,
@@ -139,19 +67,24 @@ const DEFAULT_PACKAGES = [
     admissionFeeINR: 0,
     priceUSD: 180,
     admissionFeeUSD: 0,
-    description: '16 Private 1-on-1 Coaching Sessions (60 minutes each). No admission fee.',
+    priceAED: 499,
+    admissionFeeAED: 0,
+    tag: 'MOST POPULAR',
+    tagline: 'Personalised | 60 Minutes',
+    subtext: '100% Focus on Your Child • Tailored Plan for Faster Progress',
+    description: '16 Personalised 1-on-1 coaching sessions (60 mins each) with comprehensive tournament prep.',
     features: [
-      '16 Personal 1-on-1 Coaching Sessions (60 mins)',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Priority Coach Scheduling & Master Support'
+      '16 Personalised 1-on-1 Sessions (60 mins)',
+      'Advanced Positional & Endgame Mastery',
+      'Live Interactive Zoom Classes & Recordings',
+      'AIM Student Portal Access & Homework',
+      'Weekly Tournaments & Progress Tracking'
     ],
     isActive: true,
   },
   {
-    id: 'pkg-oto-diamond',
-    name: 'Diamond - 1-on-1 Coaching (24 Classes)',
+    id: 'pkg-oto-24',
+    name: '1-to-1 Premium Coaching (24 Classes)',
     type: 'ONE_ON_ONE',
     stage: 'ADVANCED',
     totalClasses: 24,
@@ -159,13 +92,172 @@ const DEFAULT_PACKAGES = [
     admissionFeeINR: 0,
     priceUSD: 250,
     admissionFeeUSD: 0,
-    description: '24 Private 1-on-1 Coaching Sessions (60 minutes each). No admission fee.',
+    priceAED: 699,
+    admissionFeeAED: 0,
+    tag: 'MOST POPULAR',
+    tagline: 'Personalised | 60 Minutes',
+    subtext: '100% Focus on Your Child • Tailored Plan for Faster Progress',
+    description: '24 Personalised 1-on-1 coaching sessions (60 mins each) for master preparation and rating milestones.',
     features: [
-      '24 Personal 1-on-1 Coaching Sessions (60 mins)',
-      'Weekly Student Portal Tournament',
-      'AIM Rating Development',
-      'Portal Practice & Learning Support',
-      'Full Grandmaster Preparation & Tournament Prep'
+      '24 Personalised 1-on-1 Sessions (60 mins)',
+      'Full Grandmaster Preparation & Repertoire',
+      'Live Interactive Zoom Classes & Recordings',
+      'AIM Student Portal Access & Homework',
+      'Weekly Tournaments & Progress Tracking'
+    ],
+    isActive: true,
+  },
+
+  // --- BUDDY COACHING (MAX 2 STUDENTS) ---
+  {
+    id: 'pkg-buddy-4',
+    name: 'Buddy Coaching (4 Classes)',
+    type: 'BUDDY',
+    stage: 'BEGINNER',
+    totalClasses: 4,
+    priceINR: 2200,
+    admissionFeeINR: 0,
+    priceUSD: 35,
+    admissionFeeUSD: 0,
+    priceAED: 99,
+    admissionFeeAED: 0,
+    tag: 'SEMI-PRIVATE',
+    tagline: 'Semi-Private (Max 2) | 60 Minutes',
+    subtext: 'Learn Together, Grow Together • Best for Siblings & Friends',
+    description: '4 Semi-Private Coaching Sessions for 2 students (60 minutes each). Learn together with sibling or friend.',
+    features: [
+      '4 Semi-Private Sessions (Max 2 Students)',
+      '60 Minutes Live Interactive Zoom Classes',
+      'Learn Together & Healthy Friendly Sparring',
+      'Class Recordings After Each Session',
+      'AIM Student Portal Access & Homework'
+    ],
+    isActive: true,
+  },
+  {
+    id: 'pkg-buddy-8',
+    name: 'Buddy Coaching (8 Classes)',
+    type: 'BUDDY',
+    stage: 'INTERMEDIATE',
+    totalClasses: 8,
+    priceINR: 4200,
+    admissionFeeINR: 0,
+    priceUSD: 65,
+    admissionFeeUSD: 0,
+    priceAED: 189,
+    admissionFeeAED: 0,
+    tag: 'SEMI-PRIVATE',
+    tagline: 'Semi-Private (Max 2) | 60 Minutes',
+    subtext: 'Learn Together, Grow Together • Best for Siblings & Friends',
+    description: '8 Semi-Private Coaching Sessions for 2 students (60 minutes each).',
+    features: [
+      '8 Semi-Private Sessions (Max 2 Students)',
+      '60 Minutes Live Interactive Zoom Classes',
+      'Interactive Tactics & Strategy Drills',
+      'Class Recordings After Each Session',
+      'AIM Student Portal Access & Homework'
+    ],
+    isActive: true,
+  },
+  {
+    id: 'pkg-buddy-16',
+    name: 'Buddy Coaching (16 Classes)',
+    type: 'BUDDY',
+    stage: 'ADVANCED',
+    totalClasses: 16,
+    priceINR: 7900,
+    admissionFeeINR: 0,
+    priceUSD: 120,
+    admissionFeeUSD: 0,
+    priceAED: 349,
+    admissionFeeAED: 0,
+    tag: 'SEMI-PRIVATE',
+    tagline: 'Semi-Private (Max 2) | 60 Minutes',
+    subtext: 'Learn Together, Grow Together • Best for Siblings & Friends',
+    description: '16 Semi-Private Coaching Sessions for 2 students (60 minutes each).',
+    features: [
+      '16 Semi-Private Sessions (Max 2 Students)',
+      '60 Minutes Live Interactive Zoom Classes',
+      'Advanced Strategy & Tactical Puzzles',
+      'Class Recordings After Each Session',
+      'Weekly Tournaments & Puzzle Competitions'
+    ],
+    isActive: true,
+  },
+  {
+    id: 'pkg-buddy-24',
+    name: 'Buddy Coaching (24 Classes)',
+    type: 'BUDDY',
+    stage: 'ADVANCED',
+    totalClasses: 24,
+    priceINR: 11500,
+    admissionFeeINR: 0,
+    priceUSD: 170,
+    admissionFeeUSD: 0,
+    priceAED: 499,
+    admissionFeeAED: 0,
+    tag: 'SEMI-PRIVATE',
+    tagline: 'Semi-Private (Max 2) | 60 Minutes',
+    subtext: 'Learn Together, Grow Together • Best for Siblings & Friends',
+    description: '24 Semi-Private Coaching Sessions for 2 students (60 minutes each).',
+    features: [
+      '24 Semi-Private Sessions (Max 2 Students)',
+      '60 Minutes Live Interactive Zoom Classes',
+      'Complete Mastery Curriculum & Tournament Prep',
+      'Class Recordings After Each Session',
+      'Weekly Tournaments & Progress Tracking'
+    ],
+    isActive: true,
+  },
+
+  // --- PREMIUM SMALL GROUP CLASSES (MAX 4 STUDENTS) ---
+  {
+    id: 'pkg-group-4',
+    name: 'Premium Small Group (4 Classes / Month)',
+    type: 'GROUP',
+    stage: 'BEGINNER',
+    totalClasses: 4,
+    priceINR: 800,
+    admissionFeeINR: 300,
+    priceUSD: 15,
+    admissionFeeUSD: 5,
+    priceAED: 99,
+    admissionFeeAED: 0,
+    tag: 'AFFORDABLE & EFFECTIVE',
+    tagline: 'Level-Matched Batch (Max 4) | 60 Minutes',
+    subtext: 'More Interaction, More Fun • Affordable & Effective',
+    description: '4 Interactive Small Group Sessions per month (Max 4 students). Level-matched batch.',
+    features: [
+      '4 Interactive Small Group Classes / Month',
+      'Max 4 Students per Level-Matched Batch',
+      'Live Zoom Classes & Post-Session Recordings',
+      'AIM Student Portal Access & Homework',
+      'Weekly Tournaments & Puzzle Competitions'
+    ],
+    isActive: true,
+  },
+  {
+    id: 'pkg-group-8',
+    name: 'Premium Small Group (8 Classes / Month)',
+    type: 'GROUP',
+    stage: 'INTERMEDIATE',
+    totalClasses: 8,
+    priceINR: 1500,
+    admissionFeeINR: 300,
+    priceUSD: 25,
+    admissionFeeUSD: 5,
+    priceAED: 179,
+    admissionFeeAED: 0,
+    tag: 'AFFORDABLE & EFFECTIVE',
+    tagline: 'Level-Matched Batch (Max 4) | 60 Minutes',
+    subtext: 'More Interaction, More Fun • Affordable & Effective',
+    description: '8 Interactive Small Group Sessions per month (2 classes/week). Max 4 students.',
+    features: [
+      '8 Interactive Small Group Classes / Month',
+      'Max 4 Students per Level-Matched Batch',
+      'Live Zoom Classes & Post-Session Recordings',
+      'AIM Student Portal Access & Homework',
+      'Weekly Tournaments & Puzzle Competitions'
     ],
     isActive: true,
   },
@@ -182,7 +274,20 @@ export async function GET() {
       return NextResponse.json({ packages: DEFAULT_PACKAGES, isDefault: true });
     }
 
-    return NextResponse.json({ packages, isDefault: false });
+    // Merge in any missing AED fields if database records were saved earlier without AED fields
+    const mergedPackages = packages.map((pkg) => {
+      const defaultMatch = DEFAULT_PACKAGES.find((d) => d.id === pkg.id || (d.name === pkg.name && d.type === pkg.type));
+      return {
+        ...pkg,
+        priceAED: (pkg as any).priceAED || defaultMatch?.priceAED || (pkg.priceUSD ? Math.round(pkg.priceUSD * 3.67) : 99),
+        admissionFeeAED: (pkg as any).admissionFeeAED ?? (defaultMatch?.admissionFeeAED || 0),
+        tag: defaultMatch?.tag,
+        tagline: defaultMatch?.tagline,
+        subtext: defaultMatch?.subtext,
+      };
+    });
+
+    return NextResponse.json({ packages: mergedPackages, isDefault: false });
   } catch (error: any) {
     console.error('Error fetching packages:', error);
     // Fallback to defaults on error
@@ -198,13 +303,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, type, stage, totalClasses, priceINR, admissionFeeINR, priceUSD, admissionFeeUSD, description, features } = body;
+    const { name, type, stage, totalClasses, priceINR, admissionFeeINR, priceUSD, admissionFeeUSD, priceAED, admissionFeeAED, description, features } = body;
 
     if (!name || !totalClasses || priceINR === undefined) {
       return NextResponse.json({ error: 'Missing required package fields' }, { status: 400 });
     }
 
-    const defaultAdmissionFee = (type || 'GROUP') === 'GROUP' ? 300 : 0;
+    const defaultAdmissionFeeINR = (type || 'GROUP') === 'GROUP' ? 300 : 0;
+    const defaultAdmissionFeeUSD = (type || 'GROUP') === 'GROUP' ? 5 : 0;
 
     const newPackage = await prisma.coursePackage.create({
       data: {
@@ -213,9 +319,11 @@ export async function POST(req: Request) {
         stage: stage || 'BEGINNER',
         totalClasses: parseInt(totalClasses, 10),
         priceINR: parseFloat(priceINR),
-        admissionFeeINR: parseFloat(admissionFeeINR !== undefined ? admissionFeeINR : defaultAdmissionFee),
+        admissionFeeINR: parseFloat(admissionFeeINR !== undefined ? admissionFeeINR : defaultAdmissionFeeINR),
         priceUSD: parseFloat(priceUSD || 0),
-        admissionFeeUSD: parseFloat(admissionFeeUSD || 0),
+        admissionFeeUSD: parseFloat(admissionFeeUSD !== undefined ? admissionFeeUSD : defaultAdmissionFeeUSD),
+        priceAED: parseFloat(priceAED || (priceUSD ? String(Math.round(parseFloat(priceUSD) * 3.67)) : '99')),
+        admissionFeeAED: parseFloat(admissionFeeAED || 0),
         description,
         features: features || [],
         isActive: true,
