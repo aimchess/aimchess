@@ -40,7 +40,6 @@ export default function CoachLibraryPage() {
     const observer = new ResizeObserver(entries => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect
-        // If setupMode is active, subtract estimated toolbar height (approx 200px) from available height
         const availableHeight = setupMode ? height - 200 : height
         const bestSize = Math.min(width, availableHeight) - 24
         setBoardWidth(Math.max(260, Math.min(bestSize, 550)))
@@ -61,20 +60,95 @@ export default function CoachLibraryPage() {
     fetchCourses()
   }, [])
 
+  // PGN Stepper States
+  const [pgnMoves, setPgnMoves] = useState<string[]>([])
+  const [currentMoveIndex, setCurrentMoveIndex] = useState<number>(-1)
+
+  const isPgnText = (text: string) => {
+    if (!text) return false
+    const t = text.trim()
+    return t.startsWith('[') || /^\d+\.\s+[a-zA-Z]/.test(t)
+  }
+
+  const getCleanNotes = (text: string) => {
+    if (!text) return 'Focus on board positions for this module.'
+    if (!isPgnText(text)) return text
+    // Extract { comments }
+    const comments: string[] = []
+    const re = /\{([^}]*)\}/g
+    let m
+    while ((m = re.exec(text)) !== null) {
+      if (m[1].trim()) comments.push(m[1].trim())
+    }
+    if (comments.length > 0) return comments.join('\n\n')
+    // Extract Description or Objective tag
+    const descMatch = text.match(/\[(Description|Objective)\s+"(.*?)"\]/i)
+    if (descMatch && descMatch[2]) return descMatch[2]
+    return 'Interactive PGN study. Follow the moves on the board with the students.'
+  }
+
   useEffect(() => {
     if (activeChapter) {
-      try {
-        game.current.load(activeChapter.fen)
-        setBoardFen(activeChapter.fen)
-        setSquares({})
-        setSetupMode(false)
-        setIsSidebarOpen(false)
-      } catch (e) {
-        game.current.reset()
-        setBoardFen('start')
+      setSquares({})
+      setSetupMode(false)
+      setIsSidebarOpen(false)
+
+      const content = activeChapter.content || ''
+      if (isPgnText(content)) {
+        try {
+          const tempChess = new Chess()
+          tempChess.loadPgn(content)
+          const moves = tempChess.history()
+          setPgnMoves(moves)
+          setCurrentMoveIndex(-1)
+
+          // Load starting fen or chapter fen
+          const startFen = activeChapter.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+          game.current.load(startFen)
+          setBoardFen(startFen)
+        } catch (e) {
+          setPgnMoves([])
+          setCurrentMoveIndex(-1)
+          try {
+            game.current.load(activeChapter.fen || 'start')
+            setBoardFen(activeChapter.fen || 'start')
+          } catch {
+            game.current.reset()
+            setBoardFen('start')
+          }
+        }
+      } else {
+        setPgnMoves([])
+        setCurrentMoveIndex(-1)
+        try {
+          game.current.load(activeChapter.fen || 'start')
+          setBoardFen(activeChapter.fen || 'start')
+        } catch {
+          game.current.reset()
+          setBoardFen('start')
+        }
       }
     }
   }, [activeChapter])
+
+  const goToMove = (moveIdx: number) => {
+    if (!activeChapter || !activeChapter.content) return
+    try {
+      const temp = new Chess()
+      temp.loadPgn(activeChapter.content)
+      const moves = temp.history()
+
+      const newBoard = new Chess(activeChapter.fen || undefined)
+      for (let i = 0; i <= moveIdx; i++) {
+        if (moves[i]) newBoard.move(moves[i])
+      }
+      game.current = newBoard
+      setBoardFen(newBoard.fen())
+      setCurrentMoveIndex(moveIdx)
+    } catch (e) {
+      console.error('Failed to go to move', e)
+    }
+  }
 
   const updateBoard = () => setBoardFen(game.current.fen())
 
@@ -229,6 +303,59 @@ export default function CoachLibraryPage() {
                 {setupMode && <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-red-600 text-white px-2 py-0.5 md:px-3 md:py-1 text-[8px] md:text-[10px] font-bold rounded-full animate-pulse z-10 shadow-xl">Editor Active</div>}
               </div>
 
+              {/* PGN Move Navigation Controls */}
+              {pgnMoves.length > 0 && !setupMode && (
+                <div className="bg-white/95 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl shadow-xl border border-sky-100 flex flex-col gap-2 z-20 w-[95%] max-w-[550px] shrink-0 transition-all">
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                    <button
+                      onClick={() => goToMove(-1)}
+                      disabled={currentMoveIndex === -1}
+                      className="px-2.5 sm:px-3 py-1 bg-sky-50 text-[#0b1d3a] font-bold rounded-lg text-xs hover:bg-sky-100 disabled:opacity-40 transition-all active:scale-95"
+                    >
+                      ⏮ Start
+                    </button>
+                    <button
+                      onClick={() => goToMove(Math.max(-1, currentMoveIndex - 1))}
+                      disabled={currentMoveIndex === -1}
+                      className="px-2.5 sm:px-3 py-1 bg-sky-50 text-[#0b1d3a] font-bold rounded-lg text-xs hover:bg-sky-100 disabled:opacity-40 transition-all active:scale-95"
+                    >
+                      ◀ Prev
+                    </button>
+                    <button
+                      onClick={() => goToMove(Math.min(pgnMoves.length - 1, currentMoveIndex + 1))}
+                      disabled={currentMoveIndex === pgnMoves.length - 1}
+                      className="px-2.5 sm:px-3 py-1 bg-[#0b1d3a] text-white font-bold rounded-lg text-xs hover:bg-sky-600 disabled:opacity-40 transition-all active:scale-95 shadow-sm"
+                    >
+                      Next ▶
+                    </button>
+                    <button
+                      onClick={() => goToMove(pgnMoves.length - 1)}
+                      disabled={currentMoveIndex === pgnMoves.length - 1}
+                      className="px-2.5 sm:px-3 py-1 bg-sky-50 text-[#0b1d3a] font-bold rounded-lg text-xs hover:bg-sky-100 disabled:opacity-40 transition-all active:scale-95"
+                    >
+                      End ⏭
+                    </button>
+                  </div>
+
+                  {/* Move list */}
+                  <div className="max-h-[50px] overflow-y-auto flex flex-wrap gap-1 px-1 py-0.5 text-[11px] justify-center">
+                    {pgnMoves.map((m, idx) => {
+                      const moveNumber = Math.floor(idx / 2) + 1
+                      const isWhite = idx % 2 === 0
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => goToMove(idx)}
+                          className={`px-1.5 py-0.5 rounded font-bold transition-all ${currentMoveIndex === idx ? 'bg-sky-600 text-white' : 'hover:bg-sky-100 text-slate-700'}`}
+                        >
+                          {isWhite ? `${moveNumber}. ` : ''}{m}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
               {setupMode && (
                 <div className="bg-white/95 backdrop-blur-xl p-2 md:p-3 rounded-xl md:rounded-2xl shadow-2xl border border-sky-100 flex flex-col items-center gap-2 md:gap-3 z-20 w-[95%] sm:w-auto shrink-0 transition-all">
                   <div className="flex gap-1 md:gap-1.5 flex-wrap justify-center">
@@ -259,16 +386,23 @@ export default function CoachLibraryPage() {
                 <span className="text-[9px] md:text-[10px] font-bold text-sky-400 uppercase tracking-widest mt-0.5 block">Instructor Notes</span>
               </div>
               <button
-                onClick={() => { game.current.load(activeChapter.fen); setBoardFen(activeChapter.fen); setSquares({}) }}
+                onClick={() => {
+                  setCurrentMoveIndex(-1)
+                  const startFen = activeChapter.fen || 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+                  game.current.load(startFen)
+                  setBoardFen(startFen)
+                  setSquares({})
+                }}
                 className="w-10 h-10 flex items-center justify-center bg-white hover:bg-sky-50 text-slate-400 hover:text-sky-600 rounded-full transition shadow-sm border border-sky-100"
+                title="Reset Position"
               >
                 <RotateCcw size={18} />
               </button>
             </div>
 
             <div className="p-4 md:p-8 overflow-y-auto flex-1 min-h-[100px] lg:min-h-0">
-              <p className="whitespace-pre-wrap text-slate-500 leading-relaxed text-xs md:text-sm">
-                {activeChapter?.content || "Focus on board positions for this module."}
+              <p className="whitespace-pre-wrap text-slate-700 leading-relaxed text-xs md:text-sm font-medium">
+                {getCleanNotes(activeChapter?.content)}
               </p>
             </div>
 

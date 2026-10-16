@@ -275,7 +275,7 @@ export async function GET() {
     }
 
     // Merge in any missing AED fields if database records were saved earlier without AED fields
-    const mergedPackages = packages.map((pkg) => {
+    const mergedPackages = packages.map((pkg: any) => {
       const defaultMatch = DEFAULT_PACKAGES.find((d) => d.id === pkg.id || (d.name === pkg.name && d.type === pkg.type));
       return {
         ...pkg,

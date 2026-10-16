@@ -12,6 +12,21 @@ const isPgn = (text: string) => {
   const trimmed = text.trim();
   return trimmed.startsWith("[") || trimmed.match(/^\d+\.\s+[a-zA-Z]/) !== null;
 };
+
+const getCleanStudentNotes = (content: string) => {
+  if (!content) return "This lesson summary is not available.";
+  if (!isPgn(content)) return content;
+  const comments: string[] = [];
+  const re = /\{([^}]*)\}/g;
+  let m;
+  while ((m = re.exec(content)) !== null) {
+    if (m[1].trim()) comments.push(m[1].trim());
+  }
+  if (comments.length > 0) return comments.join("\n\n");
+  const descMatch = content.match(/\[(Description|Objective)\s+"(.*?)"\]/i);
+  if (descMatch && descMatch[2]) return descMatch[2];
+  return "This lesson features an interactive PGN chess study. Drag the pieces on the board to explore moves, or use the controls above to navigate the main PGN line.";
+};
 import { toast } from 'sonner'
 import {
   BookOpen, ChevronRight, Folder, FileText,
@@ -532,10 +547,8 @@ export default function StudentLibraryPage() {
                         <Star className="text-yellow-500 fill-yellow-500" size={18} />
                         <h4 className="text-xl font-black text-[#0b1d3a] tracking-tight">{selectedCourse.chapters[activeChapterIndex].title}</h4>
                       </div>
-                      <div className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap font-medium">
-                        {isPgn(selectedCourse.chapters[activeChapterIndex].content) 
-                          ? "This lesson features an interactive PGN chess study. Drag the pieces on the board to explore moves, or use the controls above to navigate the main PGN line." 
-                          : (selectedCourse.chapters[activeChapterIndex].content || "This lesson summary is not available.")}
+                      <div className="text-slate-600 leading-relaxed text-sm sm:text-base whitespace-pre-wrap font-medium">
+                        {getCleanStudentNotes(selectedCourse.chapters[activeChapterIndex].content)}
                       </div>
                     </div>
 
