@@ -42,7 +42,24 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 4,
-    priceINR: 800,
+    priceINR: 900,
+    admissionFeeINR: 300,
+    description: 'Weekly 1 Class – 4 Classes/Month for Beginner Level students.',
+    features: [
+      '4 Interactive Group Classes / Month',
+      'Weekly Student Portal Tournament',
+      'AIM Rating Development',
+      'Portal Practice & Learning Support',
+      'AIM Certificate of Completion'
+    ]
+  },
+  'pkg-group-beginner-4': {
+    id: 'pkg-group-beginner-4',
+    name: 'Beginner Level - Weekly 1 Class (4 Classes / Month)',
+    type: 'GROUP',
+    stage: 'BEGINNER',
+    totalClasses: 4,
+    priceINR: 900,
     admissionFeeINR: 300,
     description: 'Weekly 1 Class – 4 Classes/Month for Beginner Level students.',
     features: [
@@ -59,7 +76,24 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 8,
-    priceINR: 1500,
+    priceINR: 1700,
+    admissionFeeINR: 300,
+    description: 'Weekly 2 Classes – 8 Classes/Month for Beginner Level students.',
+    features: [
+      '8 Interactive Group Classes / Month',
+      'Weekly Student Portal Tournament',
+      'AIM Rating Development',
+      'Portal Practice & Learning Support',
+      'AIM Certificate of Completion'
+    ]
+  },
+  'pkg-group-beginner-8': {
+    id: 'pkg-group-beginner-8',
+    name: 'Beginner Level - Weekly 2 Classes (8 Classes / Month)',
+    type: 'GROUP',
+    stage: 'BEGINNER',
+    totalClasses: 8,
+    priceINR: 1700,
     admissionFeeINR: 300,
     description: 'Weekly 2 Classes – 8 Classes/Month for Beginner Level students.',
     features: [
@@ -76,7 +110,7 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'INTERMEDIATE',
     totalClasses: 4,
-    priceINR: 900,
+    priceINR: 1000,
     admissionFeeINR: 300,
     description: 'Weekly 1 Class – 4 Classes/Month for Intermediate & Advanced Level students.',
     features: [
@@ -84,7 +118,24 @@ const packageFallbackMap: Record<string, PackageDetails> = {
       'Weekly Student Portal Tournament',
       'AIM Rating Development',
       'Portal Practice & Learning Support',
-      'Advanced Strategy & Analysis'
+      'Advanced Strategy & Tactical Analysis'
+    ]
+  },
+  'pkg-group-inter-4': {
+    id: 'pkg-group-inter-4',
+    name: 'Intermediate & Advanced - Weekly 1 Class (4 Classes / Month)',
+    type: 'GROUP',
+    stage: 'INTERMEDIATE',
+    totalClasses: 4,
+    priceINR: 1000,
+    admissionFeeINR: 300,
+    description: 'Weekly 1 Class – 4 Classes/Month for Intermediate & Advanced Level students.',
+    features: [
+      '4 Interactive Group Classes / Month',
+      'Weekly Student Portal Tournament',
+      'AIM Rating Development',
+      'Portal Practice & Learning Support',
+      'Advanced Strategy & Tactical Analysis'
     ]
   },
   'pkg-group-inter-w2': {
@@ -93,7 +144,7 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'INTERMEDIATE',
     totalClasses: 8,
-    priceINR: 1700,
+    priceINR: 1900,
     admissionFeeINR: 300,
     description: 'Weekly 2 Classes – 8 Classes/Month for Intermediate & Advanced Level students.',
     features: [
@@ -101,7 +152,58 @@ const packageFallbackMap: Record<string, PackageDetails> = {
       'Weekly Student Portal Tournament',
       'AIM Rating Development',
       'Portal Practice & Learning Support',
-      'Advanced Strategy & Analysis'
+      'Advanced Strategy & Tactical Analysis'
+    ]
+  },
+  'pkg-group-inter-8': {
+    id: 'pkg-group-inter-8',
+    name: 'Intermediate & Advanced - Weekly 2 Classes (8 Classes / Month)',
+    type: 'GROUP',
+    stage: 'INTERMEDIATE',
+    totalClasses: 8,
+    priceINR: 1900,
+    admissionFeeINR: 300,
+    description: 'Weekly 2 Classes – 8 Classes/Month for Intermediate & Advanced Level students.',
+    features: [
+      '8 Interactive Group Classes / Month',
+      'Weekly Student Portal Tournament',
+      'AIM Rating Development',
+      'Portal Practice & Learning Support',
+      'Advanced Strategy & Tactical Analysis'
+    ]
+  },
+  'pkg-group-4': {
+    id: 'pkg-group-4',
+    name: 'Beginner Level - Weekly 1 Class (4 Classes / Month)',
+    type: 'GROUP',
+    stage: 'BEGINNER',
+    totalClasses: 4,
+    priceINR: 900,
+    admissionFeeINR: 300,
+    description: 'Weekly 1 Class – 4 Classes/Month for Beginner Level students.',
+    features: [
+      '4 Interactive Group Classes / Month',
+      'Weekly Student Portal Tournament',
+      'AIM Rating Development',
+      'Portal Practice & Learning Support',
+      'AIM Certificate of Completion'
+    ]
+  },
+  'pkg-group-8': {
+    id: 'pkg-group-8',
+    name: 'Beginner Level - Weekly 2 Classes (8 Classes / Month)',
+    type: 'GROUP',
+    stage: 'BEGINNER',
+    totalClasses: 8,
+    priceINR: 1700,
+    admissionFeeINR: 300,
+    description: 'Weekly 2 Classes – 8 Classes/Month for Beginner Level students.',
+    features: [
+      '8 Interactive Group Classes / Month',
+      'Weekly Student Portal Tournament',
+      'AIM Rating Development',
+      'Portal Practice & Learning Support',
+      'AIM Certificate of Completion'
     ]
   },
   'pkg-oto-starter': {

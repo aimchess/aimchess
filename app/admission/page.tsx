@@ -65,6 +65,7 @@ export default function PublicAdmissionPage() {
   const [packages, setPackages] = useState<PackageItem[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<PackageItem | null>(null);
   const [sessionType, setSessionType] = useState<"GROUP" | "ONE_ON_ONE" | "BUDDY">("ONE_ON_ONE");
+  const [groupLevelFilter, setGroupLevelFilter] = useState<"ALL" | "BEGINNER" | "INTERMEDIATE">("ALL");
 
   // Form State
   const [formData, setFormData] = useState({
@@ -73,7 +74,7 @@ export default function PublicAdmissionPage() {
     studentPhone: "",
     birthDate: "",
     address: "",
-    country: "UAE",
+    country: "India",
     parentName: "",
     parentPhone: "",
     parentEmail: "",
@@ -81,6 +82,28 @@ export default function PublicAdmissionPage() {
     customPassword: "",
     paymentNotes: "",
   });
+
+  // Check URL params for country or mode
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlCountry = params.get("country");
+      if (urlCountry) {
+        const normalized = urlCountry.toLowerCase();
+        if (normalized === "uae") setFormData((prev) => ({ ...prev, country: "UAE" }));
+        else if (normalized === "india") setFormData((prev) => ({ ...prev, country: "India" }));
+        else if (normalized === "usa") setFormData((prev) => ({ ...prev, country: "USA" }));
+        else if (normalized === "uk") setFormData((prev) => ({ ...prev, country: "UK" }));
+      }
+      const urlType = params.get("type");
+      if (urlType) {
+        const t = urlType.toUpperCase();
+        if (t === "GROUP" || t === "ONE_ON_ONE" || t === "BUDDY") {
+          setSessionType(t as any);
+        }
+      }
+    }
+  }, []);
 
   // Fetch packages on mount
   useEffect(() => {
@@ -103,13 +126,49 @@ export default function PublicAdmissionPage() {
     fetchPackages();
   }, []);
 
-  const filteredPackages = packages.filter((p) => p.type === sessionType);
-
-  useEffect(() => {
-    if (filteredPackages.length > 0 && (!selectedPackage || selectedPackage.type !== sessionType)) {
-      setSelectedPackage(filteredPackages[0]);
+  // Filter packages by session type and optional group level filter
+  const filteredPackages = packages.filter((p) => {
+    if (p.type !== sessionType) return false;
+    if (sessionType === "GROUP" && groupLevelFilter !== "ALL") {
+      if (groupLevelFilter === "BEGINNER") {
+        return p.stage === "BEGINNER" || p.id.includes("beginner");
+      }
+      if (groupLevelFilter === "INTERMEDIATE") {
+        return p.stage === "INTERMEDIATE" || p.stage === "ADVANCED" || p.id.includes("inter");
+      }
     }
-  }, [sessionType, packages]);
+    return true;
+  });
+
+  // Auto-switch group level filter based on student stage
+  useEffect(() => {
+    if (sessionType === "GROUP") {
+      if (formData.stage === "INTERMEDIATE" || formData.stage === "ADVANCED") {
+        setGroupLevelFilter("INTERMEDIATE");
+      } else {
+        setGroupLevelFilter("BEGINNER");
+      }
+    } else {
+      setGroupLevelFilter("ALL");
+    }
+  }, [sessionType, formData.stage]);
+
+  // Keep selected package in sync with active session type and filters
+  useEffect(() => {
+    if (filteredPackages.length > 0 && (!selectedPackage || selectedPackage.type !== sessionType || !filteredPackages.some((p) => p.id === selectedPackage.id))) {
+      if (sessionType === "GROUP") {
+        const isInterAdv = formData.stage === "INTERMEDIATE" || formData.stage === "ADVANCED";
+        const matched = filteredPackages.find((p) =>
+          isInterAdv
+            ? (p.stage === "INTERMEDIATE" || p.stage === "ADVANCED" || p.id.includes("inter"))
+            : (p.stage === "BEGINNER" || p.id.includes("beginner"))
+        );
+        setSelectedPackage(matched || filteredPackages[0]);
+      } else {
+        setSelectedPackage(filteredPackages[0]);
+      }
+    }
+  }, [sessionType, packages, groupLevelFilter, formData.stage]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -193,7 +252,7 @@ export default function PublicAdmissionPage() {
     try {
       const payload = {
         ...formData,
-        stage: selectedPackage.stage,
+        stage: formData.stage || selectedPackage.stage,
         packageId: selectedPackage.id,
         packageName: selectedPackage.name,
         packageType: selectedPackage.type,
@@ -279,16 +338,30 @@ export default function PublicAdmissionPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-sky-500 selection:text-white antialiased">
-      {/* UAE & Global Promo Banner */}
-      <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-sky-800 text-white text-xs py-2 px-4 shadow-sm">
+      {/* Top Admissions Promo Banner */}
+      <div className={`text-white text-xs py-2 px-4 shadow-sm ${
+        formData.country === "India"
+          ? "bg-gradient-to-r from-blue-700 via-sky-700 to-indigo-800"
+          : "bg-gradient-to-r from-emerald-700 via-teal-700 to-sky-800"
+      }`}>
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-base">🇦🇪</span>
-            <span className="font-bold">Official UAE & International Admissions Open:</span>
-            <span className="hidden sm:inline text-emerald-100">Special UAE rates in AED with FIDE rated international coaches</span>
+            <span className="text-base">{formData.country === "India" ? "🇮🇳" : formData.country === "UAE" ? "🇦🇪" : "🌍"}</span>
+            <span className="font-bold">
+              {formData.country === "India"
+                ? "Official India Online Admissions Open:"
+                : formData.country === "UAE"
+                ? "Official UAE & International Admissions Open:"
+                : "Official International Admissions Open:"}
+            </span>
+            <span className="hidden sm:inline text-sky-100">
+              {formData.country === "India"
+                ? "Affordable Group Classes (₹900 - ₹1,900/mo) & 1-on-1 Sessions • Beginner, Intermediate & Advanced Levels"
+                : "Special rates with FIDE rated international coaches"}
+            </span>
           </div>
           <a
-            href="https://wa.me/919903452493?text=Hi%20AIM%20Chess%20Academy%2C%20I%20would%20like%20to%20book%20a%20FREE%20Chess%20Assessment"
+            href="https://wa.me/919903452493?text=Hi%20AIM%20Chess%20Academy%2C%20I%20would%20like%20to%20inquire%20about%20admissions"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-2.5 py-1 rounded-full text-[11px] transition-all shadow-sm"
@@ -312,14 +385,22 @@ export default function PublicAdmissionPage() {
                 <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold border border-sky-200">
                   Online Admission
                 </span>
-                {formData.country === "UAE" && (
+                {formData.country === "India" ? (
+                  <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold border border-blue-200 flex items-center gap-1">
+                    🇮🇳 India Edition (INR ₹)
+                  </span>
+                ) : formData.country === "UAE" ? (
                   <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200 flex items-center gap-1">
                     🇦🇪 UAE Edition (AED)
+                  </span>
+                ) : (
+                  <span className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 font-bold border border-slate-200 flex items-center gap-1">
+                    🌍 Global Edition (USD $)
                   </span>
                 )}
               </h1>
               <p className="text-[11px] sm:text-xs text-slate-500 line-clamp-1">
-                Learn Chess • Build a Brighter Future • Developing Minds, Building Champions
+                More Than Chess, We Build Minds • Achieve • Inspire • Maintain
               </p>
             </div>
           </div>
@@ -499,8 +580,8 @@ export default function PublicAdmissionPage() {
                       onChange={handleChange}
                       className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-500/20 transition-all font-medium"
                     >
-                      <option value="UAE">🇦🇪 United Arab Emirates (AED د.إ)</option>
                       <option value="India">🇮🇳 India (INR ₹)</option>
+                      <option value="UAE">🇦🇪 United Arab Emirates (AED د.إ)</option>
                       <option value="USA">🇺🇸 United States (USD $)</option>
                       <option value="UK">🇬🇧 United Kingdom & International (USD $)</option>
                     </select>
@@ -594,6 +675,41 @@ export default function PublicAdmissionPage() {
         {/* STEP 2: COURSE & PACKAGE SELECTION */}
         {step === 2 && (
           <div className="space-y-8">
+            {/* India Hero Showcase Banner matching official flyer */}
+            {formData.country === "India" && (
+              <div className="bg-gradient-to-r from-blue-950 via-slate-900 to-sky-950 rounded-2xl p-6 text-white border border-sky-800/50 shadow-2xl relative overflow-hidden">
+                <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-sky-600/10 to-transparent pointer-events-none" />
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className="text-xl">🇮🇳</span>
+                      <span className="text-xs font-bold uppercase tracking-widest text-sky-400 bg-sky-950/80 border border-sky-700/50 px-2.5 py-0.5 rounded-full">
+                        AIM CHESS ACADEMY • INDIA
+                      </span>
+                      <span className="text-xs font-bold text-amber-400">★ Achieve • Inspire • Maintain</span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+                      More Than Chess, WE BUILD MINDS.
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
+                      Through Structured Chess Training, We Help Children Develop Skills For Life. Beginner, Intermediate & Advanced Group & 1-on-1 Classes.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <span className="bg-sky-500/20 text-sky-200 border border-sky-400/30 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
+                      🎯 FOCUS
+                    </span>
+                    <span className="bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
+                      💡 LOGIC
+                    </span>
+                    <span className="bg-amber-500/20 text-amber-200 border border-amber-400/30 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
+                      ♟️ RATED COACHES
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* UAE Hero Flyer Showcase Banner */}
             {formData.country === "UAE" && (
               <div className="bg-gradient-to-r from-slate-900 via-sky-950 to-blue-950 rounded-2xl p-6 text-white border border-sky-800/50 shadow-2xl relative overflow-hidden">
@@ -639,7 +755,7 @@ export default function PublicAdmissionPage() {
                     Select Course & Coaching Format
                   </h2>
                   <p className="text-xs text-slate-500 mt-1">
-                    Choose from 1-to-1 Premium Coaching, Semi-Private Buddy Coaching, or Premium Small Group.
+                    Choose from 1-to-1 Premium Coaching, Semi-Private Buddy Coaching, or Level-Matched Group Classes.
                   </p>
                 </div>
 
@@ -681,19 +797,19 @@ export default function PublicAdmissionPage() {
                     }`}
                   >
                     <UserCheck className="w-3.5 h-3.5" />
-                    Small Group (Max 4)
+                    Group Classes (Max 4-6)
                   </button>
                 </div>
               </div>
 
               {/* Mode Description Banner */}
-              <div className="mb-6 p-4 rounded-xl border text-xs flex items-center justify-between flex-wrap gap-2 ${
+              <div className={`mb-6 p-4 rounded-xl border text-xs flex items-center justify-between flex-wrap gap-2 ${
                 sessionType === 'ONE_ON_ONE'
                   ? 'bg-amber-50/70 border-amber-200 text-amber-900'
                   : sessionType === 'BUDDY'
                   ? 'bg-sky-50/70 border-sky-200 text-sky-900'
                   : 'bg-purple-50/70 border-purple-200 text-purple-900'
-              }">
+              }`}>
                 <div className="flex items-center gap-2">
                   {sessionType === "ONE_ON_ONE" && <Crown className="w-4 h-4 text-amber-600 shrink-0" />}
                   {sessionType === "BUDDY" && <Users className="w-4 h-4 text-sky-600 shrink-0" />}
@@ -701,10 +817,83 @@ export default function PublicAdmissionPage() {
                   <span className="font-bold">
                     {sessionType === "ONE_ON_ONE" && "1-to-1 Premium Coaching: Personalised | 60 Minutes • 100% Focus on Your Child • Tailored Plan for Faster Progress"}
                     {sessionType === "BUDDY" && "Buddy Coaching (Max 2 Students): Semi-Private | 60 Minutes • Learn Together Grow Together • Best for Siblings & Friends"}
-                    {sessionType === "GROUP" && "Premium Small Group (Max 4 Students): Level-Matched Batch | 60 Minutes • More Interaction More Fun • Affordable & Effective"}
+                    {sessionType === "GROUP" && "Group Classes: Level-Matched Batches (Max 4-6) | 60 Minutes • Beginner, Intermediate & Advanced • Affordable & Effective"}
                   </span>
                 </div>
               </div>
+
+              {/* GROUP CLASSES SPECIAL SECTION: ADMISSION FEE & LEVEL FILTER */}
+              {sessionType === "GROUP" && (
+                <div className="space-y-4 mb-6">
+                  {/* Group Class Admission Fee Flyer Callout */}
+                  <div className="bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2.5 rounded-xl bg-amber-500 text-white shrink-0 shadow-sm shadow-amber-500/20">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 border border-amber-300 px-2.5 py-0.5 rounded-md">
+                            GROUP CLASSES
+                          </span>
+                          <span className="text-xs font-extrabold text-slate-800">
+                            Beginner Level & Intermediate / Advanced Level
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1 max-w-xl">
+                          Level-matched batches with weekly student portal tournaments, AIM rating development, live interactive Zoom classes, and 24/7 learning support.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-white border-2 border-amber-300 rounded-xl p-3 text-right shrink-0 w-full md:w-auto shadow-sm">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Group Admission Fee</div>
+                      <div className="text-base sm:text-lg font-black text-amber-900">
+                        {formData.country === "India" ? "₹300 / one-time" : formData.country === "UAE" ? "AED 0 (Exempt)" : "$5 / one-time"}
+                      </div>
+                      <div className="text-[10px] text-slate-500 max-w-[180px]">Includes portal activation, registration & learning setup</div>
+                    </div>
+                  </div>
+
+                  {/* Level Filter Sub-Tabs */}
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    <button
+                      type="button"
+                      onClick={() => setGroupLevelFilter("ALL")}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        groupLevelFilter === "ALL"
+                          ? "bg-slate-900 text-white shadow-sm"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
+                      }`}
+                    >
+                      <span>All Levels (4 Packages)</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setGroupLevelFilter("BEGINNER")}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        groupLevelFilter === "BEGINNER"
+                          ? "bg-amber-500 text-white shadow-sm shadow-amber-500/20"
+                          : "bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200"
+                      }`}
+                    >
+                      <span>🟡 Beginner Level ({formData.country === "India" ? "₹900 / ₹1,700" : "Option 1 & 2"})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setGroupLevelFilter("INTERMEDIATE")}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        groupLevelFilter === "INTERMEDIATE"
+                          ? "bg-sky-600 text-white shadow-sm shadow-sky-600/20"
+                          : "bg-sky-50 text-sky-900 hover:bg-sky-100 border border-sky-200"
+                      }`}
+                    >
+                      <span>🔵 Intermediate & Advanced ({formData.country === "India" ? "₹1,000 / ₹1,900" : "Option 1 & 2"})</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Package Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
@@ -713,6 +902,8 @@ export default function PublicAdmissionPage() {
                   const { baseFee, admissionFee, totalAmount, currency } = getPackageCalculatedFee(pkg);
                   const tuitionPrice = formatPrice(baseFee, currency);
                   const totalDisplay = formatPrice(totalAmount, currency);
+                  const isInterOrAdv = pkg.stage === "INTERMEDIATE" || pkg.stage === "ADVANCED" || pkg.id.includes("inter");
+                  const isBeginnerGroup = pkg.type === "GROUP" && (pkg.stage === "BEGINNER" || pkg.id.includes("beginner"));
 
                   return (
                     <div
@@ -720,7 +911,11 @@ export default function PublicAdmissionPage() {
                       onClick={() => setSelectedPackage(pkg)}
                       className={`relative rounded-2xl p-5 sm:p-6 cursor-pointer border transition-all duration-300 flex flex-col justify-between ${
                         isSelected
-                          ? sessionType === "ONE_ON_ONE"
+                          ? isInterOrAdv
+                            ? "bg-gradient-to-b from-sky-50 to-blue-50/40 border-sky-500 shadow-xl shadow-sky-600/10 ring-2 ring-sky-500/40"
+                            : isBeginnerGroup
+                            ? "bg-gradient-to-b from-amber-50/80 to-yellow-50/30 border-amber-500 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/40"
+                            : sessionType === "ONE_ON_ONE"
                             ? "bg-gradient-to-b from-amber-50/80 to-yellow-50/30 border-amber-500 shadow-xl shadow-amber-500/10 ring-2 ring-amber-500/40"
                             : sessionType === "BUDDY"
                             ? "bg-gradient-to-b from-sky-50 to-blue-50/40 border-sky-500 shadow-xl shadow-sky-600/10 ring-2 ring-sky-500/40"
@@ -730,7 +925,11 @@ export default function PublicAdmissionPage() {
                     >
                       {isSelected && (
                         <div className={`absolute top-4 right-4 p-1.5 rounded-full border ${
-                          sessionType === "ONE_ON_ONE"
+                          isInterOrAdv
+                            ? "text-sky-700 bg-sky-100 border-sky-200"
+                            : isBeginnerGroup
+                            ? "text-amber-700 bg-amber-100 border-amber-200"
+                            : sessionType === "ONE_ON_ONE"
                             ? "text-amber-700 bg-amber-100 border-amber-200"
                             : sessionType === "BUDDY"
                             ? "text-sky-700 bg-sky-100 border-sky-200"
@@ -744,7 +943,11 @@ export default function PublicAdmissionPage() {
                         <div className="flex flex-wrap items-center gap-2 mb-3">
                           {pkg.tag && (
                             <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                              sessionType === "ONE_ON_ONE"
+                              isInterOrAdv
+                                ? "bg-sky-100 text-sky-800 border-sky-200"
+                                : isBeginnerGroup
+                                ? "bg-amber-100 text-amber-800 border-amber-200"
+                                : sessionType === "ONE_ON_ONE"
                                 ? "bg-amber-100 text-amber-800 border-amber-200"
                                 : sessionType === "BUDDY"
                                 ? "bg-sky-100 text-sky-800 border-sky-200"
@@ -754,7 +957,7 @@ export default function PublicAdmissionPage() {
                             </span>
                           )}
                           <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                            {pkg.stage} Level • {pkg.totalClasses} Classes
+                            {pkg.totalClasses === 4 ? "Weekly 1 Class (4 / Mo)" : pkg.totalClasses === 8 ? "Weekly 2 Classes (8 / Mo)" : `${pkg.totalClasses} Classes`}
                           </span>
                         </div>
 
@@ -769,13 +972,17 @@ export default function PublicAdmissionPage() {
                           <div className="flex justify-between items-baseline text-xs text-slate-500">
                             <span>Admission Fee:</span>
                             <span className="font-semibold text-emerald-600">
-                              {admissionFee > 0 ? `+${formatPrice(admissionFee, currency)}` : "0 (Exempt)"}
+                              {admissionFee > 0 ? `+${formatPrice(admissionFee, currency)} (One-Time)` : "0 (Exempt)"}
                             </span>
                           </div>
                           <div className="text-xl sm:text-2xl font-black text-slate-900 flex items-baseline justify-between pt-1 border-t border-slate-200">
                             <span className="text-xs text-slate-500 font-normal">Total Payable:</span>
                             <span className={
-                              sessionType === "ONE_ON_ONE"
+                              isInterOrAdv
+                                ? "text-sky-700"
+                                : isBeginnerGroup
+                                ? "text-amber-700"
+                                : sessionType === "ONE_ON_ONE"
                                 ? "text-amber-700"
                                 : sessionType === "BUDDY"
                                 ? "text-sky-700"
@@ -799,7 +1006,11 @@ export default function PublicAdmissionPage() {
                         type="button"
                         className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all mt-4 ${
                           isSelected
-                            ? sessionType === "ONE_ON_ONE"
+                            ? isInterOrAdv
+                              ? "bg-sky-600 text-white shadow-md shadow-sky-600/25"
+                              : isBeginnerGroup
+                              ? "bg-amber-600 text-white shadow-md shadow-amber-600/25"
+                              : sessionType === "ONE_ON_ONE"
                               ? "bg-amber-600 text-white shadow-md shadow-amber-600/25"
                               : sessionType === "BUDDY"
                               ? "bg-sky-600 text-white shadow-md shadow-sky-600/25"

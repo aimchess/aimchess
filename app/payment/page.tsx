@@ -224,7 +224,7 @@ export default function IndiaPaymentHubPage() {
                 : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
             }`}
           >
-            All Packages (8)
+            All Packages ({packages.length})
           </button>
           <button
             onClick={() => setActiveTab("GROUP")}
