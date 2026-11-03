@@ -90,7 +90,7 @@ export default function AdminAdmissionsPage() {
     stage: "BEGINNER",
     totalClasses: "4",
     priceINR: "800",
-    admissionFeeINR: "300",
+    admissionFeeINR: "0",
     priceUSD: "15",
     admissionFeeUSD: "5",
     priceAED: "99",

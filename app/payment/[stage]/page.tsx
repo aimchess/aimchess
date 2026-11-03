@@ -42,8 +42,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 4,
-    priceINR: 900,
-    admissionFeeINR: 300,
+    priceINR: 800,
+    admissionFeeINR: 0,
     description: 'Weekly 1 Class – 4 Classes/Month for Beginner Level students.',
     features: [
       '4 Interactive Group Classes / Month',
@@ -59,8 +59,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 4,
-    priceINR: 900,
-    admissionFeeINR: 300,
+    priceINR: 800,
+    admissionFeeINR: 0,
     description: 'Weekly 1 Class – 4 Classes/Month for Beginner Level students.',
     features: [
       '4 Interactive Group Classes / Month',
@@ -76,8 +76,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 8,
-    priceINR: 1700,
-    admissionFeeINR: 300,
+    priceINR: 1500,
+    admissionFeeINR: 0,
     description: 'Weekly 2 Classes – 8 Classes/Month for Beginner Level students.',
     features: [
       '8 Interactive Group Classes / Month',
@@ -93,8 +93,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 8,
-    priceINR: 1700,
-    admissionFeeINR: 300,
+    priceINR: 1500,
+    admissionFeeINR: 0,
     description: 'Weekly 2 Classes – 8 Classes/Month for Beginner Level students.',
     features: [
       '8 Interactive Group Classes / Month',
@@ -110,8 +110,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'INTERMEDIATE',
     totalClasses: 4,
-    priceINR: 1000,
-    admissionFeeINR: 300,
+    priceINR: 900,
+    admissionFeeINR: 0,
     description: 'Weekly 1 Class – 4 Classes/Month for Intermediate & Advanced Level students.',
     features: [
       '4 Interactive Group Classes / Month',
@@ -127,8 +127,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'INTERMEDIATE',
     totalClasses: 4,
-    priceINR: 1000,
-    admissionFeeINR: 300,
+    priceINR: 900,
+    admissionFeeINR: 0,
     description: 'Weekly 1 Class – 4 Classes/Month for Intermediate & Advanced Level students.',
     features: [
       '4 Interactive Group Classes / Month',
@@ -144,8 +144,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'INTERMEDIATE',
     totalClasses: 8,
-    priceINR: 1900,
-    admissionFeeINR: 300,
+    priceINR: 1700,
+    admissionFeeINR: 0,
     description: 'Weekly 2 Classes – 8 Classes/Month for Intermediate & Advanced Level students.',
     features: [
       '8 Interactive Group Classes / Month',
@@ -161,8 +161,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'INTERMEDIATE',
     totalClasses: 8,
-    priceINR: 1900,
-    admissionFeeINR: 300,
+    priceINR: 1700,
+    admissionFeeINR: 0,
     description: 'Weekly 2 Classes – 8 Classes/Month for Intermediate & Advanced Level students.',
     features: [
       '8 Interactive Group Classes / Month',
@@ -178,8 +178,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 4,
-    priceINR: 900,
-    admissionFeeINR: 300,
+    priceINR: 800,
+    admissionFeeINR: 0,
     description: 'Weekly 1 Class – 4 Classes/Month for Beginner Level students.',
     features: [
       '4 Interactive Group Classes / Month',
@@ -195,8 +195,8 @@ const packageFallbackMap: Record<string, PackageDetails> = {
     type: 'GROUP',
     stage: 'BEGINNER',
     totalClasses: 8,
-    priceINR: 1700,
-    admissionFeeINR: 300,
+    priceINR: 1500,
+    admissionFeeINR: 0,
     description: 'Weekly 2 Classes – 8 Classes/Month for Beginner Level students.',
     features: [
       '8 Interactive Group Classes / Month',
@@ -301,7 +301,7 @@ export default function PackageCheckoutPage() {
               stage: match.stage || 'BEGINNER',
               totalClasses: match.totalClasses || 4,
               priceINR: match.priceINR || 800,
-              admissionFeeINR: match.type === 'GROUP' ? (match.admissionFeeINR ?? 300) : 0,
+              admissionFeeINR: match.type === 'GROUP' ? (match.admissionFeeINR ?? 0) : 0,
               description: match.description || '',
               features: match.features || []
             })
@@ -322,7 +322,7 @@ export default function PackageCheckoutPage() {
     )
   }
 
-  const admissionFee = pkg.type === 'GROUP' ? (pkg.admissionFeeINR ?? 300) : 0
+  const admissionFee = pkg.type === 'GROUP' ? (pkg.admissionFeeINR ?? 0) : 0
   const totalPayable = pkg.priceINR + admissionFee
 
   const handlePayment = async () => {

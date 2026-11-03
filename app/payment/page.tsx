@@ -92,7 +92,7 @@ export default function IndiaPaymentHubPage() {
         throw new Error(orderData.error || "Failed to create payment order");
       }
 
-      const admissionFee = pkg.type === "GROUP" ? (pkg.admissionFeeINR ?? 300) : 0;
+      const admissionFee = pkg.type === "GROUP" ? (pkg.admissionFeeINR ?? 0) : 0;
       const totalAmount = pkg.priceINR + admissionFee;
 
       // 2. Configure Razorpay
@@ -177,15 +177,15 @@ export default function IndiaPaymentHubPage() {
           {/* Fee Policy Banner */}
           <div className="mt-6 inline-flex flex-col sm:flex-row items-center gap-3 bg-slate-800/80 backdrop-blur-md p-3.5 px-5 rounded-2xl border border-slate-700/80 text-xs text-slate-200 shadow-xl">
             <div className="flex items-center gap-2 text-amber-400 font-bold">
-              <span>📝 Admission Fee Policy:</span>
+              <span>🎉 Diwali Festive Special Offer:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-semibold border border-amber-400/30">
-                ₹300 One-Time Admission Fee (Group Classes ONLY)
+              <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-semibold border border-emerald-400/30">
+                ✨ ₹0 Admission Fee on Group Classes (Diwali Offer)
               </span>
               <span className="text-slate-400">•</span>
-              <span className="bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-semibold border border-emerald-400/30">
-                ⚠️ No Admission Fee for One-to-One Classes
+              <span className="bg-sky-500/20 text-sky-300 px-2 py-0.5 rounded font-semibold border border-sky-400/30">
+                No Admission Fee for One-to-One Classes
               </span>
             </div>
           </div>
@@ -235,7 +235,7 @@ export default function IndiaPaymentHubPage() {
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            Group Classes (₹300 Admission Fee)
+            Group Classes (₹0 Admission Fee - Diwali Offer)
           </button>
           <button
             onClick={() => setActiveTab("ONE_ON_ONE")}
@@ -259,7 +259,7 @@ export default function IndiaPaymentHubPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             {filteredPackages.map((pkg) => {
-              const admissionFee = pkg.type === "GROUP" ? (pkg.admissionFeeINR ?? 300) : 0;
+              const admissionFee = pkg.type === "GROUP" ? (pkg.admissionFeeINR ?? 0) : 0;
               const totalFirstPayment = pkg.priceINR + admissionFee;
               const isProcessing = processingId === pkg.id;
               const isCopied = copiedId === pkg.id;

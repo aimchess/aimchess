@@ -216,7 +216,7 @@ export default function PublicAdmissionPage() {
 
     if (formData.country === "India") {
       const baseFee = pkg.priceINR;
-      const admissionFee = pkg.type === "GROUP" ? (pkg.admissionFeeINR ?? 300) : 0;
+      const admissionFee = pkg.type === "GROUP" ? (pkg.admissionFeeINR ?? 0) : 0;
       return {
         baseFee,
         admissionFee,
@@ -356,7 +356,7 @@ export default function PublicAdmissionPage() {
             </span>
             <span className="hidden sm:inline text-sky-100">
               {formData.country === "India"
-                ? "Affordable Group Classes (₹900 - ₹1,900/mo) & 1-on-1 Sessions • Beginner, Intermediate & Advanced Levels"
+                ? "Affordable Group Classes (₹800 - ₹1,700/mo) & 1-on-1 Sessions • Diwali Offer: ₹0 Admission Fee!"
                 : "Special rates with FIDE rated international coaches"}
             </span>
           </div>
@@ -845,10 +845,21 @@ export default function PublicAdmissionPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="bg-white border-2 border-amber-300 rounded-xl p-3 text-right shrink-0 w-full md:w-auto shadow-sm">
-                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Group Admission Fee</div>
-                      <div className="text-base sm:text-lg font-black text-amber-900">
-                        {formData.country === "India" ? "₹300 / one-time" : formData.country === "UAE" ? "AED 0 (Exempt)" : "$5 / one-time"}
+                    <div className="bg-white border-2 border-emerald-400 rounded-xl p-3 text-right shrink-0 w-full md:w-auto shadow-sm">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 flex items-center justify-end gap-1">
+                        <span>🪔 Diwali Offer</span>
+                      </div>
+                      <div className="text-base sm:text-lg font-black text-emerald-800">
+                        {formData.country === "India" ? (
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <span className="line-through text-xs font-normal text-slate-400">₹300</span>
+                            <span className="text-emerald-600">₹0 (Free Admission)</span>
+                          </div>
+                        ) : formData.country === "UAE" ? (
+                          "AED 0 (Exempt)"
+                        ) : (
+                          "$5 / one-time"
+                        )}
                       </div>
                       <div className="text-[10px] text-slate-500 max-w-[180px]">Includes portal activation, registration & learning setup</div>
                     </div>
@@ -877,7 +888,7 @@ export default function PublicAdmissionPage() {
                           : "bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200"
                       }`}
                     >
-                      <span>🟡 Beginner Level ({formData.country === "India" ? "₹900 / ₹1,700" : "Option 1 & 2"})</span>
+                      <span>🟡 Beginner Level ({formData.country === "India" ? "₹800 / ₹1,500" : "Option 1 & 2"})</span>
                     </button>
 
                     <button
@@ -889,7 +900,7 @@ export default function PublicAdmissionPage() {
                           : "bg-sky-50 text-sky-900 hover:bg-sky-100 border border-sky-200"
                       }`}
                     >
-                      <span>🔵 Intermediate & Advanced ({formData.country === "India" ? "₹1,000 / ₹1,900" : "Option 1 & 2"})</span>
+                      <span>🔵 Intermediate & Advanced ({formData.country === "India" ? "₹900 / ₹1,700" : "Option 1 & 2"})</span>
                     </button>
                   </div>
                 </div>
