@@ -204,7 +204,7 @@ export default function PublicAdmissionPage() {
     if (!pkg) return { baseFee: 0, admissionFee: 0, totalAmount: 0, currency: "AED" };
     
     if (formData.country === "UAE") {
-      const baseFee = pkg.priceAED ?? (pkg.priceUSD ? Math.round(pkg.priceUSD * 3.67) : 99);
+      const baseFee = pkg.priceAED ?? (pkg.priceUSD ? Math.round(pkg.priceUSD * 3.67) : 60);
       const admissionFee = pkg.admissionFeeAED ?? 0;
       return {
         baseFee,
@@ -888,7 +888,7 @@ export default function PublicAdmissionPage() {
                           : "bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200"
                       }`}
                     >
-                      <span>🟡 Beginner Level ({formData.country === "India" ? "₹800 / ₹1,500" : "Option 1 & 2"})</span>
+                      <span>🟡 Beginner Level ({formData.country === "India" ? "₹800 / ₹1,500" : formData.country === "UAE" ? "AED 60 / AED 110" : "Option 1 & 2"})</span>
                     </button>
 
                     <button
@@ -900,7 +900,7 @@ export default function PublicAdmissionPage() {
                           : "bg-sky-50 text-sky-900 hover:bg-sky-100 border border-sky-200"
                       }`}
                     >
-                      <span>🔵 Intermediate & Advanced ({formData.country === "India" ? "₹900 / ₹1,700" : "Option 1 & 2"})</span>
+                      <span>🔵 Intermediate & Advanced ({formData.country === "India" ? "₹900 / ₹1,700" : formData.country === "UAE" ? "AED 60 / AED 110" : "Option 1 & 2"})</span>
                     </button>
                   </div>
                 </div>

@@ -150,13 +150,22 @@ export default function IndiaPaymentHubPage() {
               <p className="text-xs text-slate-500">Secure Direct Razorpay Payment Links</p>
             </div>
           </div>
-          <Link
-            href="/admission"
-            className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 rounded-xl border border-sky-200 transition-all"
-          >
-            <span>Online Admission Form</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/uae"
+              className="flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-3.5 py-2 rounded-xl border border-amber-200 transition-all"
+            >
+              <span>🇦🇪 UAE Fees & Admission</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/admission"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 px-3.5 py-2 rounded-xl border border-sky-200 transition-all"
+            >
+              <span>Online Admission Form</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
       </header>
 
