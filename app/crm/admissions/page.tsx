@@ -72,7 +72,7 @@ export default function AdminAdmissionsPage() {
   const [applications, setApplications] = useState<AdmissionApp[]>([]);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"UNDER_REVIEW" | "APPROVED" | "REJECTED" | "ALL">("UNDER_REVIEW");
+  const [activeTab, setActiveTab] = useState<"UNDER_REVIEW" | "APPROVED" | "REJECTED" | "PENDING_PAYMENT" | "ALL">("UNDER_REVIEW");
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -225,6 +225,7 @@ export default function AdminAdmissionsPage() {
 
   // Metrics
   const pendingCount = applications.filter((a) => a.status === "UNDER_REVIEW").length;
+  const prePaymentCount = applications.filter((a) => a.status === "PENDING_PAYMENT").length;
   const approvedCount = applications.filter((a) => a.status === "APPROVED").length;
   const totalRevenue = applications
     .filter((a) => a.status === "APPROVED")
@@ -285,7 +286,7 @@ export default function AdminAdmissionsPage() {
         </div>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Under Review</span>
@@ -294,7 +295,18 @@ export default function AdminAdmissionsPage() {
               </div>
             </div>
             <div className="text-2xl font-black text-gray-900 tracking-tight">{pendingCount}</div>
-            <p className="text-xs text-gray-500 font-medium mt-1">Applications waiting approval</p>
+            <p className="text-xs text-gray-500 font-medium mt-1">Paid & waiting approval</p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Pre-Payment Enquiries</span>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+            </div>
+            <div className="text-2xl font-black text-gray-900 tracking-tight">{prePaymentCount}</div>
+            <p className="text-xs text-gray-500 font-medium mt-1">Saved before payment</p>
           </div>
 
           <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
@@ -350,6 +362,22 @@ export default function AdminAdmissionsPage() {
               {pendingCount > 0 && (
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-800">
                   {pendingCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab("PENDING_PAYMENT" as any)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                (activeTab as any) === "PENDING_PAYMENT"
+                  ? "bg-white text-blue-700 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <AlertCircle className="w-3.5 h-3.5 text-blue-500" />
+              Enquiries / Pending Pay
+              {prePaymentCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-blue-800">
+                  {prePaymentCount}
                 </span>
               )}
             </button>
@@ -496,6 +524,12 @@ export default function AdminAdmissionsPage() {
 
                       {/* Status */}
                       <td className="py-4 px-4">
+                        {app.status === "PENDING_PAYMENT" && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                            <AlertCircle className="w-3.5 h-3.5 text-blue-500" />
+                            Pre-Payment Saved
+                          </span>
+                        )}
                         {app.status === "UNDER_REVIEW" && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                             <Clock className="w-3 h-3 text-amber-500" />
@@ -526,7 +560,7 @@ export default function AdminAdmissionsPage() {
                       {/* Actions */}
                       <td className="py-4 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          {app.status === "UNDER_REVIEW" && (
+                          {(app.status === "UNDER_REVIEW" || app.status === "PENDING_PAYMENT") && (
                             <button
                               onClick={() => {
                                 setSelectedApp(app);

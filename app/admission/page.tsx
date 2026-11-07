@@ -60,6 +60,7 @@ export default function PublicAdmissionPage() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedApplicationId, setSavedApplicationId] = useState<string | null>(null);
 
   // Packages state
   const [packages, setPackages] = useState<PackageItem[]>([]);
@@ -189,6 +190,43 @@ export default function PublicAdmissionPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Pre-save enquiry into database whenever student reaches Step 3 (or selects package)
+  const saveEnquiryPrePayment = async (pkgToUse?: PackageItem) => {
+    const pkg = pkgToUse || selectedPackage;
+    if (!pkg) return;
+    if (!formData.studentName.trim() || !formData.studentEmail.trim() || !formData.studentPhone.trim()) return;
+
+    try {
+      const { totalAmount, admissionFee, currency } = getPackageCalculatedFee(pkg);
+      const payload = {
+        ...formData,
+        applicationId: savedApplicationId,
+        stage: formData.stage || pkg.stage,
+        packageId: pkg.id,
+        packageName: pkg.name,
+        packageType: pkg.type,
+        totalClasses: pkg.totalClasses,
+        amount: totalAmount,
+        admissionFee,
+        currency,
+        isPrePayment: true,
+      };
+
+      const res = await fetch("/api/admission/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.applicationId) {
+        setSavedApplicationId(data.applicationId);
+      }
+    } catch (e) {
+      console.warn("Could not pre-save admission enquiry:", e);
+    }
+  };
+
   const handleStep2Next = () => {
     if (!selectedPackage) {
       setError("Please select a course package.");
@@ -197,6 +235,8 @@ export default function PublicAdmissionPage() {
     setError(null);
     setStep(3);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    // Pre-save to database immediately so admission team never loses this enquiry
+    saveEnquiryPrePayment(selectedPackage);
   };
 
   // Helper calculation for tuition fee, admission fee, and total payable based on selected country
@@ -252,6 +292,7 @@ export default function PublicAdmissionPage() {
     try {
       const payload = {
         ...formData,
+        applicationId: savedApplicationId,
         stage: formData.stage || selectedPackage.stage,
         packageId: selectedPackage.id,
         packageName: selectedPackage.name,
@@ -288,6 +329,9 @@ export default function PublicAdmissionPage() {
   const triggerRazorpayPayment = async () => {
     if (!selectedPackage) return;
     const { totalAmount, currency } = getPackageCalculatedFee(selectedPackage);
+
+    // Ensure enquiry is pre-saved before Razorpay window launches
+    await saveEnquiryPrePayment(selectedPackage);
 
     // Dynamically load Razorpay SDK if not already loaded
     if (typeof window !== "undefined" && !(window as any).Razorpay) {
